@@ -1,7 +1,20 @@
 #!/bin/bash
 
+echo "AdA project triplestore startup..."
+
 if [ -f /root/virtuoso.ini ]; then
   mv /root/virtuoso.ini .
+fi
+
+# TODO: Decide whether to ship ontology with triplestore or retrieve from final repository
+if [ ! -f ".ontoset" ]; then
+	echo "Importing ontology..."
+	wget https://github.com/ProjectAdA/public/raw/master/ontology/ada_ontology.owl
+	echo "ld_dir('.', 'ada_ontology.owl', 'http://onto.ada.filmontology.org/');" >/tmp/import.sql
+	virtuoso-t +wait && isql-v -U dba -P dba </tmp/import.sql
+	kill $(ps aux | grep '[v]irtuoso-t' | awk '{print $2}')
+	rm /tmp/import.sql
+	touch .ontoset
 fi
 
 if [ ! -f ".pwset" ]; then

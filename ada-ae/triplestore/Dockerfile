@@ -14,7 +14,8 @@ RUN apt-get update \
         && apt autoremove -y \
         && apt autoclean
 
-RUN apt-get update && apt-get install -y libreadline-dev
+# TODO Fix removal
+RUN apt-get update && apt-get install -y libreadline-dev wget
 ENV PATH /usr/local/virtuoso-opensource/bin/:$PATH
 
 COPY virtuoso.ini /root/virtuoso.ini
