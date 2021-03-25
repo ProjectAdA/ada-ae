@@ -1,0 +1,762 @@
+body {
+    font-size: 14px;
+    background: #2f323a;
+    overflow: hidden;
+    font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    line-height: 14px;
+    height: 100vh;
+}
+ul.fancytree-container {
+    font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif !important;
+    line-height: 14px;
+}
+input, label, .button {
+    line-height: 21px;
+}
+#chart_wrapper {
+    display: none;
+}
+ul.fancytree-container {
+    background: transparent !important;
+    margin-top: 10px !important;
+}
+body .compareSpecific {
+    display: none;
+}
+#loadingResults {
+    position: fixed;
+    top: 61px;
+    left: 0px;
+    width: 100%;
+    height: calc(100% - 61px);
+    background: rgba(47, 50, 58, .8);
+    z-index: 1000;
+}
+#loadingResults .workingSpinner {
+    background: #fff;
+    background: linear-gradient(to right, #fff 10%, transparent 42%);
+}
+header {
+    position: relative;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    min-height: 84px;
+    text-align: left;
+    padding: 0 10px 10px 10px;
+    box-sizing: border-box;
+    background: #fff;
+    border-bottom: 1px solid #e5e5e5;
+    color: #333;
+}
+header #headerContainer {
+    border-bottom: 1px solid #ccc;
+}
+header h2 {
+    float: left;
+    padding: 10px 3px;
+    line-height: 17px;
+    font-size: 16px;
+    font-weight: normal;
+}
+header #loginContainer {
+    float: left;
+    padding-top: 4px;
+    margin-left: 6px;
+    display: none;
+}
+header #loginContainer.active {
+    display: block;
+}
+header #loginContainer button#loginButton {
+    border: 2px solid #2f323a;
+    padding: 2px 10px 2px 6px;
+}
+header #loginContainer button#loginButton:hover,
+header #loginContainer button#loginButton.active {
+    border: 2px solid #2f323a;
+    padding: 2px 10px 2px 6px;
+}
+header #loginContainer button#logoutButton {
+    display: none;
+    cursor: default;
+}
+header #resultPanelOptions {
+    position: absolute;
+    top: 10px;
+    right: 370px;
+}
+header #resultPanelOptions .switch {
+    float: right;
+}
+header #resultPanelOptions .switchLabel {
+    float: right;
+    margin: 1px 4px 2px 15px;
+}
+header #resultPanelActions {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+}
+header #resultPanelActions div {
+    float: right;
+    line-height: 13px;
+}
+header #resultPanelActions .button {
+    background-color: #eeeeee;
+    border: 2px solid #2f323a;
+}
+header #resultPanelActions .button[data-result-view],
+header #resultPanelActions .button[data-result-unit] {
+    border: 2px solid #cfcfcf;
+    color: #666;
+}
+header #resultPanelActions .button.active, header #resultPanelActions .button:hover {
+    background-color: #fff;
+    border: 2px solid #2f323a;
+    color: #2f323a;
+}
+header #resultPanelActions .button.active {
+    cursor: default;
+}
+header #resultPanelActions .button[data-result-view="list"], 
+header #resultPanelActions .button[data-result-unit="scene"] {
+    border-left-color: #2f323a;
+}
+header #resultPanelActions .button[data-result-view="movie"], 
+header #resultPanelActions .button[data-result-unit="movie"] {
+    border-right-width: 0px;
+    margin-left: 8px;
+}
+header #resultPanelActions .button.downloadResult, 
+header #resultPanelActions #videoSourceSettingsButton, 
+header #resultPanelActions #timelineOrderSettingsButton {
+    margin-left: 8px;
+}
+.icon-hypervideo::before {
+    margin-right: 0.7em;
+}
+#content {
+    position: relative;
+    display: flex;
+    flex: 1;
+    top: 0px;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    transition-duration: 200ms;
+    transition-property: left, width;
+}
+#sidebar, #main {
+    position: absolute;
+    top: 0px;
+    height: 100%;
+    box-sizing: border-box;
+    transition-duration: 200ms;
+    transition-property: left, width;
+}
+#sidebar {
+    left: 0px;
+    width: 324px;
+    border-right: 1px solid #888;
+    overflow: hidden;
+    background: #f3f3f3;
+    color: #333;
+    padding-right: 15px;
+}
+#sidebar input {
+    line-height: 14px;
+}
+body.sidebarClosed #sidebar {
+    left: -300px;
+    overflow: hidden;
+}
+#sidebar .sidebarPanel {
+    margin: 10px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+    max-height: calc(100% - 20px);
+    overflow-y: auto;
+    padding-bottom: 20px;
+    overflow-x: hidden;
+}
+#sidebar .sidebarPanel#status {
+    height: 60px;
+}
+#sidebar #sidebarToggleButton {
+    position: absolute;
+    top: 2px;
+    right: 0px;
+    width: 24px;
+    height: 30px;
+    cursor: pointer;
+}
+#sidebar #sidebarToggleButton::after {
+    display: block;
+    font-family: "frametrail-webfont";
+    font-style: normal;
+    content: '\f100';
+    font-weight: normal;
+    speak: none;
+    text-decoration: inherit;
+    width: 100%;
+    text-align: center;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 30px;
+    font-size: 120%;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-shadow: 1px 1px 1px rgba(127,127,127,0.3);
+    color: var(--primary-fg-color);
+}
+body.sidebarClosed #sidebar #sidebarToggleButton::after {
+    content: '\f101';
+}
+#sidebar a {
+    color: #2f323a;
+}
+#main {
+    left: 324px;
+    width: calc(100% - 324px);
+    background: transparent;
+}
+body.sidebarClosed #main {
+    left: 24px;
+    width: calc(100% - 24px);
+}
+
+#main #intro {
+    color: #fff;
+    padding: 60px 40px 0 40px;
+    text-align: center;
+    z-index: 1;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    box-sizing: border-box;
+    line-height: 18px;
+    max-height: 100%;
+}
+#main #intro .message {
+    margin: 18px 13px;
+}
+#main #intro h2 {
+    font-size: 16px;
+    font-weight: normal;
+    margin-bottom: 6px;
+}
+#main #intro a {
+    color: #fff;
+}
+#main #intro img {
+    position: absolute;
+    top: 60px;
+    left: 10px;
+    width: 70px;
+}
+#examplesWrapper {
+    margin-top: 20px;
+    padding: 0 10px;
+    height: calc(100vh - 480px);
+    overflow: auto;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#examplesWrapper .exampleItem {
+    padding: 6px;
+    flex: 1 1 25%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    border: none;
+    margin: 2px;
+    background: rgba(255,255,255,.2);
+    color: #fff !important;
+    text-decoration: none;
+}
+
+#examplesWrapper .exampleItem:hover {
+    background: #fff;
+    color: #000 !important;
+}
+
+#examplesWrapper .exampleItem p {
+    margin-top: 4px;
+    display: none;
+}
+
+#examplesWrapper .exampleItem:hover p {
+    display: block;
+}
+/*
+#optionsPanel {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 60px;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+#optionsPanel button, #optionsPanel input {
+    border: 2px solid #4d5058;
+    padding: 4px 6px;
+    background: #4d5058;
+    color: #cfcfcf;
+}
+#optionsPanel button:hover, #optionsPanel input:hover {
+    color: #fff;
+}
+#optionsPanel input {
+    width: 80%;
+}
+#optionsPanel #toggleCompareModeButton {
+    position: absolute;
+    top: 14px;
+    right: 10px;
+}
+*/
+
+#editableMovieListContainer, 
+#prioritizedTypeList {
+    margin-top: 7px;
+    border-top: 1px solid #333;
+    max-height: 40vh;
+    padding: 10px;
+    overflow: auto;
+}
+
+#prioritizedTypeList {
+    min-height: 200px;
+}
+
+#editableMovieListContainer label,
+#editableMovieListContainer input[type="text"] {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#editableMovieListContainer label {
+    margin-top: 8px;
+}
+
+#prioritizedTypeList li {
+    margin: 6px 0;
+    padding: 4px 6px;
+    border: 1px solid #999;
+    background: #fff;
+    list-style: none;
+}
+
+#prioritizedTypeList li:hover {
+    background: #efefef;
+    cursor: move;
+}
+
+#prioritizedTypeList li .icon-cancel-circled {
+    padding-right: 4px;
+    opacity: 0.4;
+    font-size: 16px;
+    margin-left: -3px;
+}
+
+#prioritizedTypeList li .icon-cancel-circled:hover {
+    opacity: 1;
+    cursor: pointer;
+}
+
+#prioritizedTypeList .ui-sortable-placeholder {
+    margin: 6px 0;
+    background: rgba(200,200,200,.3);
+    border: 2px dotted #333;
+    height: 20px;
+}
+
+#activeSearchFacets {
+    width: calc(100% - 215px);
+    background: #fff;
+    position: relative;
+    top: 7px;
+    left: 0px;
+    max-height: 74px;
+    overflow: auto;
+}
+
+#resultPanelContainer {
+    position: absolute;
+    top: 0px;
+    left: 10px;
+    width: calc(100% - 20px);
+    height: 100%;
+    transition-duration: 400ms;
+    transition-property: left;
+    overflow: hidden;
+}
+body.compareMode #resultPanelContainer {
+    left: 30px;
+    width: calc(100% - 60px);
+}
+.resultPanelNavButton {
+    position: absolute;
+    left: 0px;
+    top: 50%;
+    width: 30px;
+    height: 60px;
+    margin-top: -30px;
+    color: #fff;
+    opacity: .2;
+    display: none;
+}
+body.compareMode .resultPanelNavButton {
+    display: block;
+    pointer-events: none;
+}
+.resultPanelNavButton#resultPanelNavRight {
+    left: auto;
+    right: 0px;
+}
+.resultPanelNavButton.active {
+    opacity: .7;
+    pointer-events: all !important;
+}
+.resultPanelNavButton.active:hover {
+    cursor: pointer;
+    opacity: 1;
+}
+.resultPanelNavButton .icon-left-open-big {
+    line-height: 60px;
+    font-size: 35px;
+    margin-left: -10px;
+}
+.resultPanelNavButton .icon-right-open-big {
+    line-height: 60px;
+    font-size: 35px;
+    margin-left: -10px;
+}
+#resultPanel {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    transition-duration: 400ms;
+    transition-property: left;
+}
+body.compareMode #resultPanel {
+    height: calc(100% - 30px);
+}
+#resultIndicatorContainer {
+    position: absolute;
+    left: 0px;
+    bottom: 12px;
+    width: 100%;
+    height: 16px;
+    overflow: hidden;
+    display: none;
+}
+body.compareMode #resultIndicatorContainer {
+    display: block;
+}
+#resultIndicatorContainer #resultIndicatorScrollContainer {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 1000000000px;
+    transition-property: left;
+    transition-duration: 600ms;
+} 
+#resultIndicatorContainer .resultIndicatorItem {
+    float: left;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #eeeeee;
+    box-sizing: border-box;
+    margin-right: 5px;
+    background: transparent;
+    font-size: 8px;
+    color: #fff;
+    text-align: center;
+}
+#resultIndicatorContainer .resultIndicatorItem.active {
+    background: #eeeeee;
+    color: #2f323a;
+}
+#resultCount {
+    position: absolute;
+    right: 0px;
+    bottom: 10px;
+    width: auto;
+    font-size: 14px;
+    display: none;
+    color: #fff;
+    background: #2f323a;
+    height: 20px;
+    line-height: 20px;
+    padding-left: 6px;
+    padding-right: 3px;
+    box-shadow: -4px 0px 6px 1px #2f323a;
+}
+body.compareMode #resultCount {
+    display: block;
+}
+#resultCount #resultCountNumber {
+    font-weight: bold;
+}
+#resultPanel .frametrail-body .mainContainer > .timelineList {
+    background: var(--secondary-bg-color);
+    color: var(--primary-fg-color);
+}
+.resultMovieItem {
+    float: left;
+    position: relative;
+    top: 4px;
+    width: calc(100vw - 345px);
+    height: calc(100% - 14px);
+    transition-duration: 400ms;
+    transition-property: width;
+    margin-right: 10px;
+}
+body.sidebarClosed .resultMovieItem {
+    width: calc(100vw - 44px);
+}
+body.compareMode .resultMovieItem {
+    width: calc(50vw - 198px);
+}
+body.sidebarClosed.compareMode .resultMovieItem {
+    width: calc(50vw - 48px);
+}
+.resultMovieItem .sceneLabel {
+    color: #fff;
+    line-height: 20px;
+    padding: 6px 5px;
+}
+.mainContainer .timelineList .userLabel {
+    margin-bottom: 6px;
+}
+.resultMovieItem .filteredSceneLabel {
+    font-weight: bold;
+    margin-left: 5px;
+}
+.resultMovieItem .timelineClearButton {
+    float: right;
+    border: 1px solid #fff;
+    padding: 0px 4px;
+    line-height: 18px;
+    display: none;
+    margin-top: 2px;
+    background: #fff;
+    color: #2f323a;
+    border-radius: 7px;
+}
+.scenesPanel {
+    position: relative;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    padding: 0px;
+    height: 60px;
+    box-sizing: border-box;
+    font-family: TitilliumWeb,"Helvetica Neue",Helvetica,Arial,sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #fff;
+    transition-duration: 400ms;
+    transition-property: width;
+    z-index: 7;
+}
+body.compareMode .compareSpecific {
+    display: inline;
+}
+.scenesPanel .timelineList .userTimeline .compareTimelineElement {
+    background: #fff;
+    border-color: #2f323a;
+}
+.scenesPanel .timelineList .userTimeline .compareTimelineElement .previewWrapper {
+    top: 27px;
+    bottom: auto;
+    background: #fff;
+    color: #2f323a;
+    height: auto;
+    min-height: 60px;
+}
+.scenesPanel .timelineList .userTimeline .compareTimelineElement .previewWrapper:after {
+    bottom: auto;
+    top: -7px;
+    border-top: transparent;
+    border-bottom: 8px solid #fff;
+}
+.scenesPanel .timelineList .userTimeline .compareTimelineElement:nth-child(1) .previewWrapper, 
+.scenesPanel .timelineList .userTimeline .compareTimelineElement:nth-child(2) .previewWrapper {
+    margin-left: -10px;
+}
+.scenesPanel .timelineList .userTimeline .compareTimelineElement:nth-child(1) .previewWrapper::after, 
+.scenesPanel .timelineList .userTimeline .compareTimelineElement:nth-child(2) .previewWrapper::after {
+    left: 10px;
+}
+
+.scenesPanel .timelineList .userTimeline .compareTimelineElement .previewWrapper .resourceThumb .resourceTextPreview {
+    position: relative;
+}
+/*
+.scenesPanel .userTimeline .compareTimelineElement.active .previewWrapper {
+    display: block;
+}
+*/
+.scenesPanel .userTimeline .compareTimelineElement:hover, 
+.scenesPanel .userTimeline .compareTimelineElement.active {
+    cursor: pointer;
+}
+.scenesPanel .timelineList .userTimelineWrapper {
+    margin-top: 0px;
+    padding: 0px !important;
+}
+.scenesPanel .compareTimelineElementTime {
+    display: none !important;
+}
+.playerPanel {
+    position: absolute;
+    top: 60px;
+    left: 0px;
+    width: 100%;
+    height: calc(100% - 60px);
+    display: flex;
+}
+.playerPanel .titlebar {
+    display: none;
+}
+body.compareMode .playerPanel .areaLeftContainer {
+    display: none !important;
+}
+.playerPanel .titlebar .titlebarTitle {
+    color: #2f323a;
+    z-index: 0;
+}
+.playerPanel .titlebar .titlebarTitle b, .playerPanel .loadingTitle b {
+    font-weight: 600;
+}
+.playerPanel .titlebarActionButtonContainer, .playerPanel .sharingWidget {
+    display: none !important;
+}
+
+.playerPanel .mainContainer.playerHidden .playerContainer, 
+.playerPanel .mainContainer.playerHidden .areaTopDetails {
+    display: none;
+}
+
+.playerPanel .mainContainer.playerHidden .slideArea {
+    margin-top: 0px !important;
+    min-height: 0px !important;
+}
+.playerPanel .mainContainer.playerHidden .areaTopContainer {
+    min-height: 100%;
+}
+.playerPanel .mainContainer .areaTopContainer .layoutAreaToggleCloseButton::after {
+    content: '\f103';
+}
+.playerPanel .mainContainer.playerHidden .areaTopContainer .layoutAreaToggleCloseButton::after {
+    content: '\f102';
+}
+
+.playerPanel .mainContainer .areaRightContainer .layoutAreaToggleCloseButton {
+    display: none;
+}
+
+.playerPanel .mainContainer .areaRightContainer .contentViewTabName span[class^='icon'],
+.playerPanel .mainContainer .areaRightContainer .contentViewTabName span[class*='icon'] {
+    font-size: 18px;
+    padding-top: 2px;
+    display: inline-block;
+}
+
+.playerPanel .timelinesContainer {
+    
+}
+
+.hypervideoContainer .videoContainer .videoStartOverlay {
+    display: none !important;
+}
+
+.customhtmlContainer .timebased {
+    display: block;
+    text-align: center;
+}
+
+.customhtmlContainer .timebased em {
+    color: #000;
+    background: #ffcf40;
+    padding: 0px 2px;
+}
+
+.layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased {
+    background-color: transparent;
+    padding: 3px 8px;
+    line-height: 16px;
+}
+.layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased:hover, .layoutArea .contentViewContainer .contentViewContents .customhtmlContainer .timebased.active {
+    background-color: transparent;
+    font-weight: 600;
+    padding: 3px 3px;
+}
+
+/* Media Queries */
+
+@media (min-height: 1500px) {
+    .areaBottomDetails, .areaTopDetails, .areaTopContainer[data-size="large"], .areaBottomContainer[data-size="large"] {
+        flex-basis: 1100px;
+    }
+}
+
+@media (min-height: 1300px) and (max-height: 1500px) {
+    .areaBottomDetails, .areaTopDetails, .areaTopContainer[data-size="large"], .areaBottomContainer[data-size="large"] {
+        flex-basis: 900px;
+    }
+}
+
+@media (min-height: 1100px) and (max-height: 1300px) {
+    .areaBottomDetails, .areaTopDetails, .areaTopContainer[data-size="large"], .areaBottomContainer[data-size="large"] {
+        flex-basis: 700px;
+    }
+}
+
+@media (min-height: 920px) and (max-height: 1100px) {
+    .areaBottomDetails, .areaTopDetails, .areaTopContainer[data-size="large"], .areaBottomContainer[data-size="large"] {
+        flex-basis: 550px;
+    }
+}
+
+@media (min-height: 820px) and (max-height: 920px) {
+    .areaBottomDetails, .areaTopDetails, .areaTopContainer[data-size="large"], .areaBottomContainer[data-size="large"] {
+        flex-basis: 450px;
+    }
+}
+
+@media (min-height: 680px) and (max-height: 820px) {
+    .areaBottomDetails, .areaTopDetails, .areaTopContainer[data-size="large"], .areaBottomContainer[data-size="large"] {
+        flex-basis: 300px;
+    }
+}
+
+@media (min-height: 540px) and (max-height: 680px) {
+    .areaBottomDetails, .areaTopDetails, .areaTopContainer[data-size="large"], .areaBottomContainer[data-size="large"] {
+        flex-basis: 260px;
+    }
+}
+
+@media (min-height: 400px) and (max-height: 540px) {
+    .areaBottomDetails, .areaTopDetails, .areaTopContainer[data-size="large"], .areaBottomContainer[data-size="large"] {
+        flex-basis: 220px;
+    }
+}
+
+@media (max-height: 400px) {
+    .areaBottomDetails, .areaTopDetails, .areaTopContainer[data-size="large"], .areaBottomContainer[data-size="large"] {
+        flex-basis: 200px;
+    }
+}

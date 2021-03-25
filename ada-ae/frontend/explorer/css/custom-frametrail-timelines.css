@@ -1,0 +1,1458 @@
+.mainContainer .timelineList .userLabel {
+    text-shadow: 0px 1px 1px #191C24;
+}
+
+.timelineList .timelineZoomWrapper .timelineZoomScroller {
+    overflow: hidden;
+}
+
+.timelineList .compareTimelineElement {
+    cursor: pointer !important;
+    transition-duration: 400ms;
+    transition-property: height, opacity;
+    top: auto;
+    bottom: 0px;
+    min-width: 2px;
+}
+
+.timelineList .userTimeline .compareTimelineElement {
+    opacity: .8;
+}
+
+.mainContainer .compareTimelineElement .previewWrapper {
+    width: 92px;
+    margin-left: -46px;
+}
+
+.mainContainer .compareTimelineElement.previewPositionLeft .previewWrapper {
+    margin-left: 0px;
+}
+
+.compareTimelineElement .previewWrapper .resourceThumb .resourceOverlay .resourceIcon {
+    display: none;
+}
+
+.mainContainer .compareTimelineElement .resourceThumb[data-type="entity"] .resourceTextPreview::after {
+    height: 25%;
+}
+
+.timelineList .timelineValues {
+    display: none;
+    width: calc(100vw - 350px);
+}
+
+body.compareMode .timelineList .timelineValues {
+    width: calc(50vw - 210px);
+}
+
+body.sidebarClosed .timelineList .timelineValues,
+.frametrail-body.inFullscreen .timelineList .timelineValues {
+    width: calc(100vw - 50px);
+}
+
+body.sidebarClosed.compareMode .timelineList .timelineValues {
+    width: calc(50vw - 60px);
+}
+
+body[data-timeline-keys="true"] .timelineList .timelineValues {
+    display: block;
+}
+
+.timelineList .timelineValues .timelineLegendLabel {
+    margin: 0 6px;
+    font-weight: 600;
+    text-shadow: 0px 0px 1px #fff;
+    white-space: unset;
+    display: inline-block;
+}
+
+body[data-timeline-color="false"] .timelineList .userTimeline .compareTimelineElement .barchartFraction {
+    background: transparent !important;
+}
+body[data-timeline-color="false"] .timelineList .timelineValues .timelineLegendLabel {
+    color: inherit !important;
+    text-shadow: 0px 1px 1px #444;
+}
+
+/* Numeric Values START */
+
+.timelineList .horizontalGridLine {
+    position: absolute;
+    top: auto;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    height: 1px;
+    background-color: #C9C9C9;
+    display: none;
+}
+
+body[data-timeline-horizontal-grid="true"] .timelineList .horizontalGridLine {
+    display: block;
+}
+
+body:not([data-timeline-charts="true"]) .timelineList .compareTimelineElement[data-numeric-value] {
+    height: 100% !important;
+}
+
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="1"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="2"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="3"] {
+    padding-bottom: 40px;
+}
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="1"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="2"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="3"] .userTimeline {
+    height: 20px;
+}
+
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="4"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="5"] {
+    padding-bottom: 45px;
+}
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="4"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="5"] .userTimeline {
+    height: 25px;
+}
+
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="6"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="7"] {
+    padding-bottom: 50px;
+}
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="6"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="7"] .userTimeline {
+    height: 30px;
+}
+
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="8"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="9"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="10"] {
+    padding-bottom: 55px;
+}
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="8"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="9"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="10"] .userTimeline {
+    height: 35px;
+}
+
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="11"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="12"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="13"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="14"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="15"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="16"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="17"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="18"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="19"],
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="20"] {
+    padding-bottom: 60px;
+}
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="11"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="12"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="13"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="14"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="15"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="16"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="17"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="18"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="19"] .userTimeline,
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-timeline-max-value="20"] .userTimeline {
+    height: 40px;
+}
+
+/* Special Shot Duration (Histogram) */
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-type-label="Montg | Shot Duration"] {
+    padding-bottom: 120px !important;
+}
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-type-label="Montg | Shot Duration"] .userTimeline {
+    height: 100px !important;
+}
+body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrapper[data-type-label="Montg | Shot Duration"] .userTimeline .compareTimelineElement {
+    border-width: 0px;
+}
+
+/* Special Case Volume / Soundwave Info */
+body .mainContainer .timelineList .userTimelineWrapper[data-type-label="As | Volume"],
+body .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | opticalflow"],
+body .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | soundenvelope"] {
+    padding-bottom: 60px !important;
+}
+body .mainContainer .timelineList .userTimelineWrapper[data-type-label="As | Volume"] .userTimeline,
+body .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | opticalflow"] .userTimeline,
+body .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | soundenvelope"] .userTimeline {
+    height: 40px !important;
+}
+.mainContainer .timelineList .userTimelineWrapper[data-type-label="As | Volume"] .userTimeline .compareTimelineElement,
+.mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | opticalflow"] .userTimeline .compareTimelineElement,
+.mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | soundenvelope"] .userTimeline .compareTimelineElement {
+    /*pointer-events: none;*/
+    opacity: 1;
+    border-left-color: transparent;
+    border-right-color: transparent;
+}
+/*
+body:not(.dividerLinesOn) .mainContainer .timelineList .compareTimelineElement[data-origin-type="ao:PredefinedValuesAnnotationType"], 
+body:not(.dividerLinesOn) .mainContainer .timelineList .compareTimelineElement[data-origin-type="ao:ContrastingValuesAnnotationType"], 
+body:not(.dividerLinesOn) .mainContainer .timelineList .compareTimelineElement[data-origin-type="ao:EvolvingValuesAnnotationType"] {
+    border-left: none;
+    border-right: none;
+}
+*/
+.mainContainer .timelineList .compareTimelineElement[data-origin-type="ao:PredefinedValuesAnnotationType"]:hover, 
+.mainContainer .timelineList .compareTimelineElement[data-origin-type="ao:ContrastingValuesAnnotationType"]:hover, 
+.mainContainer .timelineList .compareTimelineElement[data-origin-type="ao:EvolvingValuesAnnotationType"]:hover {
+    border-left: 1px solid #fff !important;
+    border-right: 1px solid #fff !important;
+}
+body[data-timeline-color="true"] .mainContainer .timelineList .userTimelineWrapper[data-type-label="As | Volume"] .userTimeline .compareTimelineElement,
+body[data-timeline-color="true"] .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | opticalflow"] .userTimeline .compareTimelineElement,
+body[data-timeline-color="true"] .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | soundenvelope"] .userTimeline .compareTimelineElement {
+    background: transparent !important;
+}
+
+body .timelineList .compareTimelineElement[data-numeric-value] {
+    
+}
+
+body[data-timeline-background="false"] .mainContainer .timelineList .userTimeline {
+    background-image: none;
+    background-color: #fff;
+}
+
+.timelineList .compareTimelineElement[data-numeric-value] {
+    opacity: .8;
+}
+
+.timelineList .compareTimelineElement[data-numeric-value]:hover {
+    opacity: 1 !important;
+}
+
+.compareTimelineElement.opaque, [data-timeline-color].opaque {
+    opacity: 0 !important;
+}
+
+body[data-timeline-color="true"] .mainContainer .timelineList .compareTimelineElement {
+    background: #777777 !important;
+}
+body .mainContainer .timelineList .compareTimelineElement.transparentBackground {
+    border-color: transparent !important;
+}
+body[data-timeline-color="true"] .mainContainer .timelineList .compareTimelineElement.transparentBackground {
+    background: transparent !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-origin-type="ao:EvolvingValuesAnnotationType"] {
+    background: transparent !important;
+}
+
+body[data-timeline-color="false"][data-timeline-charts="true"] .timelineList .compareTimelineElement[data-origin-type="ao:EvolvingValuesAnnotationType"] {
+    background: transparent !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-origin-type="ao:EvolvingValuesAnnotationType"] path {
+    fill: #777777 !important;
+}
+
+body[data-timeline-color="true"] .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | asr"] .compareTimelineElement[title="SIL"] {
+    background: #cfcfcf !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="1"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="1"] {
+    background-color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="1"] {
+    color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="1"] path {
+    fill: var(--color-1) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="2"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="2"] {
+    background-color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="2"] {
+    color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="2"] path {
+    fill: var(--color-2) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="3"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="3"] {
+    background-color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="3"] {
+    color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="3"] path {
+    fill: var(--color-3) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="4"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="4"] {
+    background-color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="4"] {
+    color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="4"] path {
+    fill: var(--color-4) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="5"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="5"] {
+    background-color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="5"] {
+    color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="5"] path {
+    fill: var(--color-5) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="6"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="6"] {
+    background-color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="6"] {
+    color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="6"] path {
+    fill: var(--color-6) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="7"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="7"] {
+    background-color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="7"] {
+    color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="7"] path {
+    fill: var(--color-7) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="8"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="8"] {
+    background-color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="8"] {
+    color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="8"] path {
+    fill: var(--color-8) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="9"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="9"] {
+    background-color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="9"] {
+    color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="9"] path {
+    fill: var(--color-9) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="10"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="10"] {
+    background-color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="10"] {
+    color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="10"] path {
+    fill: var(--color-10) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="11"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="11"] {
+    background-color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="11"] {
+    color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="11"] path {
+    fill: var(--color-11) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="12"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="12"] {
+    background-color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="12"] {
+    color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="12"] path {
+    fill: var(--color-12) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="13"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="13"] {
+    background-color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="13"] {
+    color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="13"] path {
+    fill: var(--color-1) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="14"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="14"] {
+    background-color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="14"] {
+    color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="14"] path {
+    fill: var(--color-2) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="15"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="15"] {
+    background-color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="15"] {
+    color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="15"] path {
+    fill: var(--color-3) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="16"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="16"] {
+    background-color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="16"] {
+    color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="16"] path {
+    fill: var(--color-4) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="17"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="17"] {
+    background-color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="17"] {
+    color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="17"] path {
+    fill: var(--color-5) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="18"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="18"] {
+    background-color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="18"] {
+    color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="18"] path {
+    fill: var(--color-6) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="19"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="19"] {
+    background-color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="19"] {
+    color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="19"] path {
+    fill: var(--color-7) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="20"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="20"] {
+    background-color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="20"] {
+    color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="20"] path {
+    fill: var(--color-8) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="21"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="21"] {
+    background-color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="21"] {
+    color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="21"] path {
+    fill: var(--color-9) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="22"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="22"] {
+    background-color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="22"] {
+    color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="22"] path {
+    fill: var(--color-10) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="23"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="23"] {
+    background-color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="23"] {
+    color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="23"] path {
+    fill: var(--color-11) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="24"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="24"] {
+    background-color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="24"] {
+    color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="24"] path {
+    fill: var(--color-12) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="25"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="25"] {
+    background-color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="25"] {
+    color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="25"] path {
+    fill: var(--color-1) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="26"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="26"] {
+    background-color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="26"] {
+    color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="26"] path {
+    fill: var(--color-2) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="27"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="27"] {
+    background-color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="27"] {
+    color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="27"] path {
+    fill: var(--color-3) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="28"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="28"] {
+    background-color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="28"] {
+    color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="28"] path {
+    fill: var(--color-4) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="29"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="29"] {
+    background-color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="29"] {
+    color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="29"] path {
+    fill: var(--color-5) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="30"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="30"] {
+    background-color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="30"] {
+    color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="30"] path {
+    fill: var(--color-6) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="31"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="31"] {
+    background-color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="31"] {
+    color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="31"] path {
+    fill: var(--color-7) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="32"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="32"] {
+    background-color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="32"] {
+    color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="32"] path {
+    fill: var(--color-8) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="33"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="33"] {
+    background-color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="33"] {
+    color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="33"] path {
+    fill: var(--color-9) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="34"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="34"] {
+    background-color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="34"] {
+    color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="34"] path {
+    fill: var(--color-10) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="35"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="35"] {
+    background-color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="35"] {
+    color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="35"] path {
+    fill: var(--color-11) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="36"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="36"] {
+    background-color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="36"] {
+    color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="36"] path {
+    fill: var(--color-12) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="37"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="37"] {
+    background-color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="37"] {
+    color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="37"] path {
+    fill: var(--color-1) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="38"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="38"] {
+    background-color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="38"] {
+    color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="38"] path {
+    fill: var(--color-2) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="39"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="39"] {
+    background-color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="39"] {
+    color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="39"] path {
+    fill: var(--color-3) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="40"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="40"] {
+    background-color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="40"] {
+    color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="40"] path {
+    fill: var(--color-4) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="41"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="41"] {
+    background-color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="41"] {
+    color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="41"] path {
+    fill: var(--color-5) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="42"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="42"] {
+    background-color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="42"] {
+    color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="42"] path {
+    fill: var(--color-6) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="43"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="43"] {
+    background-color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="43"] {
+    color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="43"] path {
+    fill: var(--color-7) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="44"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="44"] {
+    background-color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="44"] {
+    color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="44"] path {
+    fill: var(--color-8) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="45"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="45"] {
+    background-color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="45"] {
+    color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="45"] path {
+    fill: var(--color-9) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="46"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="46"] {
+    background-color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="46"] {
+    color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="46"] path {
+    fill: var(--color-10) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="47"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="47"] {
+    background-color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="47"] {
+    color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="47"] path {
+    fill: var(--color-11) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="48"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="48"] {
+    background-color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="48"] {
+    color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="48"] path {
+    fill: var(--color-12) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="49"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="49"] {
+    background-color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="49"] {
+    color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="49"] path {
+    fill: var(--color-1) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="50"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="50"] {
+    background-color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="50"] {
+    color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="50"] path {
+    fill: var(--color-2) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="51"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="51"] {
+    background-color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="51"] {
+    color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="51"] path {
+    fill: var(--color-3) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="52"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="52"] {
+    background-color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="52"] {
+    color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="52"] path {
+    fill: var(--color-4) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="53"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="53"] {
+    background-color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="53"] {
+    color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="53"] path {
+    fill: var(--color-5) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="54"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="54"] {
+    background-color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="54"] {
+    color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="54"] path {
+    fill: var(--color-6) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="55"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="55"] {
+    background-color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="55"] {
+    color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="55"] path {
+    fill: var(--color-7) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="56"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="56"] {
+    background-color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="56"] {
+    color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="56"] path {
+    fill: var(--color-8) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="57"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="57"] {
+    background-color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="57"] {
+    color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="57"] path {
+    fill: var(--color-9) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="58"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="58"] {
+    background-color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="58"] {
+    color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="58"] path {
+    fill: var(--color-10) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="59"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="59"] {
+    background-color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="59"] {
+    color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="59"] path {
+    fill: var(--color-11) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-timeline-color="60"],
+body[data-timeline-color="true"] .timelineList .compareTimelineElement .barchartFraction[data-timeline-color="60"] {
+    background-color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .timelineLegendLabel[data-timeline-color="60"] {
+    color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .compareTimelineElement svg[data-timeline-color="60"] path {
+    fill: var(--color-12) !important;
+}
+
+/********************************
+* Special Case Found Footage 
+* (20 Values in Palette) 
+********************************/
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="13"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="13"] {
+    background-color: var(--color-13) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="13"] {
+    color: var(--color-13) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="13"] path {
+    fill: var(--color-13) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="14"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="14"] {
+    background-color: var(--color-14) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="14"] {
+    color: var(--color-14) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="14"] path {
+    fill: var(--color-14) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="15"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="15"] {
+    background-color: var(--color-15) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="15"] {
+    color: var(--color-15) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="15"] path {
+    fill: var(--color-15) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="16"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="16"] {
+    background-color: var(--color-16) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="16"] {
+    color: var(--color-16) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="16"] path {
+    fill: var(--color-16) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="17"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="17"] {
+    background-color: var(--color-17) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="17"] {
+    color: var(--color-17) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="17"] path {
+    fill: var(--color-17) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="18"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="18"] {
+    background-color: var(--color-18) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="18"] {
+    color: var(--color-18) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="18"] path {
+    fill: var(--color-18) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="19"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="19"] {
+    background-color: var(--color-19) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="19"] {
+    color: var(--color-19) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="19"] path {
+    fill: var(--color-19) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="20"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="20"] {
+    background-color: var(--color-20) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="20"] {
+    color: var(--color-20) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="20"] path {
+    fill: var(--color-20) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="21"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="21"] {
+    background-color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="21"] {
+    color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="21"] path {
+    fill: var(--color-1) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="22"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="22"] {
+    background-color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="22"] {
+    color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="22"] path {
+    fill: var(--color-2) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="23"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="23"] {
+    background-color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="23"] {
+    color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="23"] path {
+    fill: var(--color-3) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="24"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="24"] {
+    background-color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="24"] {
+    color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="24"] path {
+    fill: var(--color-4) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="25"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="25"] {
+    background-color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="25"] {
+    color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="25"] path {
+    fill: var(--color-5) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="26"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="26"] {
+    background-color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="26"] {
+    color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="26"] path {
+    fill: var(--color-6) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="27"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="27"] {
+    background-color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="27"] {
+    color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="27"] path {
+    fill: var(--color-7) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="28"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="28"] {
+    background-color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="28"] {
+    color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="28"] path {
+    fill: var(--color-8) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="29"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="29"] {
+    background-color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="29"] {
+    color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="29"] path {
+    fill: var(--color-9) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="30"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="30"] {
+    background-color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="30"] {
+    color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="30"] path {
+    fill: var(--color-10) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="31"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="31"] {
+    background-color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="31"] {
+    color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="31"] path {
+    fill: var(--color-11) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="32"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="32"] {
+    background-color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="32"] {
+    color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="32"] path {
+    fill: var(--color-12) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="33"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="33"] {
+    background-color: var(--color-13) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="33"] {
+    color: var(--color-13) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="33"] path {
+    fill: var(--color-13) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="34"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="34"] {
+    background-color: var(--color-14) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="34"] {
+    color: var(--color-14) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="34"] path {
+    fill: var(--color-14) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="35"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="35"] {
+    background-color: var(--color-15) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="35"] {
+    color: var(--color-15) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="35"] path {
+    fill: var(--color-15) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="36"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="36"] {
+    background-color: var(--color-16) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="36"] {
+    color: var(--color-16) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="36"] path {
+    fill: var(--color-16) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="37"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="37"] {
+    background-color: var(--color-17) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="37"] {
+    color: var(--color-17) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="37"] path {
+    fill: var(--color-17) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="38"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="38"] {
+    background-color: var(--color-18) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="38"] {
+    color: var(--color-18) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="38"] path {
+    fill: var(--color-18) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="39"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="39"] {
+    background-color: var(--color-19) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="39"] {
+    color: var(--color-19) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="39"] path {
+    fill: var(--color-19) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="40"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="40"] {
+    background-color: var(--color-20) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="40"] {
+    color: var(--color-20) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="40"] path {
+    fill: var(--color-20) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="41"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="41"] {
+    background-color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="41"] {
+    color: var(--color-1) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="41"] path {
+    fill: var(--color-1) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="42"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="42"] {
+    background-color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="42"] {
+    color: var(--color-2) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="42"] path {
+    fill: var(--color-2) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="43"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="43"] {
+    background-color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="43"] {
+    color: var(--color-3) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="43"] path {
+    fill: var(--color-3) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="44"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="44"] {
+    background-color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="44"] {
+    color: var(--color-4) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="44"] path {
+    fill: var(--color-4) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="45"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="45"] {
+    background-color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="45"] {
+    color: var(--color-5) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="45"] path {
+    fill: var(--color-5) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="46"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="46"] {
+    background-color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="46"] {
+    color: var(--color-6) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="46"] path {
+    fill: var(--color-6) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="47"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="47"] {
+    background-color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="47"] {
+    color: var(--color-7) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="47"] path {
+    fill: var(--color-7) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="48"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="48"] {
+    background-color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="48"] {
+    color: var(--color-8) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="48"] path {
+    fill: var(--color-8) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="49"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="49"] {
+    background-color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="49"] {
+    color: var(--color-9) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="49"] path {
+    fill: var(--color-9) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="50"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="50"] {
+    background-color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="50"] {
+    color: var(--color-10) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="50"] path {
+    fill: var(--color-10) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="51"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="51"] {
+    background-color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="51"] {
+    color: var(--color-11) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="51"] path {
+    fill: var(--color-11) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="52"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="52"] {
+    background-color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="52"] {
+    color: var(--color-12) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="52"] path {
+    fill: var(--color-12) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="53"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="53"] {
+    background-color: var(--color-13) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="53"] {
+    color: var(--color-13) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="53"] path {
+    fill: var(--color-13) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="54"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="54"] {
+    background-color: var(--color-14) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="54"] {
+    color: var(--color-14) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="54"] path {
+    fill: var(--color-14) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="55"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="55"] {
+    background-color: var(--color-15) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="55"] {
+    color: var(--color-15) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="55"] path {
+    fill: var(--color-15) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="56"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="56"] {
+    background-color: var(--color-16) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="56"] {
+    color: var(--color-16) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="56"] path {
+    fill: var(--color-16) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="57"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="57"] {
+    background-color: var(--color-17) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="57"] {
+    color: var(--color-17) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="57"] path {
+    fill: var(--color-17) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="58"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="58"] {
+    background-color: var(--color-18) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="58"] {
+    color: var(--color-18) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="58"] path {
+    fill: var(--color-18) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="59"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="59"] {
+    background-color: var(--color-19) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="59"] {
+    color: var(--color-19) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="59"] path {
+    fill: var(--color-19) !important;
+}
+
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement[data-timeline-color="60"],
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement .barchartFraction[data-timeline-color="60"] {
+    background-color: var(--color-20) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .timelineLegendLabel[data-timeline-color="60"] {
+    color: var(--color-20) !important;
+}
+body[data-timeline-color="true"] .timelineList .userTimelineWrapper[data-type-label="Montg | Found Footage"] .compareTimelineElement svg[data-timeline-color="60"] path {
+    fill: var(--color-20) !important;
+}
+
+/* Numeric Values END */
+
+.timelineList .compareTimelineElement .compareTimelineElementTime .compareTimeStart, 
+.timelineList .compareTimelineElement .compareTimelineElementTime .compareTimeEnd {
+    color: var(--primary-fg-color);
+}

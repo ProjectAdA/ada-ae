@@ -1,0 +1,98 @@
+/* Default Colors (distinctive) */
+:root {
+  --color-default: #b2b2b2;
+  --color-1: #d1b86e;
+  --color-2: #ef967c;
+  --color-3: #b8dcc7;
+  --color-4: #af50ff;
+  --color-5: #75a5d9;
+  --color-6: #ffce54;
+  --color-7: #77b49c;
+  --color-8: #ea80ff;
+  --color-9: #93a8b6;
+  --color-10: #eca96e;
+  --color-11: #bcc887;
+  --color-12: #872a2f;
+}
+
+/* Color Gradient */
+.userTimelineWrapper[data-type-label="As | Dialogue Intensity"], 
+.userTimelineWrapper[data-type-label="As | Dialogue Tonality"], 
+.userTimelineWrapper[data-type-label="As | Music Intensity"], 
+.userTimelineWrapper[data-type-label="As | Music Tonality"], 
+.userTimelineWrapper[data-type-label="BodExp | Facial Expressions Intensity"], 
+.userTimelineWrapper[data-type-label="BodExp | Gestures Intensity"],
+.userTimelineWrapper[data-type-label="BodExp | Body Language Intensity"], 
+.userTimelineWrapper[data-type-label="Cam | Camera Movement Speed"], 
+.userTimelineWrapper[data-type-label="Cam | Camera Angle"], 
+.userTimelineWrapper[data-type-label="ImCo | Field Size"], 
+.userTimelineWrapper[data-type-label="ImCo | Image Brightness"], 
+.userTimelineWrapper[data-type-label="ImCo | Light Contrast"], 
+.userTimelineWrapper[data-type-label="ImCo | Colour Saturation"], 
+.userTimelineWrapper[data-type-label="ImCo | Aspect Ratio"], 
+.userTimelineWrapper[data-type-label="ImCo | Image Intrinsic Movement"], 
+.userTimelineWrapper[data-type-label="Montg | Dynamics Of Space"] {
+  --color-1: #75a5d9;
+  --color-2: #93a8b6;
+  --color-3: #b8dcc7;
+  --color-4: #77b49c;
+  --color-5: #bcc887;
+  --color-6: #d1b86e;
+  --color-7: #ffce54;
+  --color-8: #eca96e;
+  --color-9: #ef967c;
+  --color-10: #e86464;
+  --color-11: #cf3239;
+  --color-12: #872a2f;
+}
+
+/* Special Color Palette for Shot Duration */
+.userTimelineWrapper[data-type-label="Montg | Shot Duration"] {
+  --color-1: #048DAFff;
+  --color-2: #1494B1ff;
+  --color-3: #259CB2ff;
+  --color-4: #35A3B4ff;
+  --color-5: #46AAB6ff;
+  --color-6: #56B1B7ff;
+  --color-7: #67B9B9ff;
+  --color-8: #77C0BAff;
+  --color-9: #88C7BCff;
+  --color-10: #98CEBEff;
+  --color-11: #A9D6BFff;
+  --color-12: #B9DDC1ff;
+}
+
+/* Special Color Palette for Found Footage */
+.userTimelineWrapper[data-type-label="Montg | Found Footage"] {
+  --color-1: #d1b86e;
+  --color-2: #ef967c;
+  --color-3: #b8dcc7;
+  --color-4: #af50ff;
+  --color-5: #75a5d9;
+  --color-6: #ffce54;
+  --color-7: #77b49c;
+  --color-8: #ea80ff;
+  --color-9: #93a8b6;
+  --color-10: #eca96e;
+  --color-11: #bcc887;
+  --color-12: #872a2f;
+  --color-13: #228a60;
+  --color-14: #3b7bbf;
+  --color-15: #ffdf8f;
+  --color-16: #e86464;
+  --color-17: #8a6566;
+  --color-18: #be88eb;
+  --color-19: #cf3239;
+  --color-20: #b2b2b2;
+}
+
+/* Special Case (1. Value Grey) */
+.userTimelineWrapper[data-type-label="As | Dialogue Emotion"],
+.userTimelineWrapper[data-type-label="BodExp | Body Language Emotion"] {
+  --color-1: var(--color-default);
+}
+
+/* Special Case (9. Value Grey) */
+.userTimelineWrapper[data-type-label="Cam | Camera Movement Direction"] {
+  --color-9: var(--color-default);
+}
