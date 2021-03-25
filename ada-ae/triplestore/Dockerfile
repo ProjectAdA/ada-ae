@@ -10,12 +10,10 @@ RUN apt-get update \
         && ln -s /usr/local/virtuoso-opensource/var/lib/virtuoso/db /data \
         && cd .. \
         && rm -r /virtuoso-opensource \
-        && apt remove --purge -y build-essential autotools-dev autoconf automake unzip wget net-tools libtool flex bison gperf gawk m4 libssl-dev libreadline-dev \
+        && apt remove --purge -y build-essential autotools-dev autoconf automake net-tools libtool flex bison gperf gawk m4 libssl-dev  \
         && apt autoremove -y \
         && apt autoclean
 
-# TODO Fix removal
-RUN apt-get update && apt-get install -y libreadline-dev wget
 ENV PATH /usr/local/virtuoso-opensource/bin/:$PATH
 
 COPY virtuoso.ini /root/virtuoso.ini

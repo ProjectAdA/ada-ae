@@ -8,12 +8,20 @@ fi
 
 # TODO: Decide whether to ship ontology with triplestore or retrieve from final repository
 if [ ! -f ".ontoset" ]; then
+	echo "Downloading ontology..."
+	mkdir import
+	cd import
+	wget -q --show-progress https://github.com/ProjectAdA/public/raw/master/ontology/ada_ontology.owl
+	cd ..
+	echo "ld_dir('import', '*', 'http://onto.ada.filmontology.org/');" >/tmp/import.sql
+	echo "rdf_loader_run();"  >>/tmp/import.sql
+	echo "exec('checkpoint');" >>/tmp/import.sql
+	echo "WAIT_FOR_CHILDREN; " >>/tmp/import.sql
 	echo "Importing ontology..."
-	wget https://github.com/ProjectAdA/public/raw/master/ontology/ada_ontology.owl
-	echo "ld_dir('.', 'ada_ontology.owl', 'http://onto.ada.filmontology.org/');" >/tmp/import.sql
 	virtuoso-t +wait && isql-v -U dba -P dba </tmp/import.sql
 	kill $(ps aux | grep '[v]irtuoso-t' | awk '{print $2}')
 	rm /tmp/import.sql
+	rm -rf import
 	touch .ontoset
 fi
 
