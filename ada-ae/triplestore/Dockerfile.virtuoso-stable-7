@@ -1,0 +1,64 @@
+ARG VIRTUOSO_HOME=/opt/virtuoso-opensource
+
+FROM ubuntu:18.04 AS builder
+
+ARG VIRTUOSO_HOME
+ENV VIRTUOSO_HOME=${VIRTUOSO_HOME}
+
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN apt-get update \
+        && apt-get install -y build-essential autotools-dev autoconf automake net-tools libtool flex bison gperf gawk m4 libreadline-dev openssl unzip wget libssl1.0-dev \
+        && cd /tmp  && wget --quiet -O virtuoso-stable-7.zip https://github.com/openlink/virtuoso-opensource/archive/refs/heads/stable/7.zip \
+        &&  unzip virtuoso-stable-7.zip \
+        && cd virtuoso-opensource-stable-7 \
+        && ./autogen.sh \
+        && export CFLAGS="-O2 -m64" && ./configure --prefix=${VIRTUOSO_HOME} --disable-bpel-vad --enable-conductor-vad --enable-fct-vad --disable-dbpedia-vad --disable-demo-vad --disable-isparql-vad --disable-ods-vad --disable-sparqldemo-vad --disable-syncml-vad --disable-tutorial-vad --with-readline --program-transform-name="s/isql/isql-v/" \
+        && make && make install \
+        && rm -rf /tmp/virtuoso-opensource-stable-7
+
+
+
+FROM ubuntu:18.04
+ARG VIRTUOSO_HOME
+ENV VIRTUOSO_HOME=${VIRTUOSO_HOME}
+
+RUN apt-get update \
+        && apt-get install -y libssl1.0.0 wget libreadline7 \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder ${VIRTUOSO_HOME} ${VIRTUOSO_HOME}
+RUN mkdir ${VIRTUOSO_HOME}/initdb.d
+COPY load-ada-ontology.sh ${VIRTUOSO_HOME}/initdb.d/
+COPY virtuoso-entrypoint.sh /virtuoso-entrypoint.sh
+
+
+RUN mkdir /database
+RUN mkdir /settings
+
+ARG ADAAE_UID="50000"
+ARG ADAAE_GID="50000"
+ENV ADAAE_USER_HOME_DIR=/home/ada-ae
+
+RUN addgroup --gid "${ADAAE_GID}" "ada-ae" && \
+    adduser --quiet "ada-ae" --uid "${ADAAE_UID}" \
+        --gid "${ADAAE_GID}" \
+        --home "${ADAAE_USER_HOME_DIR}"
+
+RUN chown -R "ada-ae:ada-ae" /database
+RUN chown -R "ada-ae:ada-ae" /settings
+
+VOLUME /database
+VOLUME /settings
+
+COPY virtuoso-entrypoint.sh /virtuoso-entrypoint.sh
+
+ENV PATH ${VIRTUOSO_HOME}/bin:$PATH
+
+USER ${ADAAE_UID}
+WORKDIR /database
+
+ENTRYPOINT ["/virtuoso-entrypoint.sh"]
+CMD ["start"]
+
