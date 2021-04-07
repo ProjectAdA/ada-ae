@@ -1,0 +1,83 @@
+services:
+  ada-triplestore:
+    image: ada-ae/virtuoso-opensource:stable-7
+    build:
+      context: ./triplestore
+      dockerfile: Dockerfile.virtuoso-stable-7
+      args:
+        - ADAAE_UID=${ADAAE_UID:-50000}
+        - ADAAE_GID=${ADAAE_GID:-50000}
+    env_file:
+      - .env
+      - secrets.env
+    environment:
+      - VIRTUOSO_INI_FILE=/etc/virtuoso.ini
+    volumes:
+      - ./triplestore/virtuoso.ini-stable-7:/etc/virtuoso.ini:ro
+      - vol-ada-virtuoso-data:/database
+    networks:
+      - net-ada-ae
+# FIXME: add health check and test for serivce healthy in depends_on of other services
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+#      interval: 5s
+#      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "300k"
+        max-file: "5"
+    restart: always
+
+  ada-explorer:
+    image: ada-ae/explorer:1.0
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    networks:
+      - net-ada-ae
+    depends_on:
+      - ada-triplestore
+    user: "nginx:nginx"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "300k"
+        max-file: "5"
+    restart: always
+
+  ada-rest-api:
+    image: ada-ae/rest-api:1.0
+    build:
+      context: ./rest_api
+      dockerfile: Dockerfile
+      args:
+        - ADAAE_UID=${ADAAE_UID:-50000}
+        - ADAAE_GID=${ADAAE_GID:-50000}
+    env_file:
+      - secrets.env
+    networks:
+      - net-ada-ae
+    depends_on:
+      - ada-triplestore
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "300k"
+        max-file: "5"
+    restart: always
+    command: ["http://ada-triplestore:8890/sparql", "/api"]
+    
+
+volumes:
+  # FIXME: bind mount necessary? or named volume ok?
+  vol-ada-virtuoso-data: {}
+
+
+networks:
+  net-ada-ae:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.21.1.0/27
