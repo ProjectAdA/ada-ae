@@ -14,9 +14,9 @@ services:
       - VIRTUOSO_INI_FILE=/etc/virtuoso.ini
     volumes:
       - ./triplestore/virtuoso.ini-stable-7:/etc/virtuoso.ini:ro
-      - vol-ada-virtuoso-data:/database
+      - ada-virtuoso-data:/database
     networks:
-      - net-ada-ae
+      - ada-ae
 # FIXME: add health check and test for serivce healthy in depends_on of other services
 #    healthcheck:
 #      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
@@ -35,7 +35,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     networks:
-      - net-ada-ae
+      - ada-ae
     depends_on:
       - ada-triplestore
     user: "nginx:nginx"
@@ -58,7 +58,7 @@ services:
     env_file:
       - secrets.env
     networks:
-      - net-ada-ae
+      - ada-ae
     depends_on:
       - ada-triplestore
     logging:
@@ -72,11 +72,11 @@ services:
 
 volumes:
   # FIXME: bind mount necessary? or named volume ok?
-  vol-ada-virtuoso-data: {}
+  ada-virtuoso-data: {}
 
 
 networks:
-  net-ada-ae:
+  ada-ae:
     driver: bridge
     ipam:
       driver: default
