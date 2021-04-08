@@ -1,6 +1,6 @@
 ARG OPENJDK_VER=14
 
-FROM maven:3.6.3-openjdk-11 AS builder
+FROM maven:3.6.3-openjdk-${OPENJDK_VER}-slim AS builder
 
 COPY src /tmp/build/src
 COPY pom.xml /tmp/build/pom.xml 
