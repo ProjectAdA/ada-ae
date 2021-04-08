@@ -52,6 +52,7 @@ services:
       context: ./rest_api
       dockerfile: Dockerfile
       args:
+        - OPENJDK_VER=${OPENJDK_VER:-14}
         - ADAAE_UID=${ADAAE_UID:-50000}
         - ADAAE_GID=${ADAAE_GID:-50000}
     env_file:
