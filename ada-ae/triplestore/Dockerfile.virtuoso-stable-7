@@ -59,6 +59,8 @@ ENV PATH ${VIRTUOSO_HOME}/bin:$PATH
 USER ${ADAAE_UID}
 WORKDIR /database
 
+EXPOSE 8890
+
 ENTRYPOINT ["/virtuoso-entrypoint.sh"]
 CMD ["start"]
 
