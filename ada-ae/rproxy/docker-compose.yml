@@ -1,0 +1,27 @@
+services:
+  ada-rproxy:
+    image: ada/rproxy:1.0
+    build:
+      context: ./rproxy
+      dockerfile: Dockerfile
+    networks:
+      - ada-rproxy
+    ports:
+      - 127.0.0.1:80:80
+    user: "nginx:nginx"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "300k"
+        max-file: "5"
+    restart: always
+
+
+networks:
+  ada-rproxy:
+    name: ada-rproxy
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.21.1.0/27
