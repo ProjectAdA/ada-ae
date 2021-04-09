@@ -2,7 +2,7 @@ services:
   ada-rproxy:
     image: ada/rproxy:1.0
     build:
-      context: ./rproxy
+      context: .
       dockerfile: Dockerfile
     networks:
       - ada-rproxy
