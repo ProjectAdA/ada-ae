@@ -50,7 +50,9 @@ RUN chown -R "ada-ae:ada-ae" /database
 RUN chown -R "ada-ae:ada-ae" /settings
 
 VOLUME /database
-VOLUME /settings
+
+# volume is required when external access to generated dba/dav passwords is needed
+#VOLUME /settings
 
 COPY virtuoso-entrypoint.sh /virtuoso-entrypoint.sh
 
