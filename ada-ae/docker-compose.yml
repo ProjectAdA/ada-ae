@@ -17,6 +17,9 @@ services:
       - ada-virtuoso-data:/database
     networks:
       - ada-ae
+      - ada-rproxy
+#    ports:
+#      - 127.0.0.1:8890:8890
 # FIXME: add health check and test for serivce healthy in depends_on of other services
 #    healthcheck:
 #      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
@@ -36,6 +39,7 @@ services:
       dockerfile: Dockerfile
     networks:
       - ada-ae
+      - ada-rproxy
     depends_on:
       - ada-triplestore
     user: "nginx:nginx"
@@ -59,6 +63,7 @@ services:
       - secrets.env
     networks:
       - ada-ae
+      - ada-rproxy
     depends_on:
       - ada-triplestore
     logging:
@@ -81,4 +86,6 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.21.1.0/27
+        - subnet: 172.21.10.0/29
+  ada-rproxy:
+     external: true
