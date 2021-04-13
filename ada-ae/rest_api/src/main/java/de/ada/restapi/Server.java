@@ -442,8 +442,10 @@ public class Server {
 			
 			InputStream content = uploadedFiles.get(0).getContent();
 			
+			logger.info("uploadExtractorResult - media id "+mediaId+" - filename "+uploadedFiles.get(0).getFilename());
+			
 			AnnotationManager am = AnnotationManager.getInstance(defaultEndpoint);
-			am.insertAnnotations(mediaId, content);
+			String result = am.insertAnnotations(mediaId, content);		
 			
 		});
 		

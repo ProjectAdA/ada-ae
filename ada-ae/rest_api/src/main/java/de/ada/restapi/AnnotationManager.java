@@ -399,6 +399,8 @@ public class AnnotationManager {
 	public String insertAnnotations(String mediaId, InputStream content) {
 		String result = null;
 		
+		logger.info("insertAnnotations - not implemented yet");
+		
 		/*
 		
 		Model model = ModelFactory.createDefaultModel();
