@@ -14,12 +14,12 @@ services:
       - VIRTUOSO_INI_FILE=/etc/virtuoso.ini
     volumes:
       - ./triplestore/virtuoso.ini-stable-7:/etc/virtuoso.ini:ro
-      - ada-virtuoso-data:/database
+      - virtuoso-db:/database
     networks:
       - ada-ae
       - ada-rproxy
 #    ports:
-#      - 127.0.0.1:8890:8890
+#      - 8890:8890
 # FIXME: add health check and test for serivce healthy in depends_on of other services
 #    healthcheck:
 #      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
@@ -76,8 +76,12 @@ services:
     
 
 volumes:
-  # FIXME: bind mount necessary? or named volume ok?
-  ada-virtuoso-data: {}
+  virtuoso-db:
+    name: virtuoso-db
+    driver_opts:
+      type: none
+      device: $HOME/volumes/virtuoso
+      o: bind
 
 
 networks:
