@@ -134,10 +134,7 @@ public class Server {
     	
     	String mediaId = getScenes(param).left;
     	if (mediaId == null) {
-			logger.error("{} {} Invalid format of supplied media id and/or scenes", ctx.method(), ctx.url());
-			ctx.status(400);
-			ctx.contentType("application/json");
-			ctx.result("{\"error\": {\"message\": \"Invalid format of supplied media id and/or scenes.\",\"code\": 400}}");
+    		returnError(ctx, "Invalid format of supplied media id and/or scenes.", 400, null);
 			return;
     	}
     	Set<String> scenes = getScenes(param).right;
@@ -150,17 +147,13 @@ public class Server {
 		AnnotationManager am = AnnotationManager.getInstance(defaultEndpoint);
 		Model annotations = am.getAnnotations(mediaId, scenes, types);
 		if (annotations == null) {
-			ctx.status(500);
-			ctx.contentType("application/json");
-			ctx.result("{\"error\": {\"message\": \"Query annotations - Triplestore query failed\",\"code\": 500}}");
+    		returnError(ctx, "Query annotations - Triplestore query failed.", 500, null);
 			return;
 		}
 		
    		Map<String, Object> jsonld = am.modelToFramedJsonld(annotations);
    		if (jsonld == null) {
-			ctx.status(500);
-			ctx.contentType("application/json");
-			ctx.result("{\"error\": {\"message\": \"Query result processing - Conversion to jsonld failed\",\"code\": 500}}");
+    		returnError(ctx, "Query result processing - Conversion to jsonld failed.", 500, null);
 			return;
    		}
    		ctx.json(jsonld);
@@ -192,17 +185,13 @@ public class Server {
 		AnnotationManager am = AnnotationManager.getInstance(defaultEndpoint);
 		Model annotations = am.textSearch(searchTerm, whole, mediaIdSet, typeSet);
 		if (annotations == null) {
-			ctx.status(500);
-			ctx.contentType("application/json");
-			ctx.result("{\"error\": {\"message\": \"Text search annotations - Triplestore query failed\",\"code\": 500}}");
+    		returnError(ctx, "Text search annotations - Triplestore query failed.", 500, null);
 			return;
 		}
 
    		Map<String, Object> jsonld = am.modelToFramedJsonld(annotations);
    		if (jsonld == null) {
-			ctx.status(500);
-			ctx.contentType("application/json");
-			ctx.result("{\"error\": {\"message\": \"Query result processing - Conversion to jsonld failed\",\"code\": 500}}");
+    		returnError(ctx, "Query result processing - Conversion to jsonld failed.", 500, null);
 			return;
    		}
    		ctx.json(jsonld);
@@ -232,9 +221,7 @@ public class Server {
 		AnnotationManager am = AnnotationManager.getInstance(defaultEndpoint);
 		Model annotations = am.valueSearch(valueSet, mediaIdSet);
 		if (annotations == null) {
-			ctx.status(500);
-			ctx.contentType("application/json");
-			ctx.result("{\"error\": {\"message\": \"Value search annotations - Triplestore query failed\",\"code\": 500}}");
+    		returnError(ctx, "Value search annotations - Triplestore query failed.", 500, null);
 			return;
 		}
 
@@ -242,7 +229,7 @@ public class Server {
    		if (jsonld == null) {
 			ctx.status(500);
 			ctx.contentType("application/json");
-			ctx.result("{\"error\": {\"message\": \"Query result processing - Conversion to jsonld failed\",\"code\": 500}}");
+    		returnError(ctx, "Query result processing - Conversion to jsonld failed.", 500, null);
 			return;
    		}
    		ctx.json(jsonld);
@@ -262,19 +249,17 @@ public class Server {
 	private boolean checkApiToken(Context ctx) {
     	String token = ctx.header(API_TOKEN_HEADER_FIELD);
     	if (token == null || !API_TOKEN.equals(token)) {
-			logger.error("{} {} deleteMedia - unauthorized access {}", ctx.method(), ctx.url(), ctx.body().replace("\n", ""));
-			ctx.status(403);
-			ctx.contentType("application/json");
-			ctx.result("{\"error\": {\"message\": \"API Function Requires Authentification.\",\"code\": 403}}");
+    		returnError(ctx, "API Function Requires Authentification.", 403, null);
 			return false;
     	}
     	return true;
 	}
 	
 	void runServer() {
-
+		
 		Javalin app = Javalin.create(config -> {
 			config.contextPath = defaultContext;
+			//TODO Evaluate CORS restrictions
 			config.enableCorsForAllOrigins();
 			config.requestLogger((ctx, executionTimeMs) -> {
 				logger.info("{} {} {} {} \"{}\" {}", ctx.method(), ctx.url(), ctx.req.getRemoteHost(),
@@ -288,10 +273,7 @@ public class Server {
         	List<Map<String,Object>> movieMetadata = mdm.getMovieMetadata(null);
         	
         	if (movieMetadata == null) {
-				logger.error("{} {} Triplestore query for movie metadata failed.", ctx.method(), ctx.url());
-				ctx.status(500);
-				ctx.contentType("application/json");
-				ctx.result("{\"error\": {\"message\": \"Triplestore query for movie metadata failed.\",\"code\": 500}}");
+        		returnError(ctx, "Triplestore query for movie metadata failed.", 500, null);
         	} else {
         		ctx.json(movieMetadata);
         	}
@@ -306,10 +288,7 @@ public class Server {
         	List<Map<String,Object>> movieMetadata = mdm.getMovieMetadata(queryId);
         	
         	if (movieMetadata == null) {
-				logger.error("{} {} Triplestore query for movie metadata failed.", ctx.method(), ctx.url());
-				ctx.status(500);
-				ctx.contentType("application/json");
-				ctx.result("{\"error\": {\"message\": \"Triplestore query for movie metadata failed.\",\"code\": 500}}");
+        		returnError(ctx, "Triplestore query for movie metadata "+queryId+"failed.", 500, null);
         	} else {
         		ctx.json(movieMetadata);
         	}
@@ -322,10 +301,7 @@ public class Server {
 			List<Map<String,Object>> ontology = mdm.getOntology();
 			
         	if (ontology == null) {
-				logger.error("{} {} Triplestore query for ontology failed.", ctx.method(), ctx.url());
-				ctx.status(500);
-				ctx.contentType("application/json");
-				ctx.result("{\"error\": {\"message\": \"Triplestore query for ontology failed.\",\"code\": 500}}");
+        		returnError(ctx, "Triplestore query for ontology failed.", 500, null);
         	} else {
     			ctx.json(ontology);
         	}
@@ -410,41 +386,22 @@ public class Server {
 			MetadataManager mdm = MetadataManager.getInstance(defaultEndpoint);
 			MetadataRecord record = null;
 			
-			//TODO Nicht bei allen Logs die URL etc mit ausgeben
-
 			try {
 				ObjectMapper om = new ObjectMapper();
 				
-				logger.info("{} {} addMedia - input {}", ctx.method(), ctx.url(), ctx.body().replace("\n", ""));
+				logger.info("addMedia - input {}", ctx.body().replace("\n", ""));
 				record = om.readValue(ctx.body(), MetadataRecord.class);				
 
 			} catch (JsonProcessingException e) {
-				String msg = e.toString().replace("\n", " ");
-				logger.error("{} {} JsonProcessingException {}", ctx.method(), ctx.url(), msg);
-				msg = msg.replace("\"", "");
-				ctx.status(400);
-				ctx.contentType("application/json");
-				ctx.result("{\"error\": {\"message\": \"Not a valid json input.\",\"code\": 400,\"cause\": \"" + msg
-						+ "\"}}");
+				returnError(ctx, "Not a valid json input. JsonProcessingException.", 400, e);
 				return;
 			} catch (IllegalArgumentException iae) {
-				String msg = iae.toString().replace("\n", " ");
-				logger.error("{} {} IllegalArgumentException {}", ctx.method(), ctx.url(), msg);
-				msg = msg.replace("\"", "");
-				ctx.status(400);
-				ctx.contentType("application/json");
-				ctx.result("{\"error\": {\"message\": \"Unknown json field supplied.\",\"code\": 400,\"cause\": \"" + msg
-						+ "\"}}");
+				returnError(ctx, "Unknown json field supplied. IllegalArgumentException.", 400, iae);
 				return;
 			}
 
 			if (mdm.validateMissing(record)) {
-				String msg = record.toString().replace("\n", " ");
-				logger.error("{} {} Mandatory Field Missing {}", ctx.method(), ctx.url(), msg);
-				ctx.status(400);
-				ctx.contentType("application/json");
-				ctx.result("{\"error\": {\"message\": \"Mandatory field is null.\",\"code\": 400,\"cause\": \"" + msg
-						+ "\"}}");
+				returnError(ctx, "Mandatory json field missing,", 400, null);
 				return;
 			} else {
 				String result = mdm.addMedia(record);
@@ -454,7 +411,7 @@ public class Server {
 					ctx.result(result);
 					return;
 				}
-				logger.info("{} {} addMedia - added {}", ctx.method(), ctx.url(), record.toString().replace("\n", ""));
+				logger.info("addMedia - added {}", record.toString().replace("\n", ""));
 			}
 
 			ctx.status(201);
@@ -493,10 +450,14 @@ public class Server {
 	}
 
 	public static void main(String[] args) {
+		System.setProperty(org.slf4j.impl.SimpleLogger.SHOW_DATE_TIME_KEY, "true");
+		System.setProperty(org.slf4j.impl.SimpleLogger.DATE_TIME_FORMAT_KEY, "yyyy-MM-dd HH:mm:ss:SSS Z");
+
 		if (args.length == 2) {
             defaultEndpoint = args[0];
             defaultContext = args[1];
 		}
+		
 		System.out.println("Using configuration port: " + defaultPort + " and endpoint: " + defaultEndpoint + " context: " + defaultContext);
 
 		String apitoken = System.getenv("API_TOKEN");

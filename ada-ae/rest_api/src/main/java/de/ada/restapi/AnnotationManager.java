@@ -186,8 +186,6 @@ public class AnnotationManager {
 		query = query.replaceFirst("<<TYPEFILTER>>", typeFilter);
 		query = query.replaceFirst("<<MEDIAFILTER>>", mediaFilter);
 		
-		System.out.println(query);
-		
 		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
 			result = qexec.execDescribe();
         } catch (Exception e) {
