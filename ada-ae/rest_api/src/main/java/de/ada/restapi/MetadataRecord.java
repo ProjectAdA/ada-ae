@@ -37,8 +37,7 @@ public class MetadataRecord {
 	@JsonAlias("type")
 	private String type = "http://schema.org/VideoObject";
 
-	// TODO Fix hardcoded URI 
-	@JsonProperty("http://ada.filmontology.org/ontology/2020/03/17/sha256sum")
+	@JsonProperty("https://w3id.org/idsa/core/checkSum")
 	@JsonAlias("id")
 	private String id;
 	
