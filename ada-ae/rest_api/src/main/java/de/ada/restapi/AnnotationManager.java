@@ -1,21 +1,31 @@
 package de.ada.restapi;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
+import org.apache.jena.update.UpdateExecutionFactory;
+import org.apache.jena.update.UpdateFactory;
+import org.apache.jena.update.UpdateProcessor;
+import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +34,9 @@ import com.github.jsonldjava.core.JsonLdProcessor;
 import com.github.jsonldjava.utils.JsonUtils;
 
 public class AnnotationManager {
-	
+
+	public static final String GENERATED_SCENES_SUFFIX = "/scenegen";
+
 	private final String sparqlEndpoint;
 	private static AnnotationManager instance;
 
@@ -396,6 +408,78 @@ public class AnnotationManager {
     	return result;
     }
 	
+	public String insertGeneratedScene(MetadataRecord record) {
+		logger.info("insertGeneratedScene for movie "+record.getId());
+		
+		String sceneAnnotation = AnnotationConstants.ANNOTATION_PREFIXES()+AnnotationConstants.ANNOTATION_TEMPLATE();
+		
+		Date date = new Date();
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+		String dateFormatted = df.format(date);
+
+		sceneAnnotation = sceneAnnotation.replace("XXMEDIAIDXX", record.getId());
+		sceneAnnotation = sceneAnnotation.replace("XXDATETIMEXX", dateFormatted);
+		sceneAnnotation = sceneAnnotation.replace("XXENDMS", Integer.toString(record.getDuration()));
+        Float durfl = ((float)record.getDuration())/1000;
+        sceneAnnotation = sceneAnnotation.replace("XXENDFLOAT", Float.toString(durfl));
+		
+        Model sceneModel = ModelFactory.createDefaultModel();
+        try {
+        	sceneModel.read(IOUtils.toInputStream(sceneAnnotation, "UTF-8"), null, RDFLanguages.strLangTurtle);
+		} catch (IOException e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("insertGeneratedScene - Conversion of generated scene to model failed. {}", msg);
+			return "{\"error\": {\"message\": \"Conversion of generated scene to model failed.\",\"code\": 500,\"cause\": \"" + msg
+					+ "\"}}";
+		}
+        
+        String graphUri = URIconstants.GRAPH_PREFIX() + record.getId() + GENERATED_SCENES_SUFFIX;
+        
+		StringWriter sw = new StringWriter();
+		RDFDataMgr.write(sw, sceneModel, RDFFormat.NQUADS_UTF8);
+		String update = "INSERT { GRAPH <"+graphUri+"> {\r\n";
+		update = update + sw.toString()+"\r\n";
+		update = update + "} } WHERE {}";
+		
+		UpdateRequest request = new UpdateRequest();
+		request.add("CLEAR GRAPH <"+graphUri+">;");
+		UpdateFactory.parse(request, update);
+		
+		UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
+		logger.info("insertGeneratedScene - insert - {}", request.toString());
+
+        
+/*		Node graph = NodeFactory.createURI(URIconstants.GRAPH_PREFIX() + record.getId() + GENERATED_SCENES_SUFFIX);
+		
+		UpdateRequest request = new UpdateRequest();
+		QuadDataAcc acc = new QuadDataAcc();
+		acc.setGraph(graph);
+		
+		sceneModel.listStatements().forEachRemaining(st -> {
+			Triple t = st.asTriple();
+			acc.addTriple(t);
+		});
+		
+		request.add("CLEAR GRAPH <"+graph.toString()+">;");
+		request.add(new UpdateDataInsert(acc));
+		
+		UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
+		logger.info("insertGeneratedScene - insert - {}", request.toString());
+
+*/
+		try {
+			processor.execute();
+		} catch (Exception e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("insertGeneratedScene - insert - UpdateProcessor - Exception - {}", msg);
+			msg = msg.replace("\"", "");
+			return "{\"error\": {\"message\": \"TripleStore scene insert failed .\",\"code\": 500,\"cause\": \"" + msg
+					+ "\"}}";
+		}
+		
+		return null;
+	}
+	
 	public String insertAnnotations(String mediaId, InputStream content) {
 		String result = null;
 		
@@ -416,7 +500,7 @@ public class AnnotationManager {
 		ds.addNamedModel("http://test2.com", model);
 		
 		StringWriter sw = new StringWriter();
-//		RDFDataMgr.write(sw, model, RDFFormat.NQUADS_UTF8);
+		RDFDataMgr.write(sw, model, RDFFormat.NQUADS_UTF8);
 		
 		try {
 			RDFDataMgr.write(new BufferedOutputStream(new FileOutputStream("d:\\hagt\\googledrive\\HPI\\ada\\restapi\\test.nq")), ds.asDatasetGraph(), RDFFormat.NQUADS_UTF8);

@@ -35,7 +35,6 @@ public class MetadataManager {
 
 	public static final String METADATA_SUFFIX = "/meta";
 	public static final String ANNOTATIONS_SUFFIX = "/annotations";
-	public static final String GENERATED_SCENES_SUFFIX = "/scenegen";
 
 	private String sparqlEndpoint;
 	private static MetadataManager instance;
@@ -70,7 +69,7 @@ public class MetadataManager {
 		
 		try {
 			processor.execute();
-		} catch (HttpException e) {
+		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("clearGraph - UpdateProcessor - Exception {}", msg);
 			msg = msg.replace("\"", "");
@@ -130,7 +129,9 @@ public class MetadataManager {
 	        } catch (Exception e) {
 				String msg = e.toString().replace("\n", " ");
 				logger.error("{} - QUERY_MAX_SHORTID - Triplestore query failed {}", "addMedia", msg);
-				return null;
+				msg = msg.replace("\"", "");
+				return "{\"error\": {\"message\": \"Triplestore query for max movie short id failed .\",\"code\": 500,\"cause\": \"" + msg
+						+ "\"}}";
 			}
 	        
 	        record.setShortId(maxShortId+1);
@@ -185,12 +186,18 @@ public class MetadataManager {
 
 		try {
 			processor.execute();
-		} catch (HttpException e) {
+		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - insert - UpdateProcessor - Exception - {}", "addMedia", msg);
 			msg = msg.replace("\"", "");
 			return "{\"error\": {\"message\": \"TripleStore metadata update failed .\",\"code\": 500,\"cause\": \"" + msg
 					+ "\"}}";
+		}
+		
+		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
+		String result = am.insertGeneratedScene(record);
+		if (result != null) {
+			return result;
 		}
 
 		return null;
@@ -230,9 +237,9 @@ public class MetadataManager {
 		Map<String,List<Map<String, Object>>> scenes = new HashMap<String, List<Map<String,Object>>>();
 		
 		String queryScenes = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ALL_SCENES();
-		System.out.println(queryScenes);
         try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryScenes)) {        	
 			logger.info("getMovieMetadata - SPARQL - QUERY_ALL_SCENES");
+			logger.info("\n"+queryScenes);
         	ResultSet set = qexec.execSelect();        	
         	sceneResult = convertResultSetToListOfMaps(set);
         } catch (Exception e) {
@@ -256,6 +263,7 @@ public class MetadataManager {
 		String queryCounts = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ANNOTATION_TYPE_COUNTS();
         try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryCounts)) {
 			logger.info("getMovieMetadata - SPARQL - QUERY_ANNOTATION_TYPE_COUNTS");
+			logger.info("\n"+queryCounts);
         	ResultSet set = qexec.execSelect();
         	countres = convertResultSetToListOfMaps(set);
         } catch (Exception e) {
@@ -281,6 +289,7 @@ public class MetadataManager {
 		String query = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_METADATA();
         try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {        	
 			logger.info("getMovieMetadata - SPARQL - QUERY_METADATA");
+			logger.info("\n"+query);
         	ResultSet set = qexec.execSelect();        	
         	tmpResult = convertResultSetToListOfMaps(set);
         } catch (Exception e) {
