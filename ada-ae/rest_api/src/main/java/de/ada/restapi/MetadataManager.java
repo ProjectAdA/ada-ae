@@ -35,8 +35,9 @@ public class MetadataManager {
 
 	public static final String METADATA_SUFFIX = "/meta";
 	public static final String ANNOTATIONS_SUFFIX = "/annotations";
-	public static final String METADATA_GRAPH = URIconstants.URL_PREFIX + "/graph";
-	private final String sparqlEndpoint;
+	public static final String GENERATED_SCENES_SUFFIX = "/scenegen";
+
+	private String sparqlEndpoint;
 	private static MetadataManager instance;
 
 	final Logger logger;
@@ -94,16 +95,16 @@ public class MetadataManager {
 	}
 	
 	public String deleteMedia(String mediaId) {
-		Node graph = NodeFactory.createURI(METADATA_GRAPH + "/" + mediaId + METADATA_SUFFIX);
-		
+		Node graph = NodeFactory.createURI(URIconstants.GRAPH_PREFIX() + mediaId + METADATA_SUFFIX);
+		logger.info("deleteMedia - "+mediaId);
 		//TODO Implement deletion of media's annotations
 		return clearGraph(graph.getURI());
 	}
 
 	public String addMedia(MetadataRecord record) {
 		
-		Node graph = NodeFactory.createURI(METADATA_GRAPH + "/" + record.getId() + METADATA_SUFFIX);
-		String mediaUri = URIconstants.MEDIA_PREFIX + record.getId();
+		Node graph = NodeFactory.createURI(URIconstants.GRAPH_PREFIX() + record.getId() + METADATA_SUFFIX);
+		String mediaUri = URIconstants.MEDIA_PREFIX() + record.getId();
 		Node mediaNode = NodeFactory.createURI(mediaUri);
 
 		// TODO Clear graph and add in separate queries are not transaction safe
@@ -115,7 +116,7 @@ public class MetadataManager {
 		// Create a new short identifier in case metadata record is initially created
 		if (record.getShortId() == null) {
 			logger.info("addMedia - QUERY_MAX_SHORTID");
-			String queryMax = URIconstants.QUERY_PREFIXES + MetadataQueries.QUERY_MAX_MOVIE_SHORTID;
+			String queryMax = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_MAX_MOVIE_SHORTID();
 			Integer maxShortId = 0;
 	        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryMax)) {
 	        	ResultSet set = qexec.execSelect();
@@ -228,7 +229,8 @@ public class MetadataManager {
 		List<Map<String, Object>> sceneResult = new ArrayList<Map<String,Object>>();
 		Map<String,List<Map<String, Object>>> scenes = new HashMap<String, List<Map<String,Object>>>();
 		
-		String queryScenes = URIconstants.QUERY_PREFIXES + MetadataQueries.QUERY_ALL_SCENES;
+		String queryScenes = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ALL_SCENES();
+		System.out.println(queryScenes);
         try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryScenes)) {        	
 			logger.info("getMovieMetadata - SPARQL - QUERY_ALL_SCENES");
         	ResultSet set = qexec.execSelect();        	
@@ -251,7 +253,7 @@ public class MetadataManager {
         	list.add(scene);
         }
 
-		String queryCounts = URIconstants.QUERY_PREFIXES + MetadataQueries.QUERY_ANNOTATION_TYPE_COUNTS;
+		String queryCounts = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ANNOTATION_TYPE_COUNTS();
         try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryCounts)) {
 			logger.info("getMovieMetadata - SPARQL - QUERY_ANNOTATION_TYPE_COUNTS");
         	ResultSet set = qexec.execSelect();
@@ -276,7 +278,7 @@ public class MetadataManager {
 		}
         
         List<Map<String, Object>> tmpResult = null;
-		String query = URIconstants.QUERY_PREFIXES + MetadataQueries.QUERY_METADATA;
+		String query = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_METADATA();
         try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {        	
 			logger.info("getMovieMetadata - SPARQL - QUERY_METADATA");
         	ResultSet set = qexec.execSelect();        	
@@ -309,9 +311,10 @@ public class MetadataManager {
 		
 		List<Map<String, Object>> tempResult = new ArrayList<Map<String,Object>>();
 
-		String query = URIconstants.QUERY_PREFIXES + MetadataQueries.QUERY_ONTOLOGY_ELEMENTS;
+		String query = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ONTOLOGY_ELEMENTS();
 		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
 			logger.info("getOntology - SPARQL - QUERY_ONTOLOGY_ELEMENTS");
+			logger.info("\n"+query);
             ResultSet set = qexec.execSelect();
             tempResult = convertResultSetToListOfMaps(set);
             
@@ -337,9 +340,10 @@ public class MetadataManager {
         
         Map<String, Set<String>> subElements = new HashMap<String, Set<String>>();
         
-		query = URIconstants.QUERY_PREFIXES + MetadataQueries.QUERY_ONTOLOGY_LINKS;
+		query = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ONTOLOGY_LINKS();
 		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
 			logger.info("getOntology - SPARQL - QUERY_ONTOLOGY_LINKS");
+			logger.info("\n"+query);
             ResultSet set = qexec.execSelect();
             while (set.hasNext()) {
                 QuerySolution sol = set.next();

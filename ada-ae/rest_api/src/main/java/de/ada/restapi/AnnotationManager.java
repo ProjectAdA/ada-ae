@@ -74,7 +74,7 @@ public class AnnotationManager {
 			result = "?body ao:annotationType ?annotype. FILTER (";
 			
 			for (String type : annotationTypes) {
-				result = result + "?annotype = <"+URIconstants.RESOURCE_PREFIX+type+"> ";
+				result = result + "?annotype = <"+URIconstants.RESOURCE_PREFIX()+type+"> ";
 				i++;
     			if (i == numTypes) {
     				result = result + " ) ";
@@ -97,7 +97,7 @@ public class AnnotationManager {
 			result = "?anno oa:hasTarget ?target. ?target oa:hasSource ?source. FILTER (";
 			
 			for (String media : mediaIdSet) {
-				result = result + "?source = <"+URIconstants.MEDIA_PREFIX+media+"> ";
+				result = result + "?source = <"+URIconstants.MEDIA_PREFIX()+media+"> ";
 				i++;
     			if (i == numMedia) {
     				result = result + " ) ";
@@ -127,7 +127,7 @@ public class AnnotationManager {
 		int i = 0;
 		result = "FILTER (";
     	for (String value : valuesOR) {
-    		result = result + "?annovalue = <"+URIconstants.RESOURCE_PREFIX+"AnnotationValue/"+value+"> || ?seqValue = <"+URIconstants.RESOURCE_PREFIX+"AnnotationValue/"+value+">";
+    		result = result + "?annovalue = <"+URIconstants.RESOURCE_PREFIX()+"AnnotationValue/"+value+"> || ?seqValue = <"+URIconstants.RESOURCE_PREFIX()+"AnnotationValue/"+value+">";
 			i++;
 			if (i == numValue) {
 				result = result + " )";
@@ -146,11 +146,11 @@ public class AnnotationManager {
 		String sceneFilter = createSceneFilter(scenes);
 		String typeFilter = createTypeFilter(types);
 		
-		String query = URIconstants.QUERY_PREFIXES + AnnotationQueries.QUERY_ANNOTATIONS_TEMPLATE;
+		String query = URIconstants.QUERY_PREFIXES() + AnnotationQueries.QUERY_ANNOTATIONS_TEMPLATE;
 		if ("".equals(mediaId)) {
 			query = query.replaceFirst("\\?target oa:hasSource <<MEDIA>>.","");
 		} else {
-			query = query.replaceFirst("<<MEDIA>>", "<"+URIconstants.MEDIA_PREFIX + mediaId + ">");
+			query = query.replaceFirst("<<MEDIA>>", "<"+URIconstants.MEDIA_PREFIX() + mediaId + ">");
 		}
 		query = query.replaceFirst("<<SCENEFILTER>>", sceneFilter);
 		query = query.replaceFirst("<<TYPEFILTER>>", typeFilter);
@@ -181,7 +181,7 @@ public class AnnotationManager {
 
 		String textFilter = "FILTER regex(?annotextvalue, \""+term+"\" ,\"i\")";
 		
-		String query = URIconstants.QUERY_PREFIXES + AnnotationQueries.TEXT_SEARCH_TEMPLATE;
+		String query = URIconstants.QUERY_PREFIXES() + AnnotationQueries.TEXT_SEARCH_TEMPLATE;
 		query = query.replaceFirst("<<TEXTFILTER>>", textFilter);
 		query = query.replaceFirst("<<TYPEFILTER>>", typeFilter);
 		query = query.replaceFirst("<<MEDIAFILTER>>", mediaFilter);
@@ -229,7 +229,7 @@ public class AnnotationManager {
 		for (String values : valueSet) {
 
 			String valueFilter = createValueFilter(values);
-			String query = URIconstants.QUERY_PREFIXES + AnnotationQueries.VALUE_SEARCH_SELECT_TEMPLATE;
+			String query = URIconstants.QUERY_PREFIXES() + AnnotationQueries.VALUE_SEARCH_SELECT_TEMPLATE;
 			query = query.replaceFirst("<<VALUEFILTER>>", valueFilter);
 			query = query.replaceFirst("<<MEDIAFILTER>>", mediaFilter);
 			
@@ -321,7 +321,7 @@ public class AnnotationManager {
 			}
 		}
 
-		String query = URIconstants.QUERY_PREFIXES + AnnotationQueries.QUERY_ANNOTATIONS_TEMPLATE;
+		String query = URIconstants.QUERY_PREFIXES() + AnnotationQueries.QUERY_ANNOTATIONS_TEMPLATE;
 		query = query.replaceFirst("\\?target oa:hasSource <<MEDIA>>.","");
 		query = query.replaceFirst("<<SCENEFILTER>>", "");
 		query = query.replaceFirst("<<TYPEFILTER>>", annoFilter);

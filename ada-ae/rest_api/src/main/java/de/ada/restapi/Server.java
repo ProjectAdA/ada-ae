@@ -27,19 +27,17 @@ import io.javalin.http.UploadedFile;
 public class Server {
 	
 	private static final String API_TOKEN_HEADER_FIELD = "X-API-Token";
+	private static final int defaultPort = 7002;
 	
-	private static int defaultPort = 7002;
-	private static String defaultContext = "/api_lt";
-//    private static String defaultEndpoint = "http://127.0.0.1:8890/sparql";
-	private static String defaultEndpoint = "http://ada.filmontology.org/sparql_lt";
-	
-	private static String API_TOKEN;
+	private static String applicationContext = "/api_lt";
+	private static String sparqlEndpoint = "http://ada.filmontology.org/sparql_lt";
+
+//	private static String applicationContext = "";
+//	private static String sparqlEndpoint = "";
+
+	private static String API_TOKEN = "";
 	
 	final Logger logger = LoggerFactory.getLogger(Server.class);
-
-	public Server(String apitoken) {
-		Server.API_TOKEN = apitoken;
-	}
 
 	/**
 	 * Converts media/scene request parameter to media id string and a set of scene id strings.
@@ -144,7 +142,7 @@ public class Server {
         	types = getTypes(typeParam);
     	}
 
-		AnnotationManager am = AnnotationManager.getInstance(defaultEndpoint);
+		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
 		Model annotations = am.getAnnotations(mediaId, scenes, types);
 		if (annotations == null) {
     		returnError(ctx, "Query annotations - Triplestore query failed.", 500, null);
@@ -182,7 +180,7 @@ public class Server {
         	typeSet = getTypes(typeParam);
     	}
     	
-		AnnotationManager am = AnnotationManager.getInstance(defaultEndpoint);
+		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
 		Model annotations = am.textSearch(searchTerm, whole, mediaIdSet, typeSet);
 		if (annotations == null) {
     		returnError(ctx, "Text search annotations - Triplestore query failed.", 500, null);
@@ -218,7 +216,7 @@ public class Server {
         	}
     	}
     	
-		AnnotationManager am = AnnotationManager.getInstance(defaultEndpoint);
+		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
 		Model annotations = am.valueSearch(valueSet, mediaIdSet);
 		if (annotations == null) {
     		returnError(ctx, "Value search annotations - Triplestore query failed.", 500, null);
@@ -258,7 +256,7 @@ public class Server {
 	void runServer() {
 		
 		Javalin app = Javalin.create(config -> {
-			config.contextPath = defaultContext;
+			config.contextPath = applicationContext;
 			//TODO Evaluate CORS restrictions
 			config.enableCorsForAllOrigins();
 			config.requestLogger((ctx, executionTimeMs) -> {
@@ -268,7 +266,7 @@ public class Server {
 		}).start(defaultPort);
 		
 		app.get("/getMovieMetadata", ctx -> {
-			MetadataManager mdm = MetadataManager.getInstance(defaultEndpoint);
+			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint);
 			
         	List<Map<String,Object>> movieMetadata = mdm.getMovieMetadata(null);
         	
@@ -281,7 +279,7 @@ public class Server {
 		});
 
 		app.get("/getMovieMetadata/:mediaId", ctx -> {
-			MetadataManager mdm = MetadataManager.getInstance(defaultEndpoint);
+			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint);
 			
 			String queryId = properEscapeRemove(ctx.pathParam("mediaId"));
 			
@@ -296,7 +294,7 @@ public class Server {
 		});
 
         app.get("/getOntology", ctx -> {
-			MetadataManager mdm = MetadataManager.getInstance(defaultEndpoint);
+			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint);
 			
 			List<Map<String,Object>> ontology = mdm.getOntology();
 			
@@ -364,7 +362,7 @@ public class Server {
 			
 			mediaId = properEscapeRemove(mediaId);
 
-			MetadataManager mdm = MetadataManager.getInstance(defaultEndpoint);
+			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint);
 			
 			String result = mdm.deleteMedia(mediaId);
 			if (result != null) {
@@ -383,7 +381,7 @@ public class Server {
 				return;
 			}
 
-			MetadataManager mdm = MetadataManager.getInstance(defaultEndpoint);
+			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint);
 			MetadataRecord record = null;
 			
 			try {
@@ -444,7 +442,7 @@ public class Server {
 			
 			logger.info("uploadExtractorResult - media id "+mediaId+" - filename "+uploadedFiles.get(0).getFilename());
 			
-			AnnotationManager am = AnnotationManager.getInstance(defaultEndpoint);
+			AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
 			String result = am.insertAnnotations(mediaId, content);		
 			
 		});
@@ -452,23 +450,45 @@ public class Server {
 	}
 
 	public static void main(String[] args) {
+//		System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
 		System.setProperty(org.slf4j.impl.SimpleLogger.SHOW_DATE_TIME_KEY, "true");
 		System.setProperty(org.slf4j.impl.SimpleLogger.DATE_TIME_FORMAT_KEY, "yyyy-MM-dd HH:mm:ss:SSS Z");
 
+		final Logger logger = LoggerFactory.getLogger(Server.class);
+		logger.info("Starting AdA REST API...");
+
 		if (args.length == 2) {
-            defaultEndpoint = args[0];
-            defaultContext = args[1];
+            sparqlEndpoint = args[0];
+            applicationContext = args[1];
+		} else {
+			logger.error("Arguments sparqlEndpointURL applicationContext missing");
+			System.out.println("Usage: java -jar ada_rest_api.jar <sparqlEndpointURL> <applicationContext>");
+			System.exit(1);
 		}
 		
-		System.out.println("Using configuration port: " + defaultPort + " and endpoint: " + defaultEndpoint + " context: " + defaultContext);
+		logger.info("Using configuration defaultPort "+defaultPort+ ", sparqlEndpoint "+sparqlEndpoint+", applicationContext "+applicationContext);
+		
+		if (System.getenv("ONTOLOGY_BASE_URI") != null) {
+			URIconstants.ONTOLOGY_BASE_URI = System.getenv("ONTOLOGY_BASE_URI");
+			if (URIconstants.ONTOLOGY_BASE_URI.endsWith("/")) {
+				URIconstants.ONTOLOGY_BASE_URI = URIconstants.ONTOLOGY_BASE_URI.substring(0, URIconstants.ONTOLOGY_BASE_URI.length()-1);
+			}
+			logger.info("Setting ONTOLOGY_BASE_URI "+URIconstants.ONTOLOGY_BASE_URI);
+		}
+		if (System.getenv("ONTOLOGY_VERSION") != null) {
+			URIconstants.ONTOLOGY_VERSION = System.getenv("ONTOLOGY_VERSION");
+			logger.info("Setting ONTOLOGY_VERSION "+URIconstants.ONTOLOGY_VERSION);
+		}
 
-		String apitoken = System.getenv("API_TOKEN");
-		if (apitoken == null) {
+		if (System.getenv("API_TOKEN") != null) {
+			Server.API_TOKEN = System.getenv("API_TOKEN");
+		} else {
+			logger.error("Environment variable API_TOKEN not set");
 			System.err.println("API requires the environment variable \"API_TOKEN\" to be set.");
 			System.exit(1);
-		} else {
-			new Server(apitoken).runServer();
 		}
+		
+		new Server().runServer();
 	}
 
 }

@@ -244,7 +244,7 @@ public class JSONLDconstants {
 			+ "    },\r\n"
 			+ "    \"advene\" : \"http://www.advene.org/ns/webannotation/\",\r\n"
 			+ "    \"local\" : \"http://www.advene.org/ns/_local/\",\r\n"
-			+ "    \"ao\" : \""+URIconstants.ONTOLOGY_PREFIX+"\",\r\n"
+			+ "    \"ao\" : \""+URIconstants.ONTOLOGY_PREFIX()+"\",\r\n"
 			+ "    \"annotationType\" : {\r\n"
 			+ "      \"@id\" : \"ao:annotationType\",\r\n"
 			+ "      \"@type\" : \"@id\"\r\n"

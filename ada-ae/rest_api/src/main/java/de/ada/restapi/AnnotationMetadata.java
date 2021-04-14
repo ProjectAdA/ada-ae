@@ -19,7 +19,7 @@ public class AnnotationMetadata {
 	
 	public String getMediaId() {
 		String result = null;
-		String ids = this.annoUri.replace(URIconstants.MEDIA_PREFIX, "");
+		String ids = this.annoUri.replace(URIconstants.MEDIA_PREFIX(), "");
 		String[] split = ids.split("/");
 		if (split.length == 2) {
 			result = split[0];
@@ -29,7 +29,7 @@ public class AnnotationMetadata {
 
 	public String getAnnotationId() {
 		String result = null;
-		String ids = this.annoUri.replace(URIconstants.MEDIA_PREFIX, "");
+		String ids = this.annoUri.replace(URIconstants.MEDIA_PREFIX(), "");
 		String[] split = ids.split("/");
 		if (split.length == 2) {
 			result = split[1];
