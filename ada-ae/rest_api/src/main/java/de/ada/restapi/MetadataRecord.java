@@ -5,31 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class MetadataRecord {
 
-	public MetadataRecord(String type, String id, Integer shortId, String title, Integer year,
-			Integer runtime, Integer duration, String category, String playoutUrl, String director,
-			String releaseDate, String writer, String language, String broadcaster, String imdbId,
-			String actors, String theabstract, String filmVersion) {
-		super();
-		this.type = type;
-		this.id = id;
-		this.shortId = shortId;
-		this.title = title;
-		this.year = year;
-		this.runtime = runtime;
-		this.duration = duration;
-		this.category = category;
-		this.playoutUrl = playoutUrl;
-		this.director = director;
-		this.releaseDate = releaseDate;
-		this.writer = writer;
-		this.language = language;
-		this.broadcaster = broadcaster;
-		this.imdbId = imdbId;
-		this.actors = actors;
-		this.theabstract = theabstract;
-		this.filmVersion = filmVersion;
-	}
-
 	public MetadataRecord() {
 	}
 
@@ -109,144 +84,144 @@ public class MetadataRecord {
 		return type;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setType(String newType) {
+		this.type = newType == null ? newType : newType.trim();
 	}
 
 	public String getId() {
 		return id;
 	}
 
-	public void setId(String id) {
-		this.id = id;
+	public void setId(String newId) {
+		this.id = newId == null ? newId : newId.trim();
 	}
 
 	public Integer getShortId() {
 		return shortId;
 	}
 
-	public void setShortId(Integer shortId) {
-		this.shortId = shortId;
+	public void setShortId(Integer newShortId) {
+		this.shortId = newShortId;
 	}
 
 	public String getTitle() {
 		return title;
 	}
 
-	public void setTitle(String title) {
-		this.title = title;
+	public void setTitle(String newTitle) {
+		this.title = newTitle == null ? newTitle : newTitle.trim();
 	}
 
 	public Integer getYear() {
 		return year;
 	}
 
-	public void setYear(Integer year) {
-		this.year = year;
+	public void setYear(Integer newYear) {
+		this.year = newYear;
 	}
 
 	public Integer getRuntime() {
 		return runtime;
 	}
 
-	public void setRuntime(Integer runtime) {
-		this.runtime = runtime;
+	public void setRuntime(Integer newRuntime) {
+		this.runtime = newRuntime;
 	}
 
 	public Integer getDuration() {
 		return duration;
 	}
 
-	public void setDuration(Integer duration) {
-		this.duration = duration;
+	public void setDuration(Integer newDuration) {
+		this.duration = newDuration;
 	}
 
 	public String getCategory() {
 		return category;
 	}
 
-	public void setCategory(String category) {
-		this.category = category;
+	public void setCategory(String newCategory) {
+		this.category = newCategory == null ? newCategory : newCategory.trim();
 	}
 
 	public String getPlayoutUrl() {
 		return playoutUrl;
 	}
 
-	public void setPlayoutUrl(String playoutUrl) {
-		this.playoutUrl = playoutUrl;
+	public void setPlayoutUrl(String newPlayoutUrl) {
+		this.playoutUrl = newPlayoutUrl == null ? newPlayoutUrl : newPlayoutUrl.trim();
 	}
 
 	public String getDirector() {
 		return director;
 	}
 
-	public void setDirector(String director) {
-		this.director = director;
+	public void setDirector(String newDirector) {
+		this.director = newDirector == null ? newDirector : newDirector.trim();
 	}
 
 	public String getReleaseDate() {
 		return releaseDate;
 	}
 
-	public void setReleaseDate(String releaseDate) {
-		this.releaseDate = releaseDate;
+	public void setReleaseDate(String newReleaseDate) {
+		this.releaseDate = newReleaseDate == null ? newReleaseDate : newReleaseDate.trim();
 	}
 
 	public String getWriter() {
 		return writer;
 	}
 
-	public void setWriter(String writer) {
-		this.writer = writer;
+	public void setWriter(String newWriter) {
+		this.writer = newWriter == null ? newWriter : newWriter.trim();
 	}
 
 	public String getLanguage() {
 		return language;
 	}
 
-	public void setLanguage(String language) {
-		this.language = language;
+	public void setLanguage(String newLanguage) {
+		this.language = newLanguage == null ? newLanguage : newLanguage.trim();
 	}
 
 	public String getBroadcaster() {
 		return broadcaster;
 	}
 
-	public void setBroadcaster(String broadcaster) {
-		this.broadcaster = broadcaster;
+	public void setBroadcaster(String newBroadcaster) {
+		this.broadcaster = newBroadcaster == null ? newBroadcaster : newBroadcaster.trim();
 	}
 
 	public String getImdbId() {
 		return imdbId;
 	}
 
-	public void setImdbId(String imdbId) {
-		this.imdbId = imdbId;
+	public void setImdbId(String newImdbId) {
+		this.imdbId = newImdbId == null ? newImdbId : newImdbId.trim();
 	}
 
 	public String getActors() {
 		return actors;
 	}
 
-	public void setActors(String actors) {
-		this.actors = actors;
+	public void setActors(String newActors) {
+		this.actors = newActors == null ? newActors : newActors.trim();
 	}
 
 	public String getTheabstract() {
 		return theabstract;
 	}
 
-	public void setTheabstract(String theabstract) {
-		this.theabstract = theabstract;
+	public void setTheabstract(String newTheabstract) {
+		this.theabstract = newTheabstract == null ? newTheabstract : newTheabstract.trim();
 	}
 
 	public String getFilmVersion() {
 		return filmVersion;
 	}
 
-	public void setFilmVersion(String filmVersion) {
-		this.filmVersion = filmVersion;
+	public void setFilmVersion(String newFilmVersion) {
+		this.filmVersion = newFilmVersion == null ? newFilmVersion : newFilmVersion.trim();
 	}
 
 	@Override

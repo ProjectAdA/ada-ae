@@ -435,6 +435,10 @@ public class AnnotationManager {
         
         String graphUri = URIconstants.GRAPH_PREFIX() + record.getId() + GENERATED_SCENES_SUFFIX;
         
+        /*
+         * Note that the following SPARQL update implementation is specific to Virtuoso 7 as it does not support blank nodes
+         * in SPARQL 1.1 INSERT DATA {} syntax.
+         */
 		StringWriter sw = new StringWriter();
 		RDFDataMgr.write(sw, sceneModel, RDFFormat.NQUADS_UTF8);
 		String update = "INSERT { GRAPH <"+graphUri+"> {\r\n";
@@ -446,12 +450,14 @@ public class AnnotationManager {
 		UpdateFactory.parse(request, update);
 		
 		UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
-		logger.info("insertGeneratedScene - insert - {}", request.toString());
+		logger.info("insertGeneratedScene - SPARQL UPDATE - {}", request.toString());
+		/******/
 
-        
-/*		Node graph = NodeFactory.createURI(URIconstants.GRAPH_PREFIX() + record.getId() + GENERATED_SCENES_SUFFIX);
-		
-		UpdateRequest request = new UpdateRequest();
+        /*
+         * Implementation with INSERT DATA
+         * 
+		Node graph = NodeFactory.createURI(URIconstants.GRAPH_PREFIX() + record.getId() + GENERATED_SCENES_SUFFIX);
+		UpdateRequest req = new UpdateRequest();
 		QuadDataAcc acc = new QuadDataAcc();
 		acc.setGraph(graph);
 		
@@ -460,13 +466,10 @@ public class AnnotationManager {
 			acc.addTriple(t);
 		});
 		
-		request.add("CLEAR GRAPH <"+graph.toString()+">;");
-		request.add(new UpdateDataInsert(acc));
-		
-		UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
-		logger.info("insertGeneratedScene - insert - {}", request.toString());
+		req.add("CLEAR GRAPH <"+graph.toString()+">;");
+		req.add(new UpdateDataInsert(acc));
+		*/
 
-*/
 		try {
 			processor.execute();
 		} catch (Exception e) {

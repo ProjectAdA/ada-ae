@@ -388,7 +388,7 @@ public class Server {
 				ObjectMapper om = new ObjectMapper();
 				
 				logger.info("addMedia - input {}", ctx.body().replace("\n", ""));
-				record = om.readValue(ctx.body(), MetadataRecord.class);				
+				record = om.readValue(ctx.body(), MetadataRecord.class);
 
 			} catch (JsonProcessingException e) {
 				returnError(ctx, "Not a valid json input. JsonProcessingException.", 400, e);
@@ -397,7 +397,7 @@ public class Server {
 				returnError(ctx, "Unknown json field supplied. IllegalArgumentException.", 400, iae);
 				return;
 			}
-
+			
 			if (mdm.validateMissing(record)) {
 				returnError(ctx, "Mandatory json field missing,", 400, null);
 				return;
