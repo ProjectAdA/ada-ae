@@ -52,8 +52,8 @@ public class MetadataQueries {
 			+ "	?mediauri <http://schema.org/genre> ?category.\r\n"
 			+ "	?mediauri <http://schema.org/url> ?playoutUrl.\r\n"
 			+ "	?mediauri <https://w3id.org/idsa/core/checkSum> ?id.\r\n"
-			+ " OPTIONAL {?mediauri <http://purl.org/dc/elements/1.1/identifier> ?shortId}.\r\n" // TODO remove optional
-			+ " OPTIONAL {?target oa:hasSource ?mediauri}.\r\n"
+			+ "	OPTIONAL {?mediauri <http://purl.org/dc/elements/1.1/identifier> ?shortId}.\r\n" // TODO remove optional
+			+ "	OPTIONAL {?target oa:hasSource ?mediauri}.\r\n"
 			+ "	OPTIONAL {?mediauri <http://schema.org/director> ?director.}\r\n"
 			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/abstract> ?abstract.}\r\n"
 			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/releaseDate> ?releaseDate.}\r\n"

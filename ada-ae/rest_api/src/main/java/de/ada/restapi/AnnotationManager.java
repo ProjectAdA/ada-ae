@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +20,9 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
@@ -429,11 +433,14 @@ public class AnnotationManager {
 		} catch (IOException e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("insertGeneratedScene - Conversion of generated scene to model failed. {}", msg);
-			return "{\"error\": {\"message\": \"Conversion of generated scene to model failed.\",\"code\": 500,\"cause\": \"" + msg
-					+ "\"}}";
+			return "Conversion of generated scene to model failed.";
+//			return "{\"error\": {\"message\": \"Conversion of generated scene to model failed.\",\"code\": 500,\"cause\": \"" + msg
+//					+ "\"}}";
 		}
         
         String graphUri = URIconstants.GRAPH_PREFIX() + record.getId() + GENERATED_SCENES_SUFFIX;
+        
+        // TODO Implement generic method for model insert
         
         /*
          * Note that the following SPARQL update implementation is specific to Virtuoso 7 as it does not support blank nodes
@@ -450,7 +457,6 @@ public class AnnotationManager {
 		UpdateFactory.parse(request, update);
 		
 		UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
-		logger.info("insertGeneratedScene - SPARQL UPDATE - {}", request.toString());
 		/******/
 
         /*
@@ -470,25 +476,110 @@ public class AnnotationManager {
 		req.add(new UpdateDataInsert(acc));
 		*/
 
+		
 		try {
+			logger.debug("insertGeneratedScene - SPARQL UPDATE - {}", request.toString());
 			processor.execute();
 		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
-			logger.error("insertGeneratedScene - insert - UpdateProcessor - Exception - {}", msg);
-			msg = msg.replace("\"", "");
-			return "{\"error\": {\"message\": \"TripleStore scene insert failed .\",\"code\": 500,\"cause\": \"" + msg
-					+ "\"}}";
+			logger.error("insertGeneratedScene - UpdateProcessor - {}", msg);
+			return "Triplestore scene insert failed.";
+//			msg = msg.replace("\"", "");
+//			return "{\"error\": {\"message\": \"TripleStore scene insert failed .\",\"code\": 500,\"cause\": \"" + msg
+//					+ "\"}}";
 		}
 		
 		return null;
 	}
 	
-	public String insertAnnotations(String mediaId, InputStream content) {
-		String result = null;
+	private Model matchScenes(Model annotationModel) {
+		Map<String,Map<String,Interval>> movieSceneIntervals = new HashMap<String, Map<String,Interval>>();
 		
-		logger.info("insertAnnotations - not implemented yet");
+		// Retrieve available scene annotations from triple store
+		String queryScenes = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ALL_SCENES();
+        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryScenes)) {        	
+			logger.info("matchScenes - SPARQL - QUERY_ALL_SCENES");
+        	ResultSet set = qexec.execSelect();
+			while (set.hasNext()) {
+				QuerySolution sol = set.next();
+				Literal startTime = sol.getLiteral("startTime");
+				Literal endTime = sol.getLiteral("endTime");
+				Literal id = sol.getLiteral("id");
+				String[] split = id.toString().split("/");
+				String mediaid = split[0];
+				String sceneid = split[1];
+				
+                Map<String, Interval> scenes = movieSceneIntervals.get(mediaid);
+                if (scenes == null) {
+                	scenes = new HashMap<String, Interval>();
+                	movieSceneIntervals.put(mediaid, scenes);
+                }
+               	Interval i = new Interval(startTime.getLong(), endTime.getLong());
+                scenes.put(sceneid.toString(), i);
+			}
+        } catch (Exception e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("matchScenes - QUERY_ALL_SCENES - Triplestore query failed {}", msg);
+			return null;
+		}
 		
-		/*
+		Map<String,Map<String,Interval>> movieAnnotationIntervals = new HashMap<String, Map<String,Interval>>();
+        
+		String queryAnnotations = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ALL_SCENES().replaceFirst("\\?body ao:annotationType <"+URIconstants.RESOURCE_PREFIX()+"AnnotationType/Scene>.", "");
+		try (QueryExecution qexec = QueryExecutionFactory.create(queryAnnotations, annotationModel)) {
+			logger.info("matchScenes - SPARQL - QUERY_ALL_ANNOTATIONS");
+        	ResultSet set = qexec.execSelect();
+			while (set.hasNext()) {
+				QuerySolution sol = set.next();
+				Literal startTime = sol.getLiteral("startTime");
+				Literal endTime = sol.getLiteral("endTime");
+				Literal id = sol.getLiteral("id");
+				String[] split = id.toString().split("/");
+				String mediaid = split[0];
+				String annoid = split[1];
+				
+                Map<String, Interval> annotations = movieAnnotationIntervals.get(mediaid);
+                if (annotations == null) {
+                	annotations = new HashMap<String, Interval>();
+                	movieAnnotationIntervals.put(mediaid, annotations);
+                }
+               	Interval i = new Interval(startTime.getLong(), endTime.getLong());
+               	annotations.put(annoid.toString(), i);
+
+			}			
+		} catch (Exception e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("matchScenes - QUERY_ALL_ANNOTATIONS - Model query failed {}", msg);
+			return null;
+		}
+
+        for (String mediaid : movieAnnotationIntervals.keySet()) {
+        	Map<String, Interval> annotations = movieAnnotationIntervals.get(mediaid);
+        	for (String annoid : annotations.keySet()) {
+        		boolean annotationMatched = false;
+        		Interval annoInterval = annotations.get(annoid);
+        		Map<String, Interval> scenes = movieSceneIntervals.get(mediaid);
+        		for (String sceneid : scenes.keySet()) {
+        			Interval sceneInterval = scenes.get(sceneid);
+        			if (Interval.isThereOverlapWithTolerance(annoInterval, sceneInterval)) {
+        				annotationMatched = true;
+        				Resource annoResource = annotationModel.getResource(URIconstants.MEDIA_PREFIX()+mediaid+"/"+annoid);
+        	            Property sceneIdProp = annotationModel.getProperty(URIconstants.ONTOLOGY_PREFIX()+"sceneId");
+        				Statement stmt = annotationModel.createStatement(annoResource, sceneIdProp, sceneid);
+        				annotationModel.add(stmt);
+        			}
+				}
+        		if (!annotationMatched) {
+        			logger.error("matchScenes - Cannot find a suitable scene for annotation {}", mediaid+"/"+annoid);
+        		}
+			}
+		}
+
+		return annotationModel;
+	}
+	
+	public String insertAnnotations(String mediaId, String extractor, InputStream content) {
+		logger.info("insertAnnotations for movie "+mediaId+", extractor "+extractor);
 		
 		Model model = ModelFactory.createDefaultModel();
 		try {
@@ -496,21 +587,43 @@ public class AnnotationManager {
 		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - RDF data could not be loaded into a model. {}", "insertAnnotations", msg);
-			return null;
+			return "Uploaded RDF data could not be loaded into a model.";
 		}
 		
-		Dataset ds = DatasetFactory.create();
-		ds.addNamedModel("http://test2.com", model);
+		Model matchedModel = matchScenes(model);
+		if (matchedModel == null) {
+			logger.error("insertAnnotations - matchScenes failed");
+			return "Scene matching for uploaded RDF data failed.";
+		}
 		
+        String graphUri = URIconstants.GRAPH_PREFIX() + mediaId + "/" +extractor;
+
 		StringWriter sw = new StringWriter();
-		RDFDataMgr.write(sw, model, RDFFormat.NQUADS_UTF8);
+		RDFDataMgr.write(sw, matchedModel, RDFFormat.NQUADS_UTF8);
+		String update = "INSERT { GRAPH <"+graphUri+"> {\r\n";
+		update = update + sw.toString()+"\r\n";
+		update = update + "} } WHERE {}";
 		
+		UpdateRequest request = new UpdateRequest();
+		request.add("CLEAR GRAPH <"+graphUri+">;");
+		UpdateFactory.parse(request, update);
+		
+		UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
+		
+		logger.info("insertAnnotations - SPARQL UPDATE - Size {}", request.toString().length());
 		try {
-			RDFDataMgr.write(new BufferedOutputStream(new FileOutputStream("d:\\hagt\\googledrive\\HPI\\ada\\restapi\\test.nq")), ds.asDatasetGraph(), RDFFormat.NQUADS_UTF8);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			processor.execute();
+		} catch (Exception e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("insertAnnotations - UpdateProcessor - {}", msg);
+			return "Triplestore annotation insert failed.";
+//			msg = msg.replace("\"", "");
+//			return "{\"error\": {\"message\": \"TripleStore scene insert failed .\",\"code\": 500,\"cause\": \"" + msg
+//					+ "\"}}";
 		}
-		*/
+		
+		return null;
+
 		
 /*		UpdateRequest request = new UpdateRequest();
 		request.add("CLEAR GRAPH <http://test2.com>;");
@@ -590,8 +703,6 @@ public class AnnotationManager {
 //		RDFConnectionFactory.
 //		
 //		UpdateFactory.read
-		
-		return result;
 	}
 
 

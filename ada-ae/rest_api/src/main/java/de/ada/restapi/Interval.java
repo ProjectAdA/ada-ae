@@ -23,6 +23,14 @@ public class Interval {
 	            (t1.begin.isBefore(t2.begin)||t1.begin.equals(t2.begin)) && (t1.end.isAfter(t2.end)||t1.end.equals(t2.end));
 	}
 
+	public static boolean isThereOverlapWithTolerance(Interval t1, Interval t2) {
+		
+        return (t1.begin.isAfter(t2.begin) || t1.begin.equals(t2.begin)) && t1.begin.plusMillis(42).isBefore(t2.end) ||
+                t1.end.minusMillis(42).isAfter(t2.begin) && (t1.end.isBefore(t2.end) || t1.end.equals(t2.end) ) ||
+                (t1.begin.isBefore(t2.begin)||t1.begin.equals(t2.begin)) && (t1.end.isAfter(t2.end)||t1.end.equals(t2.end));
+	}
+
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

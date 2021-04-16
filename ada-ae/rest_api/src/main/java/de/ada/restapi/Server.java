@@ -366,10 +366,7 @@ public class Server {
 			
 			String result = mdm.deleteMedia(mediaId);
 			if (result != null) {
-				//TODO Use returnError function. Requires changes of returns in metadata manager.
-				ctx.status(500);
-				ctx.contentType("application/json");
-				ctx.result(result);
+				returnError(ctx, result, 500, null);
 				return;
 			}
 			logger.info("deleteMedia - id {} deleted", mediaId);
@@ -404,9 +401,7 @@ public class Server {
 			} else {
 				String result = mdm.addMedia(record);
 				if (result != null) {
-					ctx.status(500);
-					ctx.contentType("application/json");
-					ctx.result(result);
+					returnError(ctx, result, 500, null);
 					return;
 				}
 				logger.info("addMedia - added {}", record.toString().replace("\n", ""));
@@ -430,7 +425,13 @@ public class Server {
 				returnError(ctx, "Field media_id is missing in request.", 500, null);
 				return;
 			}
-			
+
+			String extractor = ctx.formParam("extractor");
+			if (extractor == null) {
+				returnError(ctx, "Field extractor is missing in request.", 500, null);
+				return;
+			}
+
 			List<UploadedFile> uploadedFiles = ctx.uploadedFiles("upload_file");
 			
 			if (uploadedFiles == null || uploadedFiles.size() != 1) {
@@ -443,8 +444,11 @@ public class Server {
 			logger.info("uploadExtractorResult - media id "+mediaId+" - filename "+uploadedFiles.get(0).getFilename());
 			
 			AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
-			String result = am.insertAnnotations(mediaId, content);		
-			
+			String result = am.insertAnnotations(mediaId, extractor, content);		
+			if (result != null) {
+				returnError(ctx, result, 500, null);
+				return;
+			}
 		});
 		
 	}

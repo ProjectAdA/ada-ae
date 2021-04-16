@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.jena.atlas.web.HttpException;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.datatypes.xsd.impl.XSDBaseNumericType;
 import org.apache.jena.graph.Node;
@@ -68,13 +67,15 @@ public class MetadataManager {
 		UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
 		
 		try {
+			logger.debug("clearGraph - SPARQL UPDATE {}", request.toString());
 			processor.execute();
 		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("clearGraph - UpdateProcessor - Exception {}", msg);
-			msg = msg.replace("\"", "");
-			return "{\"error\": {\"message\": \"TripleStore delete metadata graph failed .\",\"code\": 500,\"cause\": \"" + msg
-					+ "\"}}";
+			return "Triplestore clear graph failed.";
+//			msg = msg.replace("\"", "");
+//			return "{\"error\": {\"message\": \"TripleStore delete metadata graph failed .\",\"code\": 500,\"cause\": \"" + msg
+//					+ "\"}}";
 		}
 
 		return null;
@@ -118,6 +119,7 @@ public class MetadataManager {
 			String queryMax = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_MAX_MOVIE_SHORTID();
 			Integer maxShortId = 0;
 	        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryMax)) {
+	        	logger.debug("addMedia - SPARQL QUERY {}", queryMax);
 	        	ResultSet set = qexec.execSelect();
 	        	if (set.hasNext()) {
 	        		QuerySolution next = set.next();
@@ -128,10 +130,11 @@ public class MetadataManager {
 	        	}
 	        } catch (Exception e) {
 				String msg = e.toString().replace("\n", " ");
-				logger.error("{} - QUERY_MAX_SHORTID - Triplestore query failed {}", "addMedia", msg);
-				msg = msg.replace("\"", "");
-				return "{\"error\": {\"message\": \"Triplestore query for max movie short id failed .\",\"code\": 500,\"cause\": \"" + msg
-						+ "\"}}";
+				logger.error("addMedia - QUERY_MAX_SHORTID - Triplestore query failed {}", msg);
+				return "Triplestore query for max movie short id failed.";
+//				msg = msg.replace("\"", "");
+//				return "{\"error\": {\"message\": \"Triplestore query for max movie short id failed .\",\"code\": 500,\"cause\": \"" + msg
+//						+ "\"}}";
 			}
 	        
 	        record.setShortId(maxShortId+1);
@@ -144,10 +147,11 @@ public class MetadataManager {
 			propertyValueMapping = om.convertValue(record, new TypeReference<Map<String, Object>>(){});
 		} catch (IllegalArgumentException e) {
 			String msg = e.toString().replace("\n", " ");
-			logger.error("{} - ObjectMapper - convertValue - {}", "addMedia", msg);
-			msg = msg.replace("\"", "");
-			return "{\"error\": {\"message\": \"MetadataRecord conversion failed .\",\"code\": 500,\"cause\": \"" + msg
-					+ "\"}}";
+			logger.error("addMedia - ObjectMapper - convertValue - {}", msg);
+			return "MetadataRecord conversion failed.";
+//			msg = msg.replace("\"", "");
+//			return "{\"error\": {\"message\": \"MetadataRecord conversion failed .\",\"code\": 500,\"cause\": \"" + msg
+//					+ "\"}}";
 		}
 		
 		UpdateRequest request = new UpdateRequest();
@@ -182,16 +186,16 @@ public class MetadataManager {
 		request.add(new UpdateDataInsert(acc));		
 		UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
 		
-		logger.info("addMedia - insert - {}", request.toString());
-
 		try {
+			logger.debug("addMedia - SPARQL UPDATE - {}", request.toString());
 			processor.execute();
 		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
-			logger.error("{} - insert - UpdateProcessor - Exception - {}", "addMedia", msg);
-			msg = msg.replace("\"", "");
-			return "{\"error\": {\"message\": \"TripleStore metadata update failed .\",\"code\": 500,\"cause\": \"" + msg
-					+ "\"}}";
+			logger.error("addMedia - insert - UpdateProcessor - Exception - {}", msg);
+			return "Triplestore metadata update failed.";
+//			msg = msg.replace("\"", "");
+//			return "{\"error\": {\"message\": \"TripleStore metadata update failed .\",\"code\": 500,\"cause\": \"" + msg
+//					+ "\"}}";
 		}
 		
 		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
@@ -239,12 +243,12 @@ public class MetadataManager {
 		String queryScenes = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ALL_SCENES();
         try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryScenes)) {        	
 			logger.info("getMovieMetadata - SPARQL - QUERY_ALL_SCENES");
-			logger.info("\n"+queryScenes);
+        	logger.debug("getMovieMetadata - SPARQL QUERY {}", queryScenes);
         	ResultSet set = qexec.execSelect();        	
         	sceneResult = convertResultSetToListOfMaps(set);
         } catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
-			logger.error("{} - QUERY_ALL_SCENES - Triplestore query failed {}", "getMovieMetadata", msg);
+			logger.error("getMovieMetadata - QUERY_ALL_SCENES - Triplestore query failed {}", msg);
 			return null;
 		}
         for (Map<String, Object> scene : sceneResult) {
@@ -263,12 +267,12 @@ public class MetadataManager {
 		String queryCounts = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ANNOTATION_TYPE_COUNTS();
         try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryCounts)) {
 			logger.info("getMovieMetadata - SPARQL - QUERY_ANNOTATION_TYPE_COUNTS");
-			logger.info("\n"+queryCounts);
+			logger.debug("getMovieMetadata - SPARQL QUERY {}", queryCounts);
         	ResultSet set = qexec.execSelect();
         	countres = convertResultSetToListOfMaps(set);
         } catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
-			logger.error("{} - QUERY_ANNOTATION_TYPE_COUNTS - Triplestore query failed {}", "getMovieMetadata", msg);
+			logger.error("getMovieMetadata - QUERY_ANNOTATION_TYPE_COUNTS - Triplestore query failed {}", msg);
 			return null;
 		}
         
@@ -289,7 +293,7 @@ public class MetadataManager {
 		String query = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_METADATA();
         try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {        	
 			logger.info("getMovieMetadata - SPARQL - QUERY_METADATA");
-			logger.info("\n"+query);
+			logger.debug("getMovieMetadata - SPARQL QUERY {}", query);
         	ResultSet set = qexec.execSelect();        	
         	tmpResult = convertResultSetToListOfMaps(set);
         } catch (Exception e) {
@@ -323,7 +327,7 @@ public class MetadataManager {
 		String query = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ONTOLOGY_ELEMENTS();
 		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
 			logger.info("getOntology - SPARQL - QUERY_ONTOLOGY_ELEMENTS");
-			logger.info("\n"+query);
+			logger.debug("getOntology - SPARQL QUERY {}", query);
             ResultSet set = qexec.execSelect();
             tempResult = convertResultSetToListOfMaps(set);
             
@@ -352,7 +356,7 @@ public class MetadataManager {
 		query = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ONTOLOGY_LINKS();
 		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
 			logger.info("getOntology - SPARQL - QUERY_ONTOLOGY_LINKS");
-			logger.info("\n"+query);
+			logger.debug("getOntology - SPARQL QUERY {}", query);
             ResultSet set = qexec.execSelect();
             while (set.hasNext()) {
                 QuerySolution sol = set.next();
