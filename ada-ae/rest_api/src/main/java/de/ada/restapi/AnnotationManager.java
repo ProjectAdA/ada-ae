@@ -39,8 +39,6 @@ import com.github.jsonldjava.utils.JsonUtils;
 
 public class AnnotationManager {
 
-	public static final String GENERATED_SCENES_SUFFIX = "/scenegen";
-
 	private final String sparqlEndpoint;
 	private static AnnotationManager instance;
 
@@ -438,7 +436,7 @@ public class AnnotationManager {
 //					+ "\"}}";
 		}
         
-        String graphUri = URIconstants.GRAPH_PREFIX() + record.getId() + GENERATED_SCENES_SUFFIX;
+        String graphUri = URIconstants.GRAPH_PREFIX() + record.getId() + URIconstants.GENERATED_SCENES_GRAPH_SUFFIX;
         
         // TODO Implement generic method for model insert
         

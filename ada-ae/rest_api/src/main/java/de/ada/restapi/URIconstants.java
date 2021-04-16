@@ -36,4 +36,8 @@ public class URIconstants {
 				+ "prefix xsd: <http://www.w3.org/2001/XMLSchema#>\r\n";
 	}
 
+	public static final String METADATA_GRAPH_SUFFIX = "/meta";
+	public static final String GENERATED_SCENES_GRAPH_SUFFIX = "/scenegen";
+	public static final String MANUAL_ANNOTATIONS_GRAPH_SUFFIX = "/manual";
+	
 }

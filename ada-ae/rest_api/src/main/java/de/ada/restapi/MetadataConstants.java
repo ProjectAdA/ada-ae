@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class MetadataConstants {
 	
-	public static final List<Map<String, Object>> TYPES = new ArrayList<Map<String,Object>>();
+	public static final List<Map<String, Object>> AUTOMATED_ANALYSIS_TYPES = new ArrayList<Map<String,Object>>();
 	public static final Map<String, Object> AUTOMATED_ANALYSIS_LEVEL  = new HashMap<String, Object>();
 	
 	//TODO Null not allowed in Map.ofEntries
@@ -33,7 +33,7 @@ public class MetadataConstants {
 		AUTOMATED_ANALYSIS_LEVEL.put("elementFullName",null);
 		AUTOMATED_ANALYSIS_LEVEL.put("elementColor",null);
 		AUTOMATED_ANALYSIS_LEVEL.put("elementNumericValue",null);
-		AUTOMATED_ANALYSIS_LEVEL.put("subElements",TYPES);
+		AUTOMATED_ANALYSIS_LEVEL.put("subElements",AUTOMATED_ANALYSIS_TYPES);
 		
 		Map<String,Object> sd = new HashMap<String, Object>();
 		sd.put("elementUri","http://manpages.ubuntu.com/manpages/focal/man1/shotdetect.1.html");
@@ -46,7 +46,7 @@ public class MetadataConstants {
 		sd.put("elementNumericValue",null);
 		sd.put("maxNumericValue",null);
 		sd.put("subElements",null);
-		TYPES.add(sd);
+		AUTOMATED_ANALYSIS_TYPES.add(sd);
 
 		Map<String,Object> of = new HashMap<String, Object>();
 		of.put("elementUri","https://opencv.org/");
@@ -59,7 +59,7 @@ public class MetadataConstants {
 		of.put("elementNumericValue",null);
 		of.put("maxNumericValue",null);
 		of.put("subElements",null);
-		TYPES.add(of);
+		AUTOMATED_ANALYSIS_TYPES.add(of);
 
 		Map<String,Object> asr = new HashMap<String, Object>();
 		asr.put("elementUri","https://github.com/facebookresearch/wav2letter/tree/wav2letter-lua");
@@ -72,7 +72,7 @@ public class MetadataConstants {
 		asr.put("elementNumericValue",null);
 		asr.put("maxNumericValue",null);
 		asr.put("subElements",null);
-		TYPES.add(asr);
+		AUTOMATED_ANALYSIS_TYPES.add(asr);
 
 		Map<String,Object> im = new HashMap<String, Object>();
 		im.put("elementUri","https://github.com/tensorflow/models/tree/archive/research/im2txt");
@@ -85,7 +85,7 @@ public class MetadataConstants {
 		im.put("elementNumericValue",null);
 		im.put("maxNumericValue",null);
 		im.put("subElements",null);
-		TYPES.add(im);
+		AUTOMATED_ANALYSIS_TYPES.add(im);
 
 		Map<String,Object> nt = new HashMap<String, Object>();
 		nt.put("elementUri","https://github.com/karpathy/neuraltalk2");
@@ -98,7 +98,7 @@ public class MetadataConstants {
 		nt.put("elementNumericValue",null);
 		nt.put("maxNumericValue",null);
 		nt.put("subElements",null);
-		TYPES.add(nt);
+		AUTOMATED_ANALYSIS_TYPES.add(nt);
 
 		Map<String,Object> dc = new HashMap<String, Object>();
 		dc.put("elementUri","https://github.com/jcjohnson/densecap");
@@ -111,7 +111,7 @@ public class MetadataConstants {
 		dc.put("elementNumericValue",null);
 		dc.put("maxNumericValue",null);
 		dc.put("subElements",null);
-		TYPES.add(dc);
+		AUTOMATED_ANALYSIS_TYPES.add(dc);
 
 		Map<String,Object> se = new HashMap<String, Object>();
 		se.put("elementUri","https://github.com/oaubert/advene/blob/master/lib/advene/plugins/soundenveloppe.py");
@@ -124,7 +124,7 @@ public class MetadataConstants {
 		se.put("elementNumericValue",null);
 		se.put("maxNumericValue",null);
 		se.put("subElements",null);
-		TYPES.add(se);
+		AUTOMATED_ANALYSIS_TYPES.add(se);
 
 		Map<String,Object> ynm = new HashMap<String, Object>();
 		ynm.put("elementUri","https://research.google.com/audioset/ontology/music.html");
@@ -137,7 +137,7 @@ public class MetadataConstants {
 		ynm.put("elementNumericValue",null);
 		ynm.put("maxNumericValue",null);
 		ynm.put("subElements",null);
-		TYPES.add(ynm);
+		AUTOMATED_ANALYSIS_TYPES.add(ynm);
 
 		Map<String,Object> ynsp = new HashMap<String, Object>();
 		ynsp.put("elementUri","https://research.google.com/audioset/ontology/speech_1.html");
@@ -150,7 +150,7 @@ public class MetadataConstants {
 		ynsp.put("elementNumericValue",null);
 		ynsp.put("maxNumericValue",null);
 		ynsp.put("subElements",null);
-		TYPES.add(ynsp);
+		AUTOMATED_ANALYSIS_TYPES.add(ynsp);
 
 		Map<String,Object> ynsi = new HashMap<String, Object>();
 		ynsi.put("elementUri","https://research.google.com/audioset/ontology/silence_1.html");
@@ -163,7 +163,7 @@ public class MetadataConstants {
 		ynsi.put("elementNumericValue",null);
 		ynsi.put("maxNumericValue",null);
 		ynsi.put("subElements",null);
-		TYPES.add(ynsi);
+		AUTOMATED_ANALYSIS_TYPES.add(ynsi);
 
 		Map<String,Object> yno = new HashMap<String, Object>();
 		yno.put("elementUri","https://research.google.com/audioset/ontology/index.html");
@@ -176,7 +176,7 @@ public class MetadataConstants {
 		yno.put("elementNumericValue",null);
 		yno.put("maxNumericValue",null);
 		yno.put("subElements",null);
-		TYPES.add(yno);
+		AUTOMATED_ANALYSIS_TYPES.add(yno);
 	
 	}
 }

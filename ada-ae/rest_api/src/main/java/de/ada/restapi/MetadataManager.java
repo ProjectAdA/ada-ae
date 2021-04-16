@@ -3,6 +3,7 @@ package de.ada.restapi;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,9 +33,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MetadataManager {
 
-	public static final String METADATA_SUFFIX = "/meta";
-	public static final String ANNOTATIONS_SUFFIX = "/annotations";
-
 	private String sparqlEndpoint;
 	private static MetadataManager instance;
 
@@ -59,6 +57,7 @@ public class MetadataManager {
 				|| record.getPlayoutUrl() == null;
 	}
 	
+	/*
 	public String clearGraph(String graphURI) {
 		logger.info("clearGraph - {}", graphURI);
 		
@@ -80,7 +79,7 @@ public class MetadataManager {
 
 		return null;
 	}
-	
+	*/
 	public Node createURI(String value) {
 		Node object = null;
 		try {
@@ -95,24 +94,43 @@ public class MetadataManager {
 	}
 	
 	public String deleteMedia(String mediaId) {
-		Node graph = NodeFactory.createURI(URIconstants.GRAPH_PREFIX() + mediaId + METADATA_SUFFIX);
 		logger.info("deleteMedia - "+mediaId);
-		//TODO Implement deletion of media's annotations
-		return clearGraph(graph.getURI());
+		Set<String> graphsToDelete = new HashSet<String>();
+		graphsToDelete.add(URIconstants.GRAPH_PREFIX() + mediaId + URIconstants.METADATA_GRAPH_SUFFIX);
+		graphsToDelete.add(URIconstants.GRAPH_PREFIX() + mediaId + URIconstants.GENERATED_SCENES_GRAPH_SUFFIX);
+		for (Map<String, Object> type : MetadataConstants.AUTOMATED_ANALYSIS_TYPES) {
+			String fullid = (String)type.get("id");
+			String extractorid = fullid.split("/")[1];
+			graphsToDelete.add(URIconstants.GRAPH_PREFIX() + mediaId + "/" + extractorid);
+		}
+
+		UpdateRequest request = new UpdateRequest();
+		for (String graph : graphsToDelete) {
+			request.add("CLEAR GRAPH <"+graph+">;");
+		}
+		
+		UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
+		
+		try {
+			logger.info("deleteMedia - clear graphs - size "+graphsToDelete.size());
+			logger.debug("deleteMedia - SPARQL UPDATE {}", request.toString());
+			processor.execute();
+		} catch (Exception e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("clearGraph - UpdateProcessor - Exception {}", msg);
+			return "Triplestore clear graph failed.";
+		}
+		
+		return null;
+		
 	}
 
 	public String addMedia(MetadataRecord record) {
 		
-		Node graph = NodeFactory.createURI(URIconstants.GRAPH_PREFIX() + record.getId() + METADATA_SUFFIX);
+		Node graph = NodeFactory.createURI(URIconstants.GRAPH_PREFIX() + record.getId() + URIconstants.METADATA_GRAPH_SUFFIX);
 		String mediaUri = URIconstants.MEDIA_PREFIX() + record.getId();
 		Node mediaNode = NodeFactory.createURI(mediaUri);
 
-		// TODO Clear graph and add in separate queries are not transaction safe
-		String res = clearGraph(graph.getURI());
-		if (res != null) {
-			return res;
-		}
-		
 		// Create a new short identifier in case metadata record is initially created
 		if (record.getShortId() == null) {
 			logger.info("addMedia - QUERY_MAX_SHORTID");
@@ -183,6 +201,7 @@ public class MetadataManager {
 			
 		}
 
+		request.add("CLEAR GRAPH <"+graph.getURI()+">;");
 		request.add(new UpdateDataInsert(acc));		
 		UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
 		
