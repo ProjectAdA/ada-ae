@@ -33,7 +33,6 @@ RUN mkdir ${VIRTUOSO_HOME}/initdb.d
 COPY load-ada-ontology.sh ${VIRTUOSO_HOME}/initdb.d/
 COPY virtuoso-entrypoint.sh /virtuoso-entrypoint.sh
 
-
 RUN mkdir /database
 RUN mkdir /settings
 
@@ -48,13 +47,12 @@ RUN addgroup --gid "${ADAAE_GID}" "ada-ae" && \
 
 RUN chown -R "ada-ae:ada-ae" /database
 RUN chown -R "ada-ae:ada-ae" /settings
+RUN chmod +x /virtuoso-entrypoint.sh
 
 VOLUME /database
 
 # volume is required when external access to generated dba/dav passwords is needed
 #VOLUME /settings
-
-COPY virtuoso-entrypoint.sh /virtuoso-entrypoint.sh
 
 ENV PATH ${VIRTUOSO_HOME}/bin:$PATH
 
@@ -65,4 +63,3 @@ EXPOSE 8890
 
 ENTRYPOINT ["/virtuoso-entrypoint.sh"]
 CMD ["start"]
-
