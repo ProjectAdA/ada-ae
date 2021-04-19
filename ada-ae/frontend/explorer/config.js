@@ -1,7 +1,7 @@
 /******************************
 * Generic Config Parameters
 ******************************/
-const apiUrl='http://ada.cinepoetics.org:9090/api';
+const apiUrl='/api';
 
 const requestUrls = {
 	moviesearch: apiUrl + '/jsonld/getAnnotations/',
