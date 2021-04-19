@@ -1005,15 +1005,20 @@ function getCurrentAnnotationData() {
 		var movieid = anno.target.source.substr(anno.target.source.lastIndexOf("/")+1);
 		var movie = annotation_structure.find(m => m.id == movieid);
 		var scenes_to_process = [];
-		if (Array.isArray(anno.sceneId)) {
-			scenes_to_process = anno.sceneId;
+		
+		if (typeof anno.sceneId === 'undefined') {
+			console.log("Error: scene id is missing for annotation",anno.id);
 		} else {
-			scenes_to_process.push(anno.sceneId);
+			if (Array.isArray(anno.sceneId)) {
+				scenes_to_process = anno.sceneId;
+			} else {
+				scenes_to_process.push(anno.sceneId);
+			}
+			scenes_to_process.forEach(function(sceneid){
+				var scene = movie.scenes.find(s => s.id == sceneid);
+				scene.annotations.push(anno);
+			});
 		}
-		scenes_to_process.forEach(function(sceneid){
-			var scene = movie.scenes.find(s => s.id == sceneid);
-			scene.annotations.push(anno);
-		});
 	});
 	
 	return annotation_structure;
