@@ -31,6 +31,7 @@ RUN apt-get update \
 COPY --from=builder ${VIRTUOSO_HOME} ${VIRTUOSO_HOME}
 RUN mkdir ${VIRTUOSO_HOME}/initdb.d
 COPY load-ada-ontology.sh ${VIRTUOSO_HOME}/initdb.d/
+COPY setup-user-rights.sh ${VIRTUOSO_HOME}/initdb.d/
 COPY virtuoso-entrypoint.sh /virtuoso-entrypoint.sh
 
 RUN mkdir /database
