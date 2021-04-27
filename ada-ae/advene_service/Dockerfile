@@ -15,7 +15,7 @@ ENV DEBIAN_FRONTEND noninteractive
 #Install required packages for Advene. Normally more are required, but the following are sufficient to run the AdA RDF Exporter
 RUN apt-get update && apt-get install -y wget unzip python3 python3-pip python3-gi gir1.2-gtk-3.0 python3-gst-1.0 python3-gi-cairo gir1.2-rsvg-2.0 && apt-get autoclean && apt-get autoremove && rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install --trusted-host pypi.python.org Flask==1.1.2 waitress==2.0.0
+RUN pip3 install --trusted-host pypi.python.org Flask==1.1.2 waitress==2.0.0 flask-compress==1.9.0
 
 ENV ADAVA_HOME=${ADAVA_HOME}
 ENV ADVENE_COMMIT=${ADVENE_COMMIT}
