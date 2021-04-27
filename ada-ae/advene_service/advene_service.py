@@ -7,6 +7,7 @@ import logging
 import json
 import posixpath
 from flask import Flask, request, jsonify
+from flask_compress import Compress
 from waitress import serve
 from werkzeug.utils import secure_filename
 
@@ -16,6 +17,8 @@ ONTOLOGY_VERSION = ''
 
 # will be constructed from ONTOLOGY_BASE_URI and ONTOLOGY_VERSION
 ONTOLOGY_PREFIX = ''
+RESOURCE_PREFIX = ''
+MEDIA_PREFIX = ''
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -27,6 +30,7 @@ logger.addHandler(ch)
 logger.propagate = False    # prevent log messages from appearing twice
 
 app = Flask(__name__)
+Compress(app)
 
 def advene_call(azp_filename, output_filename):
     logger.info('Running Advene AdARDFExporter with {0}'.format(azp_filename))
@@ -257,8 +261,12 @@ def GET_JSONLD_CONTEXT():
     "startIndex":    {"@id": "as:startIndex", "@type": "xsd:nonNegativeInteger"},
 
     "advene" : "http://www.advene.org/ns/webannotation/",
+    "advu" : "http://www.advene.org/ns/_local/user/",
     "local" : "http://www.advene.org/ns/_local/",
     "ao" : "'''+ONTOLOGY_PREFIX+'''",
+    "art" : "'''+RESOURCE_PREFIX+'''AnnotationType/",
+    "arv" : "'''+RESOURCE_PREFIX+'''AnnotationValue/",
+    "arm" : "'''+MEDIA_PREFIX+'''",
     "ao:annotationType": {
         "@type": "@id"
     },
@@ -283,5 +291,7 @@ if __name__ == '__main__':
         logger.error("Environment variables ONTOLOGY_BASE_URI and ONTOLOGY_VERSION have to be set to run the Advene Service.")
     else:
         ONTOLOGY_PREFIX = posixpath.join(ONTOLOGY_BASE_URI, 'ontology', ONTOLOGY_VERSION, '')
+        RESOURCE_PREFIX = posixpath.join(ONTOLOGY_BASE_URI, 'resource', ONTOLOGY_VERSION, '')
+        MEDIA_PREFIX = posixpath.join(ONTOLOGY_BASE_URI, 'resource', 'media', '')
         #app.run(host='0.0.0.0', port=5002)
         serve(app, host='0.0.0.0', port=5002)
