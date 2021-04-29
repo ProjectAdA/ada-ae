@@ -43,4 +43,6 @@ ENV PATH="${ADAVA_USER_HOME_DIR}/.local/bin:${ADAVA_USER_HOME_DIR}/.local/advene
 WORKDIR ${ADAVA_USER_HOME_DIR}/.local/bin
 USER ${ADAVA_UID} 
 
+EXPOSE 5002
+
 ENTRYPOINT ["advene_service.py"] 
