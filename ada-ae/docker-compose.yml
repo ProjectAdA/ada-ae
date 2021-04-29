@@ -60,12 +60,18 @@ services:
         - ADAAE_UID=${ADAAE_UID:-50000}
         - ADAAE_GID=${ADAAE_GID:-50000}
     env_file:
+      - .env
       - secrets.env
+    environment:
+      - ADVENE_SERVICE_URL=http://advene-service:5002/convertazp
+      - ONTOLOGY_BASE_URI=${ONTOLOGY_BASE_URI}
+      - ONTOLOGY_VERSION=${ONTOLOGY_VERSION}
     networks:
       - ada-ae
       - ada-rproxy
     depends_on:
       - ada-triplestore
+      - advene-service
     logging:
       driver: "json-file"
       options:
@@ -73,7 +79,25 @@ services:
         max-file: "5"
     restart: always
     command: ["http://ada-triplestore:8890/sparql", "/api"]
-    
+
+  advene-service:
+    image: ada-ae/advene-service:1.0
+    build:
+      context: ./advene_service
+      dockerfile: Dockerfile
+      args:
+        - ADAAE_UID=${ADAAE_UID:-50000}
+        - ADAAE_GID=${ADAAE_GID:-50000}
+    env_file:
+      - .env
+    networks:
+      - ada-ae
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "300k"
+        max-file: "5"
+    restart: always
 
 volumes:
   virtuoso-db:
