@@ -1,6 +1,7 @@
 package de.ada.restapi;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -10,8 +11,17 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.text.StringEscapeUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,21 +36,31 @@ import io.javalin.http.UploadedFile;
 
 public class Server {
 	
-	private static final String API_TOKEN_HEADER_FIELD = "X-API-Token";
+	// Port on which the API listens.
+	// Warning: if the default port is modified, configuration of respective
+	// docker images and/or reverse proxy must be adjusted as well 
 	private static final int defaultPort = 7002;
+
+	// Context path (url prefix) to which web requests are sent, e.g., /api
+	private static String applicationContext = "";
+
+	// URL of the SPARQL endpoint
+	private static String sparqlEndpoint = "";
 	
-	private static String applicationContext = "/api_lt";
-	private static String sparqlEndpoint = "http://ada.filmontology.org/sparql_lt";
-
-//	private static String applicationContext = "";
-//	private static String sparqlEndpoint = "";
-
+	// Token that is required to authenticate to the API for update/insert/delete requests
 	private static String API_TOKEN = "";
 	
+	// Name of the field in the HTTP request header
+	private static final String API_TOKEN_HEADER_FIELD = "X-API-Token";
+	
+	// URL of the Advene service that converts AZP packages to JSON-LD
+	private static String ADVENE_SERVICE_URL = "";
+
+
 	final Logger logger = LoggerFactory.getLogger(Server.class);
 
 	/**
-	 * Converts media/scene request parameter to media id string and a set of scene id strings.
+	 * Converts media/scene request parameters to media id string and a set of scene id strings.
 	 * @param ids
 	 * @return
 	 */
@@ -409,7 +429,75 @@ public class Server {
 
 			ctx.status(201);
 		});
-		
+
+		app.post("/uploadAdvenePackage", ctx -> {
+			if (!checkApiToken(ctx)) {
+				return;
+			}
+
+			if (!ctx.isMultipartFormData()) {
+				returnError(ctx, "Request is not multipart/form-data.", 500, null);
+				return;
+			}
+			
+			String mediaId = ctx.formParam("media_id");
+			if (mediaId == null) {
+				returnError(ctx, "Field media_id is missing in request.", 500, null);
+				return;
+			}
+
+			List<UploadedFile> uploadedFiles = ctx.uploadedFiles("upload_file");
+			
+			if (uploadedFiles == null || uploadedFiles.size() != 1) {
+				returnError(ctx, "Exactly one upload_file is required.", 500, null);
+				return;
+			}
+			
+			InputStream upload_content = uploadedFiles.get(0).getContent();
+			String filename = uploadedFiles.get(0).getFilename();
+			
+			InputStream converted_result = null;
+			
+			logger.info("uploadAdvenePackage - media id "+mediaId+" - filename "+uploadedFiles.get(0).getFilename());
+			
+			try {
+				CloseableHttpClient client = HttpClients.createDefault();
+				HttpPost post = new HttpPost(ADVENE_SERVICE_URL);
+				MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+				builder.addBinaryBody("file", upload_content, ContentType.APPLICATION_OCTET_STREAM, filename);
+				post.setEntity(builder.build());
+
+				logger.info("uploadAdvenePackage - Advene service call at "+ADVENE_SERVICE_URL);
+
+				HttpResponse response = client.execute(post);
+				HttpEntity entity = response.getEntity();
+				InputStream resultInputStream = entity.getContent();
+				
+				if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+					String result = IOUtils.toString(resultInputStream, StandardCharsets.UTF_8.name());
+					returnError(ctx, "Advene service call failed.", 500, new Exception(result));
+					return;
+				}
+				
+				converted_result = resultInputStream;
+				
+			} catch (Exception e) {
+				returnError(ctx, "Advene Service call failed.", 500, e);
+				return;
+			}
+			
+			if (converted_result != null) {
+				AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
+				String result = am.insertAdveneResult(mediaId, converted_result);
+				if (result != null) {
+					returnError(ctx, result, 500, null);
+					return;
+				}
+			}
+			
+			
+		});
+
 		app.post("/uploadExtractorResult", ctx -> {
 			if (!checkApiToken(ctx)) {
 				return;
@@ -454,6 +542,7 @@ public class Server {
 	}
 
 	public static void main(String[] args) {
+		
 //		System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
 		System.setProperty(org.slf4j.impl.SimpleLogger.SHOW_DATE_TIME_KEY, "true");
 		System.setProperty(org.slf4j.impl.SimpleLogger.DATE_TIME_FORMAT_KEY, "yyyy-MM-dd HH:mm:ss:SSS Z");
@@ -465,8 +554,7 @@ public class Server {
             sparqlEndpoint = args[0];
             applicationContext = args[1];
 		} else {
-			logger.error("Arguments sparqlEndpointURL applicationContext missing");
-			System.out.println("Usage: java -jar ada_rest_api.jar <sparqlEndpointURL> <applicationContext>");
+			logger.error("Usage: java -jar ada_rest_api.jar <sparqlEndpointURL> <applicationContext>");
 			System.exit(1);
 		}
 		
@@ -477,18 +565,32 @@ public class Server {
 			if (URIconstants.ONTOLOGY_BASE_URI.endsWith("/")) {
 				URIconstants.ONTOLOGY_BASE_URI = URIconstants.ONTOLOGY_BASE_URI.substring(0, URIconstants.ONTOLOGY_BASE_URI.length()-1);
 			}
-			logger.info("Setting ONTOLOGY_BASE_URI "+URIconstants.ONTOLOGY_BASE_URI);
+			logger.info("Setting ONTOLOGY_BASE_URI to "+URIconstants.ONTOLOGY_BASE_URI);
+		} else {
+			logger.error("Environment variable ONTOLOGY_BASE_URI is not set");
+			System.exit(1);
 		}
+		
 		if (System.getenv("ONTOLOGY_VERSION") != null) {
 			URIconstants.ONTOLOGY_VERSION = System.getenv("ONTOLOGY_VERSION");
-			logger.info("Setting ONTOLOGY_VERSION "+URIconstants.ONTOLOGY_VERSION);
+			logger.info("Setting ONTOLOGY_VERSION to "+URIconstants.ONTOLOGY_VERSION);
+		} else {
+			logger.error("Environment variable ONTOLOGY_VERSION is not set");
+			System.exit(1);
+		}
+
+		if (System.getenv("ADVENE_SERVICE_URL") != null) {
+			ADVENE_SERVICE_URL = System.getenv("ADVENE_SERVICE_URL");
+			logger.info("Setting ADVENE_SERVICE_URL to "+ADVENE_SERVICE_URL);
+		} else {
+			logger.error("Environment variable ADVENE_SERVICE_URL is not set");
+			System.exit(1);
 		}
 
 		if (System.getenv("API_TOKEN") != null) {
 			Server.API_TOKEN = System.getenv("API_TOKEN");
 		} else {
-			logger.error("Environment variable API_TOKEN not set");
-			System.err.println("API requires the environment variable \"API_TOKEN\" to be set.");
+			logger.error("Environment variable API_TOKEN is not set");
 			System.exit(1);
 		}
 		
