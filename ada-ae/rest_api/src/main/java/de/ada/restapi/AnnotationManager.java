@@ -13,6 +13,13 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
@@ -40,18 +47,24 @@ import com.github.jsonldjava.utils.JsonUtils;
 public class AnnotationManager {
 
 	private final String sparqlEndpoint;
+	private final String sparqlAuthEndpoint;
+	private final String sparqlUser;
+	private final String sparqlPassword;
 	private static AnnotationManager instance;
 
 	final Logger logger;
 
-	private AnnotationManager(String endpoint) {
+	private AnnotationManager(String endpoint, String authEndpoint, String user, String password) {
 		this.sparqlEndpoint = endpoint;
+		this.sparqlAuthEndpoint = authEndpoint;
+		this.sparqlUser = user;
+		this.sparqlPassword = password;
 		logger = LoggerFactory.getLogger(AnnotationManager.class);
 	}
 
-	public static AnnotationManager getInstance(String endpoint) {
+	public static AnnotationManager getInstance(String endpoint, String authEndpoint, String user, String password) {
 		if (instance == null) {
-			instance = new AnnotationManager(endpoint);
+			instance = new AnnotationManager(endpoint, authEndpoint, user, password);
 		}
 
 		return instance;
@@ -435,6 +448,43 @@ public class AnnotationManager {
 	
 	*/
 	
+	/*
+	private ArrayList<String> paginateQuery(StringWriter query) {
+		ArrayList<String> result = new ArrayList<String>();
+		
+		String[] lines = query.toString().split("\n");
+		
+		int i = 0;
+		StringBuilder sb = new StringBuilder();
+		while (i < lines.length) {
+			int length = sb.toString().length();
+			if (length > AnnotationConstants.MAX_VIRTUOSO_QUERY_SIZE) {
+				result.add(sb.toString());
+				sb = new StringBuilder();
+			} else {
+				sb.append(lines[i]);
+				sb.append("\n");
+				i++;
+			}
+		}
+		
+		return result;
+	}
+	
+	*/
+	
+	private UpdateProcessor createUpdateProcessor(UpdateRequest request, boolean auth) {
+		if (auth) {
+			CredentialsProvider credsProvider = new BasicCredentialsProvider();
+			Credentials credentials = new UsernamePasswordCredentials(sparqlUser, sparqlPassword);
+			credsProvider.setCredentials(AuthScope.ANY, credentials);
+			CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultCredentialsProvider(credsProvider).build();
+			return UpdateExecutionFactory.createRemote(request, sparqlAuthEndpoint, httpClient);
+		} else {
+			return UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
+		}
+	}
+	
 	private String insertModelIntoTripleStore(Model model, String targetGraphUri) {
 		
 		StringWriter triples = new StringWriter();
@@ -445,18 +495,18 @@ public class AnnotationManager {
 		update = update + "} } WHERE {}";
 		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
 		request.add(update);
-
+	
 		try {
 			logger.info("insertModelIntoTripleStore - INSERT - size {}", request.toString().length());
 			logger.debug("insertModelIntoTripleStore - INSERT - {}", request.toString());
-			UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
+			UpdateProcessor processor = createUpdateProcessor(request, true);
 			processor.execute();
 		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("insertModelIntoTripleStore - INSERT - {}", msg);
 			return "Triplestore insert failed. "+msg.replace("\"", "");
 		}
-
+	
 		
 		/*
 		
@@ -465,7 +515,7 @@ public class AnnotationManager {
 		ArrayList<String> paginatedQuery = paginateQuery(queryString);
 		
 		logger.info("insertModelIntoTripleStore - paginatedQuery - number of queries {}", paginatedQuery.size());
-
+	
 		// Attention: The respective graph is first cleared and then the triples are inserted
 		UpdateRequest clearRequest = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
 		try {
@@ -480,8 +530,8 @@ public class AnnotationManager {
 		}
 		
 		*/
-
-
+	
+	
 		/*
 		
 		for (String query : paginatedQuery) {
@@ -503,9 +553,9 @@ public class AnnotationManager {
 		}
 		*/ 
 		
-        /*
-         * Implementation with INSERT DATA
-         * 
+	    /*
+	     * Implementation with INSERT DATA
+	     * 
 		Node graph = NodeFactory.createURI(URIconstants.GRAPH_PREFIX() + record.getId() + GENERATED_SCENES_SUFFIX);
 		UpdateRequest req = new UpdateRequest();
 		QuadDataAcc acc = new QuadDataAcc();
@@ -519,8 +569,8 @@ public class AnnotationManager {
 		req.add("CLEAR GRAPH <"+graph.toString()+">;");
 		req.add(new UpdateDataInsert(acc));
 		*/
-
-
+	
+	
 		return null;		
 	}
 	
@@ -653,6 +703,8 @@ public class AnnotationManager {
 		return annotationModel;
 	}
 	
+	
+	// TODO unify insert methods
 	public String insertAnnotations(String mediaId, String extractor, InputStream content) {
 		logger.info("insertAnnotations for movie "+mediaId+", extractor "+extractor);
 		

@@ -46,10 +46,19 @@ public class Server {
 
 	// URL of the SPARQL endpoint
 	private static String sparqlEndpoint = "";
-	
+
+	// URL of the SPARQL endpoint with authentification
+	private static String sparqlAuthEndpoint = "";
+
 	// Token that is required to authenticate to the API for update/insert/delete requests
 	private static String API_TOKEN = "";
-	
+
+	// User to authenticate at the triple store for update/insert/delete queries
+	private static String SPARQL_UPDATE_USER = "";
+
+	// Password to authenticate at the triple store for update/insert/delete queries
+	private static String SPARQL_UPDATE_PASSWORD = "";
+
 	// Name of the field in the HTTP request header
 	private static final String API_TOKEN_HEADER_FIELD = "X-API-Token";
 	
@@ -162,7 +171,7 @@ public class Server {
         	types = getTypes(typeParam);
     	}
 
-		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
+		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
 		Model annotations = am.getAnnotations(mediaId, scenes, types);
 		if (annotations == null) {
     		returnError(ctx, "Query annotations - Triplestore query failed.", 500, null);
@@ -200,7 +209,7 @@ public class Server {
         	typeSet = getTypes(typeParam);
     	}
     	
-		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
+		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
 		Model annotations = am.textSearch(searchTerm, whole, mediaIdSet, typeSet);
 		if (annotations == null) {
     		returnError(ctx, "Text search annotations - Triplestore query failed.", 500, null);
@@ -236,7 +245,7 @@ public class Server {
         	}
     	}
     	
-		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
+		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
 		Model annotations = am.valueSearch(valueSet, mediaIdSet);
 		if (annotations == null) {
     		returnError(ctx, "Value search annotations - Triplestore query failed.", 500, null);
@@ -286,7 +295,7 @@ public class Server {
 		}).start(defaultPort);
 		
 		app.get("/getMovieMetadata", ctx -> {
-			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint);
+			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
 			
         	List<Map<String,Object>> movieMetadata = mdm.getMovieMetadata(null);
         	
@@ -299,7 +308,7 @@ public class Server {
 		});
 
 		app.get("/getMovieMetadata/:mediaId", ctx -> {
-			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint);
+			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
 			
 			String queryId = properEscapeRemove(ctx.pathParam("mediaId"));
 			
@@ -314,7 +323,7 @@ public class Server {
 		});
 
         app.get("/getOntology", ctx -> {
-			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint);
+			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
 			
 			List<Map<String,Object>> ontology = mdm.getOntology();
 			
@@ -382,7 +391,7 @@ public class Server {
 			
 			mediaId = properEscapeRemove(mediaId);
 
-			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint);
+			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
 			
 			String result = mdm.deleteMedia(mediaId);
 			if (result != null) {
@@ -398,7 +407,7 @@ public class Server {
 				return;
 			}
 
-			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint);
+			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
 			MetadataRecord record = null;
 			
 			try {
@@ -487,7 +496,7 @@ public class Server {
 			}
 			
 			if (converted_result != null) {
-				AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
+				AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
 				String result = am.insertAdveneResult(mediaId, converted_result);
 				if (result != null) {
 					returnError(ctx, result, 500, null);
@@ -531,7 +540,7 @@ public class Server {
 			
 			logger.info("uploadExtractorResult - media id "+mediaId+" - filename "+uploadedFiles.get(0).getFilename());
 			
-			AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
+			AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
 			String result = am.insertAnnotations(mediaId, extractor, content);		
 			if (result != null) {
 				returnError(ctx, result, 500, null);
@@ -550,11 +559,13 @@ public class Server {
 		final Logger logger = LoggerFactory.getLogger(Server.class);
 		logger.info("Starting AdA REST API...");
 
-		if (args.length == 2) {
+		if (args.length == 3) {
             sparqlEndpoint = args[0];
-            applicationContext = args[1];
+            sparqlAuthEndpoint = args[1];
+            applicationContext = args[2];
 		} else {
-			logger.error("Usage: java -jar ada_rest_api.jar <sparqlEndpointURL> <applicationContext>");
+			logger.error("Usage  : java -jar ada_rest_api.jar <sparqlEndpointURL> <sparqlAuthEndpointURL> <applicationContext>");
+			logger.error("Example: java -jar ada_rest_api.jar http://127.0.0.1:8890/sparql http://127.0.0.1:8890/sparql-auth /api");
 			System.exit(1);
 		}
 		
@@ -587,8 +598,25 @@ public class Server {
 			System.exit(1);
 		}
 
+		if (System.getenv("SPARQL_UPDATE_USER") != null) {
+			SPARQL_UPDATE_USER = System.getenv("SPARQL_UPDATE_USER");
+			logger.info("Setting SPARQL_UPDATE_USER to "+SPARQL_UPDATE_USER);
+		} else {
+			logger.error("Environment variable SPARQL_UPDATE_USER is not set");
+			System.exit(1);
+		}
+
+		if (System.getenv("SPARQL_UPDATE_PASSWORD") != null) {
+			SPARQL_UPDATE_PASSWORD = System.getenv("SPARQL_UPDATE_PASSWORD");
+			logger.info("Setting SPARQL_UPDATE_PASSWORD");
+		} else {
+			logger.error("Environment variable SPARQL_UPDATE_PASSWORD is not set");
+			System.exit(1);
+		}
+
 		if (System.getenv("API_TOKEN") != null) {
 			Server.API_TOKEN = System.getenv("API_TOKEN");
+			logger.info("Setting API_TOKEN");
 		} else {
 			logger.error("Environment variable API_TOKEN is not set");
 			System.exit(1);

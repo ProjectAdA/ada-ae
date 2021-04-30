@@ -8,6 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.datatypes.xsd.impl.XSDBaseNumericType;
 import org.apache.jena.graph.Node;
@@ -33,19 +40,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MetadataManager {
 
-	private String sparqlEndpoint;
+	private final String sparqlEndpoint;
+	private final String sparqlAuthEndpoint;
+	private final String sparqlUser;
+	private final String sparqlPassword;
 	private static MetadataManager instance;
 
 	final Logger logger;
 
-	private MetadataManager(String endpoint) {
+	private MetadataManager(String endpoint, String authEndpoint, String user, String password) {
 		this.sparqlEndpoint = endpoint;
+		this.sparqlAuthEndpoint = authEndpoint;
+		this.sparqlUser = user;
+		this.sparqlPassword = password;
 		logger = LoggerFactory.getLogger(MetadataManager.class);
 	}
 
-	public static MetadataManager getInstance(String endpoint) {
+	public static MetadataManager getInstance(String endpoint, String authEndpoint, String user, String password) {
 		if (instance == null) {
-			instance = new MetadataManager(endpoint);
+			instance = new MetadataManager(endpoint, authEndpoint, user, password);
 		}
 
 		return instance;
@@ -93,6 +106,19 @@ public class MetadataManager {
 		return object;
 	}
 	
+	// TODO refactor to reuse in AnnotationManager
+	private UpdateProcessor createUpdateProcessor(UpdateRequest request, boolean auth) {
+		if (auth) {
+			CredentialsProvider credsProvider = new BasicCredentialsProvider();
+			Credentials credentials = new UsernamePasswordCredentials(sparqlUser, sparqlPassword);
+			credsProvider.setCredentials(AuthScope.ANY, credentials);
+			CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultCredentialsProvider(credsProvider).build();
+			return UpdateExecutionFactory.createRemote(request, sparqlAuthEndpoint, httpClient);
+		} else {
+			return UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
+		}
+	}
+	
 	public String deleteMedia(String mediaId) {
 		logger.info("deleteMedia - "+mediaId);
 		Set<String> graphsToDelete = new HashSet<String>();
@@ -109,11 +135,11 @@ public class MetadataManager {
 			request.add("CLEAR GRAPH <"+graph+">;");
 		}
 		
-		UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
 		
 		try {
 			logger.info("deleteMedia - clear graphs - size "+graphsToDelete.size());
 			logger.debug("deleteMedia - SPARQL UPDATE {}", request.toString());
+			UpdateProcessor processor = createUpdateProcessor(request, true);
 			processor.execute();
 		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
@@ -203,21 +229,19 @@ public class MetadataManager {
 
 		request.add("CLEAR GRAPH <"+graph.getURI()+">;");
 		request.add(new UpdateDataInsert(acc));		
-		UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
 		
 		try {
+			logger.info("addMedia - SPARQL UPDATE - size {}", request.toString().length());
 			logger.debug("addMedia - SPARQL UPDATE - {}", request.toString());
+			UpdateProcessor processor = createUpdateProcessor(request, true);
 			processor.execute();
 		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("addMedia - insert - UpdateProcessor - Exception - {}", msg);
 			return "Triplestore metadata update failed.";
-//			msg = msg.replace("\"", "");
-//			return "{\"error\": {\"message\": \"TripleStore metadata update failed .\",\"code\": 500,\"cause\": \"" + msg
-//					+ "\"}}";
 		}
 		
-		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint);
+		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, sparqlUser, sparqlPassword);
 		String result = am.insertGeneratedScene(record);
 		if (result != null) {
 			return result;
