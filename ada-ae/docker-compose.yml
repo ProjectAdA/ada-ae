@@ -3,7 +3,7 @@ services:
     image: ada-ae/virtuoso-opensource:stable-7
     build:
       context: ./triplestore
-      dockerfile: Dockerfile.virtuoso-stable-7
+      dockerfile: Dockerfile
       args:
         - ADAAE_UID=${ADAAE_UID:-50000}
         - ADAAE_GID=${ADAAE_GID:-50000}
@@ -11,9 +11,8 @@ services:
       - .env
       - secrets.env
     environment:
-      - VIRTUOSO_INI_FILE=/etc/virtuoso.ini
+      - VIRTUOSO_INI_FILE=/virtuoso.ini
     volumes:
-      - ./triplestore/virtuoso.ini-stable-7:/etc/virtuoso.ini:ro
       - virtuoso-db:/database
     networks:
       - ada-ae

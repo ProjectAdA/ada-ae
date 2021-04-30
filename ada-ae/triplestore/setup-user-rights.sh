@@ -1,9 +1,14 @@
 #!/bin/bash
 
-#FIXME Setup User/Pass for SPARQL UPDATE rights
-echo "Grant update rights to SPARQL user..."
+echo "Setup SPARQL_UPDATE_USER $SPARQL_UPDATE_USER"
 
-echo "GRANT SPARQL_UPDATE to \"SPARQL\";" > autoexec.isql
+echo "USER_CREATE('$SPARQL_UPDATE_USER', '$SPARQL_UPDATE_PASSWORD');" > autoexec.isql
+echo "GRANT SPARQL_UPDATE to \"$SPARQL_UPDATE_USER\";" >> autoexec.isql
+echo "GRANT SPARQL_SELECT to \"$SPARQL_UPDATE_USER\";" >> autoexec.isql
+
+#FIXME remove as soon as REST API is implementing sparql-auth
+echo "GRANT SPARQL_UPDATE to \"SPARQL\";" >> autoexec.isql
+
 "$VIRTUOSO" -f +checkpoint-only
 rm autoexec.isql
 

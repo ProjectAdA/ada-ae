@@ -1,8 +1,6 @@
 #!/bin/bash
 
-ONTOLOGY_URL=https://github.com/ProjectAdA/public/raw/master/ontology/ada_ontology.owl
-
-echo "Downloading ontology..."
+echo "Downloading ontology $ONTOLOGY_URL ..."
 mkdir import
 cd import
 wget -q --show-progress $ONTOLOGY_URL
@@ -14,9 +12,6 @@ echo "WAIT_FOR_CHILDREN; " >> autoexec.isql
 echo ""
 echo "Importing ontology..."
 "$VIRTUOSO" -f +checkpoint-only
-#virtuoso-t +wait && isql-v -U dba -P dba </tmp/import.sql
-#kill $(ps aux | grep '[v]irtuoso-t' | awk '{print $2}')
-#rm /tmp/import.sql
 rm -rf import
 rm autoexec.isql
 
