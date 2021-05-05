@@ -42,6 +42,7 @@ COPY virtuoso-entrypoint.sh /virtuoso-entrypoint.sh
 COPY virtuoso.ini /virtuoso.ini
 
 RUN mkdir /database
+RUN mkdir /import
 RUN mkdir /settings
 
 ARG ADAAE_UID="50000"
@@ -54,10 +55,12 @@ RUN addgroup --gid "${ADAAE_GID}" "ada-ae" && \
         --home "${ADAAE_USER_HOME_DIR}"
 
 RUN chown -R "ada-ae:ada-ae" /database
+RUN chown -R "ada-ae:ada-ae" /import
 RUN chown -R "ada-ae:ada-ae" /settings
 RUN chmod +x /virtuoso-entrypoint.sh
 
 VOLUME /database
+VOLUME /import
 
 ENV PATH ${VIRTUOSO_HOME}/bin:$PATH
 
@@ -65,6 +68,7 @@ USER ${ADAAE_UID}
 WORKDIR /database
 
 EXPOSE 8890
+EXPOSE 1111
 
 ENTRYPOINT ["/virtuoso-entrypoint.sh"]
 CMD ["start"]
