@@ -242,12 +242,7 @@ public class MetadataManager {
 		}
 		
 		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, sparqlUser, sparqlPassword);
-		String result = am.insertGeneratedScene(record);
-		if (result != null) {
-			return result;
-		}
-
-		return null;
+		return am.insertGeneratedScene(record);
 
 	}
 
@@ -270,11 +265,12 @@ public class MetadataManager {
     		});
 			result.add(row);
     	});
+		logger.info("convertResultSetToListOfMaps - Entries processed: "+result.size());
 		return result;
 	}
 
 	public List<Map<String, Object>> getMovieMetadata(String queryId) {
-		logger.info("getMovieMetadata - id "+queryId);
+		logger.info("getMovieMetadata - " + queryId == null ? "all" : "id "+queryId);
 		
 		List<Map<String, Object>> result = new ArrayList<Map<String,Object>>();
 		List<Map<String, Object>> countres = new ArrayList<Map<String,Object>>();
@@ -287,7 +283,7 @@ public class MetadataManager {
         try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryScenes)) {        	
 			logger.info("getMovieMetadata - SPARQL - QUERY_ALL_SCENES");
         	logger.debug("getMovieMetadata - SPARQL QUERY {}", queryScenes);
-        	ResultSet set = qexec.execSelect();        	
+        	ResultSet set = qexec.execSelect();
         	sceneResult = convertResultSetToListOfMaps(set);
         } catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");

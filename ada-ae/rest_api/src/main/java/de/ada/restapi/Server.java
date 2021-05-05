@@ -50,20 +50,23 @@ public class Server {
 	// URL of the SPARQL endpoint with authentification
 	private static String sparqlAuthEndpoint = "";
 
+	// Name of the field in the HTTP request header
+	protected static String API_TOKEN_HEADER_FIELD = "X-API-Token";
+
 	// Token that is required to authenticate to the API for update/insert/delete requests
-	private static String API_TOKEN = "";
+	protected static String API_TOKEN = "";
 
 	// User to authenticate at the triple store for update/insert/delete queries
 	private static String SPARQL_UPDATE_USER = "";
 
 	// Password to authenticate at the triple store for update/insert/delete queries
 	private static String SPARQL_UPDATE_PASSWORD = "";
-
-	// Name of the field in the HTTP request header
-	private static final String API_TOKEN_HEADER_FIELD = "X-API-Token";
 	
 	// URL of the Advene service that converts AZP packages to JSON-LD
-	private static String ADVENE_SERVICE_URL = "";
+	protected static String ADVENE_SERVICE_URL = "";
+
+	// URL of the RDF uploader service that inserts turtle files directly into Virtuoso using rdf_load
+	protected static String RDF_UPLOADER_URL = "";
 
 
 	final Logger logger = LoggerFactory.getLogger(Server.class);
@@ -569,7 +572,7 @@ public class Server {
 			System.exit(1);
 		}
 		
-		logger.info("Using configuration defaultPort "+defaultPort+ ", sparqlEndpoint "+sparqlEndpoint+", applicationContext "+applicationContext);
+		logger.info("Using configuration defaultPort "+defaultPort+ ", sparqlEndpoint "+sparqlEndpoint+", sparqlAuthEndpoint "+sparqlAuthEndpoint+", applicationContext "+applicationContext);
 		
 		if (System.getenv("ONTOLOGY_BASE_URI") != null) {
 			URIconstants.ONTOLOGY_BASE_URI = System.getenv("ONTOLOGY_BASE_URI");
@@ -598,6 +601,14 @@ public class Server {
 			System.exit(1);
 		}
 
+		if (System.getenv("RDF_UPLOADER_URL") != null) {
+			RDF_UPLOADER_URL = System.getenv("RDF_UPLOADER_URL");
+			logger.info("Setting RDF_UPLOADER_URL to "+RDF_UPLOADER_URL);
+		} else {
+			logger.error("Environment variable RDF_UPLOADER_URL is not set");
+			System.exit(1);
+		}
+
 		if (System.getenv("SPARQL_UPDATE_USER") != null) {
 			SPARQL_UPDATE_USER = System.getenv("SPARQL_UPDATE_USER");
 			logger.info("Setting SPARQL_UPDATE_USER to "+SPARQL_UPDATE_USER);
@@ -621,7 +632,15 @@ public class Server {
 			logger.error("Environment variable API_TOKEN is not set");
 			System.exit(1);
 		}
-		
+
+		if (System.getenv("API_TOKEN_HEADER_FIELD") != null) {
+			Server.API_TOKEN_HEADER_FIELD = System.getenv("API_TOKEN_HEADER_FIELD");
+			logger.info("Setting API_TOKEN_HEADER_FIELD");
+		} else {
+			logger.error("Environment variable API_TOKEN_HEADER_FIELD is not set");
+			System.exit(1);
+		}
+
 		new Server().runServer();
 	}
 

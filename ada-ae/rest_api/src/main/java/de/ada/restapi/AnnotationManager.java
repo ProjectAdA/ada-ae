@@ -4,22 +4,34 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
@@ -40,6 +52,8 @@ import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jsonldjava.core.JsonLdOptions;
 import com.github.jsonldjava.core.JsonLdProcessor;
 import com.github.jsonldjava.utils.JsonUtils;
@@ -485,7 +499,242 @@ public class AnnotationManager {
 		}
 	}
 	
-	private String insertModelIntoTripleStore(Model model, String targetGraphUri) {
+	/*
+	 * This methods splits annotation definitions in turtle syntax into separate strings 	
+	 */
+	private List<String> splitAnnotations(String turtleString) {
+		List<String> result = new ArrayList<String>();
+		
+		Scanner scanner = new Scanner(turtleString);
+		String anno = "";
+		while (scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			if (line.startsWith("armid")) {
+				if (!anno.isEmpty()) {
+					result.add(anno);
+				}
+				anno = line;
+			} else {
+				if (!line.trim().isEmpty()) {
+					anno = anno + line + "\n";
+				}
+			}
+		}		
+		if (!anno.isEmpty()) {
+			result.add(anno);
+		}		
+		return result;
+	}
+	
+	private String removePrefixes(String turtleString) {
+		StringBuilder sb = new StringBuilder();
+		Scanner scanner = new Scanner(turtleString);
+		while (scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			if (!line.startsWith("@")) {
+				sb.append(line+"\n");
+			}
+		}		
+		return sb.toString();
+	}
+	
+	/*
+	 * This method extracts prefix definitions from an RDF model and converts them to be used in a SPARQL query. 
+	 */
+	private String extractPrefixes(Model model) {
+		return model.getNsPrefixMap().entrySet().stream().map(e -> "prefix "+e.getKey()+": <"+e.getValue()+">").collect(Collectors.joining("\n"));
+	}
+	
+	private String submitUpdateRequestToTripleStore(UpdateRequest request) {
+		try {
+			logger.info("submitUpdateRequestToTripleStore - request size {}", request.toString().length());
+			logger.debug("submitUpdateRequestToTripleStore - request - {}", request.toString());
+			UpdateProcessor processor = createUpdateProcessor(request, true);
+			processor.execute();
+		} catch (Exception e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("submitUpdateRequestToTripleStore - request failed - {}", msg);
+			return "Triplestore update request failed. "+msg.replace("\"", "");
+		}
+	
+		return null;
+	}
+	
+	private String insertModelIntoTripleStore(Model model, String mediaId, String targetGraphUri) {
+		
+		// Usually we would insert a model using JENA Update Requests, but Virtuoso has bug since
+		// several years that prevents us from inserting larger models.
+		// See: https://stackoverflow.com/questions/16487746/jena-sparql-update-doesnt-execute
+		
+		/*
+		StringWriter triples = new StringWriter();
+		RDFDataMgr.write(triples, model, RDFFormat.NTRIPLES_UTF8);
+		
+		String update = "INSERT { GRAPH <"+targetGraphUri+"> {\n";
+		update = update + triples.toString() +"\n";
+		update = update + "} } WHERE {}";
+		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
+		request.add(update);
+		
+		return submitUpdateRequestToTripleStore(request);
+		
+		*/
+		
+		/*
+		 * Instead we upload the turtle model to our RDF upload service that does a bulk load via isql-v
+		 */
+		
+		// Add a new namespace prefix to shorten turtle triples 
+		model.setNsPrefix("armid", URIconstants.MEDIA_PREFIX()+mediaId+"/");
+		
+		StringWriter turtleWriter = new StringWriter();
+		RDFDataMgr.write(turtleWriter, model, RDFFormat.TURTLE_PRETTY);
+		String turtleString = turtleWriter.toString();
+		
+		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
+		submitUpdateRequestToTripleStore(request);
+
+		try {
+			CloseableHttpClient client = HttpClients.createDefault();
+			
+			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+			builder.addBinaryBody("file", turtleString.getBytes(), ContentType.APPLICATION_OCTET_STREAM, mediaId+".ttl");
+			builder.addTextBody("graph", targetGraphUri);
+
+			HttpUriRequest uriRequest = RequestBuilder.post()
+					.setUri(Server.RDF_UPLOADER_URL)
+					.addHeader(Server.API_TOKEN_HEADER_FIELD, Server.API_TOKEN)
+					.setEntity(builder.build())
+					.build();
+			
+			logger.info("insertModelIntoTripleStore - RDF uploader service call at "+Server.RDF_UPLOADER_URL);
+
+			HttpResponse response = client.execute(uriRequest);
+			int statusCode = response.getStatusLine().getStatusCode();
+			HttpEntity entity = response.getEntity();
+			
+			String errormsg = null;
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				JsonNode root = mapper.readTree(entity.getContent());
+				if (root.has("error")) {
+					JsonNode err = root.get("error");
+					if (err.has("message")) {
+						errormsg = err.get("message").asText();
+					}
+				}
+			} catch (IOException e) {
+				logger.error("insertModelIntoTripleStore - Response of RDF uploader could not be parsed. {}", IOUtils.toString(entity.getContent(), "UTF-8"));
+				return "Response of RDF uploader could not be parsed.";
+			}			
+			
+			if (statusCode != HttpStatus.SC_OK) {
+				logger.error("insertModelIntoTripleStore - RDF uploader service call failed. Code: {} Msg: {}", statusCode, errormsg);
+				return "RDF uploader service call failed. Code: "+statusCode+" Msg: "+errormsg;
+			}
+			
+		} catch (Exception e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("insertModelIntoTripleStore - RDF uploader service call failed - {}", msg);
+			return "RDF uploader service call failed. "+msg.replace("\"", "");
+		}
+		
+		return null;
+		
+		/*
+		
+		// Add a new namespace prefix to shorten turtle triples 
+		model.setNsPrefix("armid", URIconstants.MEDIA_PREFIX()+mediaId+"/");
+		
+		StringWriter turtleWriter = new StringWriter();
+		RDFDataMgr.write(turtleWriter, model, RDFFormat.TURTLE_PRETTY);
+		String turtleString = turtleWriter.toString();
+		String insertPrefixes = extractPrefixes(model);
+		String annotationTurtleString = removePrefixes(turtleString);
+
+//		try {
+//			BufferedWriter out = new BufferedWriter(new FileWriter("d:\\hagt\\googledrive\\HPI\\ada\\advene_service\\shot_insert.ttl"));
+//			out.write(annotationTurtleString);
+//			out.close();
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		}
+
+		if (!AnnotationConstants.USE_VIRTUOSO_QUERY_PAGINATION) {
+			String update = insertPrefixes + "\n"; 
+			update = update + "INSERT { GRAPH <"+targetGraphUri+"> {\n";
+			update = update + annotationTurtleString.toString() +"\n";
+			update = update + "} } WHERE {}";
+			UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
+			request.add(update);
+			
+			return submitUpdateRequestToTripleStore(request);
+		} else {
+			List<String> splitAnnotations = splitAnnotations(annotationTurtleString);
+			System.out.println(splitAnnotations.size());
+			UpdateRequest crequest = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
+			String cresult = submitUpdateRequestToTripleStore(crequest);
+			if (cresult != null) {
+				return cresult;
+			}
+
+//			String update = insertPrefixes + "\n"; 
+//			update = update + "INSERT { GRAPH <"+targetGraphUri+"> {\n";
+//			update = update + splitAnnotations.get(0)+"\n" + splitAnnotations.get(1)+"\n";
+//			update = update + "} } WHERE {}";
+//			
+//			System.out.println(update);
+//			UpdateRequest request = UpdateFactory.create(update);
+//			System.out.println(request.toString());
+//			String uresult = submitUpdateRequestToTripleStore(request);
+
+			String update = insertPrefixes + "\n"; 
+			update = update + "INSERT { GRAPH <"+targetGraphUri+"> {\n";
+
+			int i = 1;
+			for (String anno : splitAnnotations) {
+				if (i % AnnotationConstants.NUMBER_OF_ANNOTATIONS_PER_INSERT_QUERY == 0) {
+					update = update + "} } WHERE {}";
+					UpdateRequest request = UpdateFactory.create(update);
+					String uresult = submitUpdateRequestToTripleStore(request);
+					if (uresult != null) {
+						return uresult;
+					}
+					update = insertPrefixes + "\n"; 
+					update = update + "INSERT { GRAPH <"+targetGraphUri+"> {\n";
+				} else {
+					update = update + anno+"\n";
+					i++;
+				}
+			}
+			if (!update.isEmpty()) {
+				update = update + "} } WHERE {}";
+				UpdateRequest request = UpdateFactory.create(update);
+				String uresult = submitUpdateRequestToTripleStore(request);
+				if (uresult != null) {
+					return uresult;
+				}
+			}
+		}
+		
+		
+		System.out.println(model.size());
+		
+		try {
+			BufferedWriter out = new BufferedWriter(new FileWriter("d:\\hagt\\googledrive\\HPI\\ada\\advene_service\\shot_test.ttl"));
+			
+			StringWriter sw = new StringWriter();
+			RDFDataMgr.write(sw, model, RDFFormat.TURTLE_PRETTY);
+			
+			out.write(sw.toString());
+			
+			out.close();
+			
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 		StringWriter triples = new StringWriter();
 		RDFDataMgr.write(triples, model, RDFFormat.NTRIPLES_UTF8);
@@ -495,18 +744,8 @@ public class AnnotationManager {
 		update = update + "} } WHERE {}";
 		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
 		request.add(update);
-	
-		try {
-			logger.info("insertModelIntoTripleStore - INSERT - size {}", request.toString().length());
-			logger.debug("insertModelIntoTripleStore - INSERT - {}", request.toString());
-			UpdateProcessor processor = createUpdateProcessor(request, true);
-			processor.execute();
-		} catch (Exception e) {
-			String msg = e.toString().replace("\n", " ");
-			logger.error("insertModelIntoTripleStore - INSERT - {}", msg);
-			return "Triplestore insert failed. "+msg.replace("\"", "");
-		}
-	
+
+		*/
 		
 		/*
 		
@@ -569,15 +808,12 @@ public class AnnotationManager {
 		req.add("CLEAR GRAPH <"+graph.toString()+">;");
 		req.add(new UpdateDataInsert(acc));
 		*/
-	
-	
-		return null;		
 	}
 	
 	public String insertGeneratedScene(MetadataRecord record) {
 		logger.info("insertGeneratedScene for movie "+record.getId());
 		
-		String sceneAnnotation = AnnotationConstants.ANNOTATION_PREFIXES()+AnnotationConstants.ANNOTATION_TEMPLATE();
+		String sceneAnnotation = AnnotationConstants.ANNOTATION_TEMPLATE();
 		
 		Date date = new Date();
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -588,7 +824,19 @@ public class AnnotationManager {
 		sceneAnnotation = sceneAnnotation.replace("XXENDMS", Integer.toString(record.getDuration()));
         Float durfl = ((float)record.getDuration())/1000;
         sceneAnnotation = sceneAnnotation.replace("XXENDFLOAT", Float.toString(durfl));
+
+        String graphUri = URIconstants.GRAPH_PREFIX() + record.getId() + URIconstants.GENERATED_SCENES_GRAPH_SUFFIX;
+
+		String update = URIconstants.INSERT_PREFIXES() + "\n"; 
+		update = update + "INSERT { GRAPH <"+graphUri+"> {\n";
+		update = update + sceneAnnotation +"\n";
+		update = update + "} } WHERE {}";
+		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+graphUri+">");
+		request.add(update);
 		
+		return submitUpdateRequestToTripleStore(request);
+		
+/*		
         Model sceneModel = ModelFactory.createDefaultModel();
         try {
         	sceneModel.read(IOUtils.toInputStream(sceneAnnotation, "UTF-8"), null, RDFLanguages.strLangTurtle);
@@ -598,9 +846,11 @@ public class AnnotationManager {
 			return "Conversion of generated scene to model failed.";
 		}
         
-        String graphUri = URIconstants.GRAPH_PREFIX() + record.getId() + URIconstants.GENERATED_SCENES_GRAPH_SUFFIX;
         
-        return insertModelIntoTripleStore(sceneModel, graphUri);
+        return insertModelIntoTripleStore(sceneModel, record.getId(), graphUri);
+        
+        */
+		
 	}
 	
 	private Map<String,Map<String,Interval>> retrieveSceneIntervals(Model modelWithScenes) {
@@ -735,7 +985,7 @@ public class AnnotationManager {
 		
         String graphUri = URIconstants.GRAPH_PREFIX() + mediaId + "/" +extractor;
         
-        return insertModelIntoTripleStore(matchedModel, graphUri);
+        return insertModelIntoTripleStore(matchedModel, mediaId, graphUri);
         
 	}
 
@@ -769,7 +1019,7 @@ public class AnnotationManager {
 
         String graphUri = URIconstants.GRAPH_PREFIX() + mediaId + URIconstants.MANUAL_ANNOTATIONS_GRAPH_SUFFIX;
 
-        return insertModelIntoTripleStore(matchedModel, graphUri);
+        return insertModelIntoTripleStore(matchedModel, mediaId, graphUri);
 		
 	}
 }

@@ -2,6 +2,9 @@ package de.ada.restapi;
 
 public class AnnotationConstants {
 	
+	public static boolean USE_VIRTUOSO_QUERY_PAGINATION = true;
+	public static int NUMBER_OF_ANNOTATIONS_PER_INSERT_QUERY = 60;
+	
 	public static String ANNOTATION_PREFIXES() {
 		return
 				"@prefix oa:    <http://www.w3.org/ns/oa#> .\r\n"
