@@ -124,18 +124,18 @@ public class MetadataManager {
 		Set<String> graphsToDelete = new HashSet<String>();
 		graphsToDelete.add(URIconstants.GRAPH_PREFIX() + mediaId + URIconstants.METADATA_GRAPH_SUFFIX);
 		graphsToDelete.add(URIconstants.GRAPH_PREFIX() + mediaId + URIconstants.GENERATED_SCENES_GRAPH_SUFFIX);
-		for (Map<String, Object> type : MetadataConstants.AUTOMATED_ANALYSIS_TYPES) {
-			String fullid = (String)type.get("id");
-			String extractorid = fullid.split("/")[1];
-			graphsToDelete.add(URIconstants.GRAPH_PREFIX() + mediaId + "/" + extractorid);
+		graphsToDelete.add(URIconstants.GRAPH_PREFIX() + mediaId + URIconstants.MANUAL_ANNOTATIONS_GRAPH_SUFFIX);
+		
+		for (String extractor : MetadataConstants.EXTRACTORS) {
+			graphsToDelete.add(URIconstants.GRAPH_PREFIX() + mediaId + "/" + extractor);
 		}
-
+		
 		UpdateRequest request = new UpdateRequest();
 		for (String graph : graphsToDelete) {
 			request.add("CLEAR GRAPH <"+graph+">;");
 		}
 		
-		
+		// TODO Use submit method of Annotation Manager		
 		try {
 			logger.info("deleteMedia - clear graphs - size "+graphsToDelete.size());
 			logger.debug("deleteMedia - SPARQL UPDATE {}", request.toString());
@@ -156,9 +156,11 @@ public class MetadataManager {
 		Node graph = NodeFactory.createURI(URIconstants.GRAPH_PREFIX() + record.getId() + URIconstants.METADATA_GRAPH_SUFFIX);
 		String mediaUri = URIconstants.MEDIA_PREFIX() + record.getId();
 		Node mediaNode = NodeFactory.createURI(mediaUri);
+		
+		boolean newMovie = record.getShortId() == null;
 
 		// Create a new short identifier in case metadata record is initially created
-		if (record.getShortId() == null) {
+		if (newMovie) {
 			logger.info("addMedia - QUERY_MAX_SHORTID");
 			String queryMax = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_MAX_MOVIE_SHORTID();
 			Integer maxShortId = 0;
@@ -176,9 +178,6 @@ public class MetadataManager {
 				String msg = e.toString().replace("\n", " ");
 				logger.error("addMedia - QUERY_MAX_SHORTID - Triplestore query failed {}", msg);
 				return "Triplestore query for max movie short id failed.";
-//				msg = msg.replace("\"", "");
-//				return "{\"error\": {\"message\": \"Triplestore query for max movie short id failed .\",\"code\": 500,\"cause\": \"" + msg
-//						+ "\"}}";
 			}
 	        
 	        record.setShortId(maxShortId+1);
@@ -193,9 +192,6 @@ public class MetadataManager {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("addMedia - ObjectMapper - convertValue - {}", msg);
 			return "MetadataRecord conversion failed.";
-//			msg = msg.replace("\"", "");
-//			return "{\"error\": {\"message\": \"MetadataRecord conversion failed .\",\"code\": 500,\"cause\": \"" + msg
-//					+ "\"}}";
 		}
 		
 		UpdateRequest request = new UpdateRequest();
@@ -242,7 +238,12 @@ public class MetadataManager {
 		}
 		
 		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, sparqlUser, sparqlPassword);
-		return am.insertGeneratedScene(record);
+		
+		if (newMovie) {
+			return am.insertGeneratedScene(record);
+		} else {
+			return null;
+		}
 
 	}
 

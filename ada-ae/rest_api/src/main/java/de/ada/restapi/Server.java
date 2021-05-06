@@ -175,7 +175,7 @@ public class Server {
     	}
 
 		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
-		Model annotations = am.getAnnotations(mediaId, scenes, types);
+		Model annotations = am.getAnnotations(mediaId, scenes, types, null);
 		if (annotations == null) {
     		returnError(ctx, "Query annotations - Triplestore query failed.", 500, null);
 			return;

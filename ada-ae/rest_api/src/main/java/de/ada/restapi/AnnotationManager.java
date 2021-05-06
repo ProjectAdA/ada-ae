@@ -4,17 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
@@ -40,8 +36,10 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
@@ -181,7 +179,7 @@ public class AnnotationManager {
 	}
 
 
-	public Model getAnnotations(String mediaId, Set<String> scenes, Set<String> types) {
+	public Model getAnnotations(String mediaId, Set<String> scenes, Set<String> types, String graphUri) {
 		Model result = null;
 		
 		String sceneFilter = createSceneFilter(scenes);
@@ -195,6 +193,12 @@ public class AnnotationManager {
 		}
 		query = query.replaceFirst("<<SCENEFILTER>>", sceneFilter);
 		query = query.replaceFirst("<<TYPEFILTER>>", typeFilter);
+		
+		if (graphUri != null) {
+			query = query.replaceFirst("<<GRAPH>>", "<"+graphUri+">");
+		} else {
+			query = query.replaceFirst("FROM <<GRAPH>>","");
+		}
 		
 		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
 			logger.info("{} Query for mediaId ({}) scenes({}) types({})", "getAnnotations", mediaId, scenes, types);
@@ -366,6 +370,7 @@ public class AnnotationManager {
 		query = query.replaceFirst("\\?target oa:hasSource <<MEDIA>>.","");
 		query = query.replaceFirst("<<SCENEFILTER>>", "");
 		query = query.replaceFirst("<<TYPEFILTER>>", annoFilter);
+		query = query.replaceFirst("FROM <<GRAPH>>>","");
 		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
 			logger.info("{} - QUERY_ANNOTATIONS_TEMPLATE - Annotations: {}", "valueSearch", numValue);
 			result = qexec.execDescribe();
@@ -436,57 +441,13 @@ public class AnnotationManager {
     	
     	return result;
     }
-	
-	/*
-	private ArrayList<String> paginateQuery(StringWriter query) {
-		ArrayList<String> result = new ArrayList<String>();
-		
-		String[] lines = query.toString().split("\n");
-		
-		int i = 0;
-		StringBuilder sb = new StringBuilder();
-		while (i < lines.length) {
-			int length = sb.toString().length();
-			if (length > AnnotationConstants.MAX_VIRTUOSO_QUERY_SIZE) {
-				result.add(sb.toString());
-				sb = new StringBuilder();
-			} else {
-				sb.append(lines[i]);
-				sb.append("\n");
-				i++;
-			}
-		}
-		
-		return result;
-	}
-	
-	*/
-	
-	/*
-	private ArrayList<String> paginateQuery(StringWriter query) {
-		ArrayList<String> result = new ArrayList<String>();
-		
-		String[] lines = query.toString().split("\n");
-		
-		int i = 0;
-		StringBuilder sb = new StringBuilder();
-		while (i < lines.length) {
-			int length = sb.toString().length();
-			if (length > AnnotationConstants.MAX_VIRTUOSO_QUERY_SIZE) {
-				result.add(sb.toString());
-				sb = new StringBuilder();
-			} else {
-				sb.append(lines[i]);
-				sb.append("\n");
-				i++;
-			}
-		}
-		
-		return result;
-	}
-	
-	*/
-	
+
+	/**
+	 * Creates an UpdateProcessor to submit SPARQL updates to the triplestore, with or without authentification.
+	 * @param request
+	 * @param auth
+	 * @return
+	 */
 	private UpdateProcessor createUpdateProcessor(UpdateRequest request, boolean auth) {
 		if (auth) {
 			CredentialsProvider credsProvider = new BasicCredentialsProvider();
@@ -499,52 +460,11 @@ public class AnnotationManager {
 		}
 	}
 	
-	/*
-	 * This methods splits annotation definitions in turtle syntax into separate strings 	
+	/**
+	 * Executes the update request.
+	 * @param request
+	 * @return Error message in case of failure or null if success
 	 */
-	private List<String> splitAnnotations(String turtleString) {
-		List<String> result = new ArrayList<String>();
-		
-		Scanner scanner = new Scanner(turtleString);
-		String anno = "";
-		while (scanner.hasNextLine()) {
-			String line = scanner.nextLine();
-			if (line.startsWith("armid")) {
-				if (!anno.isEmpty()) {
-					result.add(anno);
-				}
-				anno = line;
-			} else {
-				if (!line.trim().isEmpty()) {
-					anno = anno + line + "\n";
-				}
-			}
-		}		
-		if (!anno.isEmpty()) {
-			result.add(anno);
-		}		
-		return result;
-	}
-	
-	private String removePrefixes(String turtleString) {
-		StringBuilder sb = new StringBuilder();
-		Scanner scanner = new Scanner(turtleString);
-		while (scanner.hasNextLine()) {
-			String line = scanner.nextLine();
-			if (!line.startsWith("@")) {
-				sb.append(line+"\n");
-			}
-		}		
-		return sb.toString();
-	}
-	
-	/*
-	 * This method extracts prefix definitions from an RDF model and converts them to be used in a SPARQL query. 
-	 */
-	private String extractPrefixes(Model model) {
-		return model.getNsPrefixMap().entrySet().stream().map(e -> "prefix "+e.getKey()+": <"+e.getValue()+">").collect(Collectors.joining("\n"));
-	}
-	
 	private String submitUpdateRequestToTripleStore(UpdateRequest request) {
 		try {
 			logger.info("submitUpdateRequestToTripleStore - request size {}", request.toString().length());
@@ -591,6 +511,7 @@ public class AnnotationManager {
 		RDFDataMgr.write(turtleWriter, model, RDFFormat.TURTLE_PRETTY);
 		String turtleString = turtleWriter.toString();
 		
+		// Before inserting new data the content of graph is removed completely
 		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
 		submitUpdateRequestToTripleStore(request);
 
@@ -810,6 +731,17 @@ public class AnnotationManager {
 		*/
 	}
 	
+	public String removeGeneratedScene(String mediaId) {
+		logger.info("removeGeneratedScene for movie "+mediaId);
+		String graphUri = URIconstants.GRAPH_PREFIX() + mediaId + URIconstants.GENERATED_SCENES_GRAPH_SUFFIX;
+		return submitUpdateRequestToTripleStore(UpdateFactory.create("CLEAR GRAPH <"+graphUri+">"));
+	}
+	
+	/**
+	 * Inserts a default scene annotation into the triplestore for newly ingested movies
+	 * @param record
+	 * @return Error message in case of failure or null if success
+	 */
 	public String insertGeneratedScene(MetadataRecord record) {
 		logger.info("insertGeneratedScene for movie "+record.getId());
 		
@@ -835,21 +767,6 @@ public class AnnotationManager {
 		request.add(update);
 		
 		return submitUpdateRequestToTripleStore(request);
-		
-/*		
-        Model sceneModel = ModelFactory.createDefaultModel();
-        try {
-        	sceneModel.read(IOUtils.toInputStream(sceneAnnotation, "UTF-8"), null, RDFLanguages.strLangTurtle);
-		} catch (IOException e) {
-			String msg = e.toString().replace("\n", " ");
-			logger.error("insertGeneratedScene - Conversion of generated scene to model failed. {}", msg);
-			return "Conversion of generated scene to model failed.";
-		}
-        
-        
-        return insertModelIntoTripleStore(sceneModel, record.getId(), graphUri);
-        
-        */
 		
 	}
 	
@@ -899,6 +816,16 @@ public class AnnotationManager {
 	private Model matchScenes(Model annotationModel, Map<String,Map<String,Interval>> movieSceneIntervals) {
 
 		Map<String,Map<String,Interval>> movieAnnotationIntervals = new HashMap<String, Map<String,Interval>>();
+		
+		Property sceneIdProp = annotationModel.getProperty(URIconstants.ONTOLOGY_PREFIX()+"sceneId");
+
+		// First remove all scene id statements from model
+		StmtIterator sceneStmts = annotationModel.listStatements((Resource)null, sceneIdProp, (RDFNode)null);
+		final Set<Statement> stmtsToDelete = new HashSet<Statement>();
+		sceneStmts.forEachRemaining(st -> stmtsToDelete.add(st));
+		for (Statement statement : stmtsToDelete) {
+			annotationModel.remove(statement);
+		}
         
 		String queryAnnotations = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ALL_SCENES().replaceFirst("\\?body ao:annotationType <"+URIconstants.RESOURCE_PREFIX()+"AnnotationType/Scene>.", "");
 		try (QueryExecution qexec = QueryExecutionFactory.create(queryAnnotations, annotationModel)) {
@@ -939,7 +866,7 @@ public class AnnotationManager {
         			if (Interval.isThereOverlapWithTolerance(annoInterval, sceneInterval)) {
         				annotationMatched = true;
         				Resource annoResource = annotationModel.getResource(URIconstants.MEDIA_PREFIX()+mediaid+"/"+annoid);
-        	            Property sceneIdProp = annotationModel.getProperty(URIconstants.ONTOLOGY_PREFIX()+"sceneId");
+        	            
         				Statement stmt = annotationModel.createStatement(annoResource, sceneIdProp, sceneid);
         				annotationModel.add(stmt);
         			}
@@ -954,7 +881,6 @@ public class AnnotationManager {
 	}
 	
 	
-	// TODO unify insert methods
 	public String insertAnnotations(String mediaId, String extractor, InputStream content) {
 		logger.info("insertAnnotations for movie "+mediaId+", extractor "+extractor);
 		
@@ -988,6 +914,34 @@ public class AnnotationManager {
         return insertModelIntoTripleStore(matchedModel, mediaId, graphUri);
         
 	}
+	
+	private String updateSceneAssociations(String mediaId, Map<String, Map<String, Interval>> sceneIntervals) {
+		logger.info("updateSceneAssociations for movie "+mediaId);
+		
+		String removeRes = removeGeneratedScene(mediaId);
+		if ( removeRes != null) {
+			return removeRes;
+		}
+		
+		Set<String> extractorGraphs = new HashSet<String>();
+		for (String extractor : MetadataConstants.EXTRACTORS) {
+			extractorGraphs.add(URIconstants.GRAPH_PREFIX() + mediaId + "/" + extractor);
+		}
+		
+		for (String graphUri : extractorGraphs) {
+			Model annotations = getAnnotations(mediaId, null, null, graphUri);
+			if (annotations.size() > 0) {
+				logger.info("updateSceneAssociations - graph "+graphUri);
+				Model matchedModel = matchScenes(annotations, sceneIntervals);
+				String insertRes = insertModelIntoTripleStore(matchedModel, mediaId, graphUri);
+				if (insertRes != null) {
+					return insertRes;
+				}
+			}
+		}
+		
+		return null;
+	}
 
 	public String insertAdveneResult(String mediaId, InputStream content) {
 		logger.info("insertAdveneResult for movie "+mediaId);
@@ -1018,8 +972,14 @@ public class AnnotationManager {
 		}
 
         String graphUri = URIconstants.GRAPH_PREFIX() + mediaId + URIconstants.MANUAL_ANNOTATIONS_GRAPH_SUFFIX;
-
-        return insertModelIntoTripleStore(matchedModel, mediaId, graphUri);
+        
+        String result = insertModelIntoTripleStore(matchedModel, mediaId, graphUri);
+        
+        if (result == null) {
+        	return updateSceneAssociations(mediaId, sceneIntervals);
+        } else {
+        	return result;
+        }
 		
 	}
 }
