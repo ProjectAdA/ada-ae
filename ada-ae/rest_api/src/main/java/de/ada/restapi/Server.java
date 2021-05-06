@@ -544,7 +544,8 @@ public class Server {
 			logger.info("uploadExtractorResult - media id "+mediaId+" - filename "+uploadedFiles.get(0).getFilename());
 			
 			AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
-			String result = am.insertAnnotations(mediaId, extractor, content);		
+			String result = am.insertAnnotations(mediaId, extractor, content);
+			content.close();
 			if (result != null) {
 				returnError(ctx, result, 500, null);
 				return;

@@ -271,7 +271,11 @@ public class MetadataManager {
 	}
 
 	public List<Map<String, Object>> getMovieMetadata(String queryId) {
-		logger.info("getMovieMetadata - " + queryId == null ? "all" : "id "+queryId);
+		if (queryId == null) {
+			logger.info("getMovieMetadata - all");
+		} else {
+			logger.info("getMovieMetadata - queryId " + queryId);
+		}
 		
 		List<Map<String, Object>> result = new ArrayList<Map<String,Object>>();
 		List<Map<String, Object>> countres = new ArrayList<Map<String,Object>>();

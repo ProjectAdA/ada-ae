@@ -547,7 +547,8 @@ public class AnnotationManager {
 			} catch (IOException e) {
 				logger.error("insertModelIntoTripleStore - Response of RDF uploader could not be parsed. {}", IOUtils.toString(entity.getContent(), "UTF-8"));
 				return "Response of RDF uploader could not be parsed.";
-			}			
+			}	
+			client.close();
 			
 			if (statusCode != HttpStatus.SC_OK) {
 				logger.error("insertModelIntoTripleStore - RDF uploader service call failed. Code: {} Msg: {}", statusCode, errormsg);
@@ -803,7 +804,7 @@ public class AnnotationManager {
                	Interval i = new Interval(startTime.getLong(), endTime.getLong());
                 scenes.put(sceneid.toString(), i);
 			}
-
+			qexec.close();
 		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("retrieveSceneIntervals - QUERY_ALL_SCENES - query failed {}", msg);
@@ -848,7 +849,8 @@ public class AnnotationManager {
                	Interval i = new Interval(startTime.getLong(), endTime.getLong());
                	annotations.put(annoid.toString(), i);
 
-			}			
+			}
+			qexec.close();
 		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("matchScenes - QUERY_ALL_ANNOTATIONS - Model query failed {}", msg);
@@ -898,9 +900,9 @@ public class AnnotationManager {
 		if (sceneIntervals == null) {
 			return "Querying for existing scenes failed.";
 		}
-		if (sceneIntervals.size() == 0) {
-			logger.error("insertAnnotations - no scenes found in triple store.");
-			return "No scenes found in triple store.";
+		if (sceneIntervals.size() == 0 || sceneIntervals.get(mediaId) == null) {
+			logger.error("insertAnnotations - no scenes for movie "+mediaId+" found in triple store.");
+			return "No scenes for movie "+mediaId+" found in triple store.";
 		}
 		
 		Model matchedModel = matchScenes(model, sceneIntervals);
