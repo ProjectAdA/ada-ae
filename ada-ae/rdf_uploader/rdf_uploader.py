@@ -59,10 +59,6 @@ def run_import(sql_file):
 @app.route('/uploadrdf', methods=['POST'])
 def upload_rdf():
 
-    logger.debug('{0}'.format(request))
-    logger.debug('{0}'.format(request.headers))
-    logger.debug('{0}'.format(request.form))
-    
     if not request.headers or request.headers.get(API_TOKEN_HEADER_FIELD) != API_TOKEN:
         logger.error('Function requires authorization.')
         return jsonify(error={'message': 'Function requires authorization.'}), 403
