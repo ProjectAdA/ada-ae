@@ -3,7 +3,7 @@ package de.ada.restapi;
 public class AnnotationQueries {
 	
 	public static final String QUERY_ANNOTATIONS_TEMPLATE = 
-			"DESCRIBE ?anno ?target ?body ?selector ?list ?listRest ?numlist ?numlistRest WHERE {\r\n"
+			"DESCRIBE ?anno ?target ?body ?selector ?list ?listRest ?numlist ?numlistRest FROM <<GRAPH>> WHERE {\r\n"
 			+ "	?anno oa:hasTarget ?target.\r\n"
 			+ "	?target oa:hasSource <<MEDIA>>.\r\n"
 			+ "	?anno oa:hasBody ?body.\r\n"

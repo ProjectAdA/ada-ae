@@ -30,20 +30,13 @@ ARG VIRTUOSO_HOME
 ENV VIRTUOSO_HOME=${VIRTUOSO_HOME}
 
 RUN apt-get update \
-        && apt-get install -y libssl1.1 wget libreadline8 \
+        && apt-get install -y libssl1.1 wget libreadline8 python3 python3-pip \
         && apt-get clean \
         && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder ${VIRTUOSO_HOME} ${VIRTUOSO_HOME}
-RUN mkdir ${VIRTUOSO_HOME}/initdb.d
-COPY load-ada-ontology.sh ${VIRTUOSO_HOME}/initdb.d/
-COPY setup-user-rights.sh ${VIRTUOSO_HOME}/initdb.d/
-COPY virtuoso-entrypoint.sh /virtuoso-entrypoint.sh
-COPY virtuoso.ini /virtuoso.ini
+RUN pip3 install --trusted-host pypi.python.org Flask==1.1.2 waitress==2.0.0 flask-compress==1.9.0
 
-RUN mkdir /database
-RUN mkdir /import
-RUN mkdir /settings
+COPY --from=builder ${VIRTUOSO_HOME} ${VIRTUOSO_HOME}
 
 ARG ADAAE_UID="50000"
 ARG ADAAE_GID="50000"
@@ -54,22 +47,20 @@ RUN addgroup --gid "${ADAAE_GID}" "ada-ae" && \
         --gid "${ADAAE_GID}" \
         --home "${ADAAE_USER_HOME_DIR}"
 
-RUN chown -R "ada-ae:ada-ae" /database
+RUN mkdir /import
 RUN chown -R "ada-ae:ada-ae" /import
-RUN chown -R "ada-ae:ada-ae" /settings
-RUN chmod +x /virtuoso-entrypoint.sh
 
-VOLUME /database
-VOLUME /import
+RUN mkdir -p ${ADAAE_USER_HOME_DIR}/.local/
+COPY --chown=ada-ae:ada-ae rdf_uploader.py ${ADAAE_USER_HOME_DIR}/.local/bin/rdf_uploader.py
+RUN chmod +x ${ADAAE_USER_HOME_DIR}/.local/bin/rdf_uploader.py
 
-ENV PATH ${VIRTUOSO_HOME}/bin:$PATH
+ENV PATH="${ADAAE_USER_HOME_DIR}/.local/bin:${VIRTUOSO_HOME}/bin:${PATH}" 
 
 USER ${ADAAE_UID}
-WORKDIR /database
+WORKDIR ${ADAAE_USER_HOME_DIR}/.local/bin
 
-EXPOSE 8890
-EXPOSE 1111
+VOLUME /import
 
-ENTRYPOINT ["/virtuoso-entrypoint.sh"]
-CMD ["start"]
+EXPOSE 5003
 
+ENTRYPOINT ["rdf_uploader.py"]

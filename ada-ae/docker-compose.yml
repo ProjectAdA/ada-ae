@@ -1,6 +1,6 @@
 services:
   ada-triplestore:
-    image: ada-ae/virtuoso-opensource:stable-7
+    image: ada-ae/virtuoso-opensource:1.0
     build:
       context: ./triplestore
       dockerfile: Dockerfile
@@ -10,15 +10,18 @@ services:
     env_file:
       - .env
       - secrets.env
+      - ada-ae.env
     environment:
       - VIRTUOSO_INI_FILE=/virtuoso.ini
     volumes:
       - virtuoso-db:/database
+      - import:/import
     networks:
       - ada-ae
       - ada-rproxy
 #    ports:
 #      - 8890:8890
+#      - 1111:1111
 # FIXME: add health check and test for serivce healthy in depends_on of other services
 #    healthcheck:
 #      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
@@ -36,11 +39,13 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    env_file:
+      - ada-ae.env
     networks:
       - ada-ae
       - ada-rproxy
     depends_on:
-      - ada-triplestore
+      - ada-rest-api
     user: "nginx:nginx"
     logging:
       driver: "json-file"
@@ -61,16 +66,19 @@ services:
     env_file:
       - .env
       - secrets.env
+      - ada-ae.env
     environment:
       - ADVENE_SERVICE_URL=http://advene-service:5002/convertazp
-      - ONTOLOGY_BASE_URI=${ONTOLOGY_BASE_URI}
-      - ONTOLOGY_VERSION=${ONTOLOGY_VERSION}
+      - RDF_UPLOADER_URL=http://rdf-uploader:5003/uploadrdf
     networks:
       - ada-ae
       - ada-rproxy
+#    ports:
+#      - 7002:7002
     depends_on:
       - ada-triplestore
       - advene-service
+      - rdf-uploader
     logging:
       driver: "json-file"
       options:
@@ -89,8 +97,41 @@ services:
         - ADAAE_GID=${ADAAE_GID:-50000}
     env_file:
       - .env
+      - ada-ae.env
     networks:
       - ada-ae
+#    ports:
+#      - 5002:5002
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "300k"
+        max-file: "5"
+    restart: always
+
+  rdf-uploader:
+    image: ada-ae/rdf-uploader:1.0
+    build:
+      context: ./rdf_uploader
+      dockerfile: Dockerfile
+      args:
+        - ADAAE_UID=${ADAAE_UID:-50000}
+        - ADAAE_GID=${ADAAE_GID:-50000}
+    env_file:
+      - .env
+      - secrets.env
+      - ada-ae.env
+    environment:
+      - TRIPLESTORE_HOST=ada-triplestore
+      - TRIPLESTORE_PORT=1111
+    volumes:
+      - import:/import
+    networks:
+      - ada-ae
+#    ports:
+#      - 5003:5003
+    depends_on:
+      - ada-triplestore
     logging:
       driver: "json-file"
       options:
@@ -99,6 +140,8 @@ services:
     restart: always
 
 volumes:
+  import: {}
+  
   virtuoso-db:
     name: virtuoso-db
     driver_opts:

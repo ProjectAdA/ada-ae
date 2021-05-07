@@ -35,6 +35,15 @@ public class URIconstants {
 				+ "prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>\r\n"
 				+ "prefix xsd: <http://www.w3.org/2001/XMLSchema#>\r\n";
 	}
+	
+	public static String INSERT_PREFIXES() {
+		return QUERY_PREFIXES() 
+				+ "prefix dcterms: <http://purl.org/dc/terms/>\r\n"
+				+ "prefix advu:  <http://www.advene.org/ns/_local/user/>\r\n"
+				+ "prefix ar:    <"+URIconstants.RESOURCE_PREFIX()+">\r\n"
+				+ "prefix art:   <"+URIconstants.RESOURCE_PREFIX()+"AnnotationType/>\r\n"
+				+ "prefix arm:   <"+URIconstants.MEDIA_PREFIX()+">\r\n";
+	}
 
 	public static final String METADATA_GRAPH_SUFFIX = "/meta";
 	public static final String GENERATED_SCENES_GRAPH_SUFFIX = "/scenegen";

@@ -13,13 +13,21 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
@@ -28,8 +36,10 @@ import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFFormat;
 import org.apache.jena.riot.RDFLanguages;
@@ -40,6 +50,8 @@ import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jsonldjava.core.JsonLdOptions;
 import com.github.jsonldjava.core.JsonLdProcessor;
 import com.github.jsonldjava.utils.JsonUtils;
@@ -167,7 +179,7 @@ public class AnnotationManager {
 	}
 
 
-	public Model getAnnotations(String mediaId, Set<String> scenes, Set<String> types) {
+	public Model getAnnotations(String mediaId, Set<String> scenes, Set<String> types, String graphUri) {
 		Model result = null;
 		
 		String sceneFilter = createSceneFilter(scenes);
@@ -181,6 +193,12 @@ public class AnnotationManager {
 		}
 		query = query.replaceFirst("<<SCENEFILTER>>", sceneFilter);
 		query = query.replaceFirst("<<TYPEFILTER>>", typeFilter);
+		
+		if (graphUri != null) {
+			query = query.replaceFirst("<<GRAPH>>", "<"+graphUri+">");
+		} else {
+			query = query.replaceFirst("FROM <<GRAPH>>","");
+		}
 		
 		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
 			logger.info("{} Query for mediaId ({}) scenes({}) types({})", "getAnnotations", mediaId, scenes, types);
@@ -352,6 +370,7 @@ public class AnnotationManager {
 		query = query.replaceFirst("\\?target oa:hasSource <<MEDIA>>.","");
 		query = query.replaceFirst("<<SCENEFILTER>>", "");
 		query = query.replaceFirst("<<TYPEFILTER>>", annoFilter);
+		query = query.replaceFirst("FROM <<GRAPH>>>","");
 		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
 			logger.info("{} - QUERY_ANNOTATIONS_TEMPLATE - Annotations: {}", "valueSearch", numValue);
 			result = qexec.execDescribe();
@@ -422,57 +441,13 @@ public class AnnotationManager {
     	
     	return result;
     }
-	
-	/*
-	private ArrayList<String> paginateQuery(StringWriter query) {
-		ArrayList<String> result = new ArrayList<String>();
-		
-		String[] lines = query.toString().split("\n");
-		
-		int i = 0;
-		StringBuilder sb = new StringBuilder();
-		while (i < lines.length) {
-			int length = sb.toString().length();
-			if (length > AnnotationConstants.MAX_VIRTUOSO_QUERY_SIZE) {
-				result.add(sb.toString());
-				sb = new StringBuilder();
-			} else {
-				sb.append(lines[i]);
-				sb.append("\n");
-				i++;
-			}
-		}
-		
-		return result;
-	}
-	
-	*/
-	
-	/*
-	private ArrayList<String> paginateQuery(StringWriter query) {
-		ArrayList<String> result = new ArrayList<String>();
-		
-		String[] lines = query.toString().split("\n");
-		
-		int i = 0;
-		StringBuilder sb = new StringBuilder();
-		while (i < lines.length) {
-			int length = sb.toString().length();
-			if (length > AnnotationConstants.MAX_VIRTUOSO_QUERY_SIZE) {
-				result.add(sb.toString());
-				sb = new StringBuilder();
-			} else {
-				sb.append(lines[i]);
-				sb.append("\n");
-				i++;
-			}
-		}
-		
-		return result;
-	}
-	
-	*/
-	
+
+	/**
+	 * Creates an UpdateProcessor to submit SPARQL updates to the triplestore, with or without authentification.
+	 * @param request
+	 * @param auth
+	 * @return
+	 */
 	private UpdateProcessor createUpdateProcessor(UpdateRequest request, boolean auth) {
 		if (auth) {
 			CredentialsProvider credsProvider = new BasicCredentialsProvider();
@@ -485,7 +460,203 @@ public class AnnotationManager {
 		}
 	}
 	
-	private String insertModelIntoTripleStore(Model model, String targetGraphUri) {
+	/**
+	 * Executes the update request.
+	 * @param request
+	 * @return Error message in case of failure or null if success
+	 */
+	private String submitUpdateRequestToTripleStore(UpdateRequest request) {
+		try {
+			logger.info("submitUpdateRequestToTripleStore - request size {}", request.toString().length());
+			logger.debug("submitUpdateRequestToTripleStore - request - {}", request.toString());
+			UpdateProcessor processor = createUpdateProcessor(request, true);
+			processor.execute();
+		} catch (Exception e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("submitUpdateRequestToTripleStore - request failed - {}", msg);
+			return "Triplestore update request failed. "+msg.replace("\"", "");
+		}
+	
+		return null;
+	}
+	
+	private String insertModelIntoTripleStore(Model model, String mediaId, String targetGraphUri) {
+		
+		// Usually we would insert a model using JENA Update Requests, but Virtuoso has bug since
+		// several years that prevents us from inserting larger models.
+		// See: https://stackoverflow.com/questions/16487746/jena-sparql-update-doesnt-execute
+		
+		/*
+		StringWriter triples = new StringWriter();
+		RDFDataMgr.write(triples, model, RDFFormat.NTRIPLES_UTF8);
+		
+		String update = "INSERT { GRAPH <"+targetGraphUri+"> {\n";
+		update = update + triples.toString() +"\n";
+		update = update + "} } WHERE {}";
+		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
+		request.add(update);
+		
+		return submitUpdateRequestToTripleStore(request);
+		
+		*/
+		
+		/*
+		 * Instead we upload the turtle model to our RDF upload service that does a bulk load via isql-v
+		 */
+		
+		// Add a new namespace prefix to shorten turtle triples 
+		model.setNsPrefix("armid", URIconstants.MEDIA_PREFIX()+mediaId+"/");
+		
+		StringWriter turtleWriter = new StringWriter();
+		RDFDataMgr.write(turtleWriter, model, RDFFormat.TURTLE_PRETTY);
+		String turtleString = turtleWriter.toString();
+		
+		// Before inserting new data the content of graph is removed completely
+		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
+		submitUpdateRequestToTripleStore(request);
+
+		try {
+			CloseableHttpClient client = HttpClients.createDefault();
+			
+			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+			builder.addBinaryBody("file", turtleString.getBytes(), ContentType.APPLICATION_OCTET_STREAM, mediaId+".ttl");
+			builder.addTextBody("graph", targetGraphUri);
+
+			HttpUriRequest uriRequest = RequestBuilder.post()
+					.setUri(Server.RDF_UPLOADER_URL)
+					.addHeader(Server.API_TOKEN_HEADER_FIELD, Server.API_TOKEN)
+					.setEntity(builder.build())
+					.build();
+			
+			logger.info("insertModelIntoTripleStore - RDF uploader service call at "+Server.RDF_UPLOADER_URL);
+
+			HttpResponse response = client.execute(uriRequest);
+			int statusCode = response.getStatusLine().getStatusCode();
+			HttpEntity entity = response.getEntity();
+			
+			String errormsg = null;
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				JsonNode root = mapper.readTree(entity.getContent());
+				if (root.has("error")) {
+					JsonNode err = root.get("error");
+					if (err.has("message")) {
+						errormsg = err.get("message").asText();
+					}
+				}
+			} catch (IOException e) {
+				logger.error("insertModelIntoTripleStore - Response of RDF uploader could not be parsed. {}", IOUtils.toString(entity.getContent(), "UTF-8"));
+				return "Response of RDF uploader could not be parsed.";
+			}	
+			client.close();
+			
+			if (statusCode != HttpStatus.SC_OK) {
+				logger.error("insertModelIntoTripleStore - RDF uploader service call failed. Code: {} Msg: {}", statusCode, errormsg);
+				return "RDF uploader service call failed. Code: "+statusCode+" Msg: "+errormsg;
+			}
+			
+		} catch (Exception e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("insertModelIntoTripleStore - RDF uploader service call failed - {}", msg);
+			return "RDF uploader service call failed. "+msg.replace("\"", "");
+		}
+		
+		return null;
+		
+		/*
+		
+		// Add a new namespace prefix to shorten turtle triples 
+		model.setNsPrefix("armid", URIconstants.MEDIA_PREFIX()+mediaId+"/");
+		
+		StringWriter turtleWriter = new StringWriter();
+		RDFDataMgr.write(turtleWriter, model, RDFFormat.TURTLE_PRETTY);
+		String turtleString = turtleWriter.toString();
+		String insertPrefixes = extractPrefixes(model);
+		String annotationTurtleString = removePrefixes(turtleString);
+
+//		try {
+//			BufferedWriter out = new BufferedWriter(new FileWriter("d:\\hagt\\googledrive\\HPI\\ada\\advene_service\\shot_insert.ttl"));
+//			out.write(annotationTurtleString);
+//			out.close();
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		}
+
+		if (!AnnotationConstants.USE_VIRTUOSO_QUERY_PAGINATION) {
+			String update = insertPrefixes + "\n"; 
+			update = update + "INSERT { GRAPH <"+targetGraphUri+"> {\n";
+			update = update + annotationTurtleString.toString() +"\n";
+			update = update + "} } WHERE {}";
+			UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
+			request.add(update);
+			
+			return submitUpdateRequestToTripleStore(request);
+		} else {
+			List<String> splitAnnotations = splitAnnotations(annotationTurtleString);
+			System.out.println(splitAnnotations.size());
+			UpdateRequest crequest = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
+			String cresult = submitUpdateRequestToTripleStore(crequest);
+			if (cresult != null) {
+				return cresult;
+			}
+
+//			String update = insertPrefixes + "\n"; 
+//			update = update + "INSERT { GRAPH <"+targetGraphUri+"> {\n";
+//			update = update + splitAnnotations.get(0)+"\n" + splitAnnotations.get(1)+"\n";
+//			update = update + "} } WHERE {}";
+//			
+//			System.out.println(update);
+//			UpdateRequest request = UpdateFactory.create(update);
+//			System.out.println(request.toString());
+//			String uresult = submitUpdateRequestToTripleStore(request);
+
+			String update = insertPrefixes + "\n"; 
+			update = update + "INSERT { GRAPH <"+targetGraphUri+"> {\n";
+
+			int i = 1;
+			for (String anno : splitAnnotations) {
+				if (i % AnnotationConstants.NUMBER_OF_ANNOTATIONS_PER_INSERT_QUERY == 0) {
+					update = update + "} } WHERE {}";
+					UpdateRequest request = UpdateFactory.create(update);
+					String uresult = submitUpdateRequestToTripleStore(request);
+					if (uresult != null) {
+						return uresult;
+					}
+					update = insertPrefixes + "\n"; 
+					update = update + "INSERT { GRAPH <"+targetGraphUri+"> {\n";
+				} else {
+					update = update + anno+"\n";
+					i++;
+				}
+			}
+			if (!update.isEmpty()) {
+				update = update + "} } WHERE {}";
+				UpdateRequest request = UpdateFactory.create(update);
+				String uresult = submitUpdateRequestToTripleStore(request);
+				if (uresult != null) {
+					return uresult;
+				}
+			}
+		}
+		
+		
+		System.out.println(model.size());
+		
+		try {
+			BufferedWriter out = new BufferedWriter(new FileWriter("d:\\hagt\\googledrive\\HPI\\ada\\advene_service\\shot_test.ttl"));
+			
+			StringWriter sw = new StringWriter();
+			RDFDataMgr.write(sw, model, RDFFormat.TURTLE_PRETTY);
+			
+			out.write(sw.toString());
+			
+			out.close();
+			
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 		StringWriter triples = new StringWriter();
 		RDFDataMgr.write(triples, model, RDFFormat.NTRIPLES_UTF8);
@@ -495,18 +666,8 @@ public class AnnotationManager {
 		update = update + "} } WHERE {}";
 		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
 		request.add(update);
-	
-		try {
-			logger.info("insertModelIntoTripleStore - INSERT - size {}", request.toString().length());
-			logger.debug("insertModelIntoTripleStore - INSERT - {}", request.toString());
-			UpdateProcessor processor = createUpdateProcessor(request, true);
-			processor.execute();
-		} catch (Exception e) {
-			String msg = e.toString().replace("\n", " ");
-			logger.error("insertModelIntoTripleStore - INSERT - {}", msg);
-			return "Triplestore insert failed. "+msg.replace("\"", "");
-		}
-	
+
+		*/
 		
 		/*
 		
@@ -569,15 +730,23 @@ public class AnnotationManager {
 		req.add("CLEAR GRAPH <"+graph.toString()+">;");
 		req.add(new UpdateDataInsert(acc));
 		*/
-	
-	
-		return null;		
 	}
 	
+	public String removeGeneratedScene(String mediaId) {
+		logger.info("removeGeneratedScene for movie "+mediaId);
+		String graphUri = URIconstants.GRAPH_PREFIX() + mediaId + URIconstants.GENERATED_SCENES_GRAPH_SUFFIX;
+		return submitUpdateRequestToTripleStore(UpdateFactory.create("CLEAR GRAPH <"+graphUri+">"));
+	}
+	
+	/**
+	 * Inserts a default scene annotation into the triplestore for newly ingested movies
+	 * @param record
+	 * @return Error message in case of failure or null if success
+	 */
 	public String insertGeneratedScene(MetadataRecord record) {
 		logger.info("insertGeneratedScene for movie "+record.getId());
 		
-		String sceneAnnotation = AnnotationConstants.ANNOTATION_PREFIXES()+AnnotationConstants.ANNOTATION_TEMPLATE();
+		String sceneAnnotation = AnnotationConstants.ANNOTATION_TEMPLATE();
 		
 		Date date = new Date();
 		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -588,19 +757,18 @@ public class AnnotationManager {
 		sceneAnnotation = sceneAnnotation.replace("XXENDMS", Integer.toString(record.getDuration()));
         Float durfl = ((float)record.getDuration())/1000;
         sceneAnnotation = sceneAnnotation.replace("XXENDFLOAT", Float.toString(durfl));
-		
-        Model sceneModel = ModelFactory.createDefaultModel();
-        try {
-        	sceneModel.read(IOUtils.toInputStream(sceneAnnotation, "UTF-8"), null, RDFLanguages.strLangTurtle);
-		} catch (IOException e) {
-			String msg = e.toString().replace("\n", " ");
-			logger.error("insertGeneratedScene - Conversion of generated scene to model failed. {}", msg);
-			return "Conversion of generated scene to model failed.";
-		}
-        
+
         String graphUri = URIconstants.GRAPH_PREFIX() + record.getId() + URIconstants.GENERATED_SCENES_GRAPH_SUFFIX;
-        
-        return insertModelIntoTripleStore(sceneModel, graphUri);
+
+		String update = URIconstants.INSERT_PREFIXES() + "\n"; 
+		update = update + "INSERT { GRAPH <"+graphUri+"> {\n";
+		update = update + sceneAnnotation +"\n";
+		update = update + "} } WHERE {}";
+		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+graphUri+">");
+		request.add(update);
+		
+		return submitUpdateRequestToTripleStore(request);
+		
 	}
 	
 	private Map<String,Map<String,Interval>> retrieveSceneIntervals(Model modelWithScenes) {
@@ -636,7 +804,7 @@ public class AnnotationManager {
                	Interval i = new Interval(startTime.getLong(), endTime.getLong());
                 scenes.put(sceneid.toString(), i);
 			}
-
+			qexec.close();
 		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("retrieveSceneIntervals - QUERY_ALL_SCENES - query failed {}", msg);
@@ -649,6 +817,16 @@ public class AnnotationManager {
 	private Model matchScenes(Model annotationModel, Map<String,Map<String,Interval>> movieSceneIntervals) {
 
 		Map<String,Map<String,Interval>> movieAnnotationIntervals = new HashMap<String, Map<String,Interval>>();
+		
+		Property sceneIdProp = annotationModel.getProperty(URIconstants.ONTOLOGY_PREFIX()+"sceneId");
+
+		// First remove all scene id statements from model
+		StmtIterator sceneStmts = annotationModel.listStatements((Resource)null, sceneIdProp, (RDFNode)null);
+		final Set<Statement> stmtsToDelete = new HashSet<Statement>();
+		sceneStmts.forEachRemaining(st -> stmtsToDelete.add(st));
+		for (Statement statement : stmtsToDelete) {
+			annotationModel.remove(statement);
+		}
         
 		String queryAnnotations = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ALL_SCENES().replaceFirst("\\?body ao:annotationType <"+URIconstants.RESOURCE_PREFIX()+"AnnotationType/Scene>.", "");
 		try (QueryExecution qexec = QueryExecutionFactory.create(queryAnnotations, annotationModel)) {
@@ -671,7 +849,8 @@ public class AnnotationManager {
                	Interval i = new Interval(startTime.getLong(), endTime.getLong());
                	annotations.put(annoid.toString(), i);
 
-			}			
+			}
+			qexec.close();
 		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("matchScenes - QUERY_ALL_ANNOTATIONS - Model query failed {}", msg);
@@ -689,7 +868,7 @@ public class AnnotationManager {
         			if (Interval.isThereOverlapWithTolerance(annoInterval, sceneInterval)) {
         				annotationMatched = true;
         				Resource annoResource = annotationModel.getResource(URIconstants.MEDIA_PREFIX()+mediaid+"/"+annoid);
-        	            Property sceneIdProp = annotationModel.getProperty(URIconstants.ONTOLOGY_PREFIX()+"sceneId");
+        	            
         				Statement stmt = annotationModel.createStatement(annoResource, sceneIdProp, sceneid);
         				annotationModel.add(stmt);
         			}
@@ -704,7 +883,6 @@ public class AnnotationManager {
 	}
 	
 	
-	// TODO unify insert methods
 	public String insertAnnotations(String mediaId, String extractor, InputStream content) {
 		logger.info("insertAnnotations for movie "+mediaId+", extractor "+extractor);
 		
@@ -722,9 +900,9 @@ public class AnnotationManager {
 		if (sceneIntervals == null) {
 			return "Querying for existing scenes failed.";
 		}
-		if (sceneIntervals.size() == 0) {
-			logger.error("insertAnnotations - no scenes found in triple store.");
-			return "No scenes found in triple store.";
+		if (sceneIntervals.size() == 0 || sceneIntervals.get(mediaId) == null) {
+			logger.error("insertAnnotations - no scenes for movie "+mediaId+" found in triple store.");
+			return "No scenes for movie "+mediaId+" found in triple store.";
 		}
 		
 		Model matchedModel = matchScenes(model, sceneIntervals);
@@ -735,8 +913,36 @@ public class AnnotationManager {
 		
         String graphUri = URIconstants.GRAPH_PREFIX() + mediaId + "/" +extractor;
         
-        return insertModelIntoTripleStore(matchedModel, graphUri);
+        return insertModelIntoTripleStore(matchedModel, mediaId, graphUri);
         
+	}
+	
+	private String updateSceneAssociations(String mediaId, Map<String, Map<String, Interval>> sceneIntervals) {
+		logger.info("updateSceneAssociations for movie "+mediaId);
+		
+		String removeRes = removeGeneratedScene(mediaId);
+		if ( removeRes != null) {
+			return removeRes;
+		}
+		
+		Set<String> extractorGraphs = new HashSet<String>();
+		for (String extractor : MetadataConstants.EXTRACTORS) {
+			extractorGraphs.add(URIconstants.GRAPH_PREFIX() + mediaId + "/" + extractor);
+		}
+		
+		for (String graphUri : extractorGraphs) {
+			Model annotations = getAnnotations(mediaId, null, null, graphUri);
+			if (annotations.size() > 0) {
+				logger.info("updateSceneAssociations - graph "+graphUri);
+				Model matchedModel = matchScenes(annotations, sceneIntervals);
+				String insertRes = insertModelIntoTripleStore(matchedModel, mediaId, graphUri);
+				if (insertRes != null) {
+					return insertRes;
+				}
+			}
+		}
+		
+		return null;
 	}
 
 	public String insertAdveneResult(String mediaId, InputStream content) {
@@ -768,8 +974,14 @@ public class AnnotationManager {
 		}
 
         String graphUri = URIconstants.GRAPH_PREFIX() + mediaId + URIconstants.MANUAL_ANNOTATIONS_GRAPH_SUFFIX;
-
-        return insertModelIntoTripleStore(matchedModel, graphUri);
+        
+        String result = insertModelIntoTripleStore(matchedModel, mediaId, graphUri);
+        
+        if (result == null) {
+        	return updateSceneAssociations(mediaId, sceneIntervals);
+        } else {
+        	return result;
+        }
 		
 	}
 }

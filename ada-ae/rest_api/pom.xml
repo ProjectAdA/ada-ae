@@ -10,7 +10,7 @@
 		<dependency>
 		    <groupId>io.javalin</groupId>
 		    <artifactId>javalin</artifactId>
-		    <version>3.13.0</version>
+		    <version>3.13.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -18,17 +18,10 @@
 			<version>1.7.30</version>
 		</dependency>
 		
-		<!--  <dependency>
-		    <groupId>org.apache.jena</groupId>
-		    <artifactId>apache-jena-libs</artifactId>
-		    <version>3.16.0</version>
-		    <type>pom</type>
-		</dependency>-->
-
 		<dependency>
 		    <groupId>org.apache.jena</groupId>
 		    <artifactId>apache-jena-libs</artifactId>
-		    <version>4.0.0</version>
+		    <version>3.17.0</version>
 		    <type>pom</type>
 		</dependency>
 
