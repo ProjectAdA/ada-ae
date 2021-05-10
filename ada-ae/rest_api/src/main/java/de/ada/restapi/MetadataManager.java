@@ -8,13 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.datatypes.xsd.impl.XSDBaseNumericType;
 import org.apache.jena.graph.Node;
@@ -29,8 +22,6 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.modify.request.QuadDataAcc;
 import org.apache.jena.sparql.modify.request.UpdateDataInsert;
-import org.apache.jena.update.UpdateExecutionFactory;
-import org.apache.jena.update.UpdateProcessor;
 import org.apache.jena.update.UpdateRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,20 +31,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class MetadataManager {
 
-	private final String sparqlEndpoint;
-	private final String sparqlAuthEndpoint;
-	private final String sparqlUser;
-	private final String sparqlPassword;
+	private String sparqlEndpoint;
+	private String sparqlAuthEndpoint;
+	private String sparqlUser;
+	private String sparqlPassword;
+	
 	private static MetadataManager instance;
 
-	final Logger logger;
+	private static final Logger logger = LoggerFactory.getLogger(MetadataManager.class);
 
 	private MetadataManager(String endpoint, String authEndpoint, String user, String password) {
 		this.sparqlEndpoint = endpoint;
 		this.sparqlAuthEndpoint = authEndpoint;
 		this.sparqlUser = user;
 		this.sparqlPassword = password;
-		logger = LoggerFactory.getLogger(MetadataManager.class);
 	}
 
 	public static MetadataManager getInstance(String endpoint, String authEndpoint, String user, String password) {
@@ -105,7 +96,8 @@ public class MetadataManager {
 		
 		return object;
 	}
-	
+
+	/*
 	// TODO refactor to reuse in AnnotationManager
 	private UpdateProcessor createUpdateProcessor(UpdateRequest request, boolean auth) {
 		if (auth) {
@@ -118,6 +110,7 @@ public class MetadataManager {
 			return UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
 		}
 	}
+	*/
 	
 	public String deleteMedia(String mediaId) {
 		logger.info("deleteMedia - "+mediaId);
@@ -135,16 +128,10 @@ public class MetadataManager {
 			request.add("CLEAR GRAPH <"+graph+">;");
 		}
 		
-		// TODO Use submit method of Annotation Manager		
-		try {
-			logger.info("deleteMedia - clear graphs - size "+graphsToDelete.size());
-			logger.debug("deleteMedia - SPARQL UPDATE {}", request.toString());
-			UpdateProcessor processor = createUpdateProcessor(request, true);
-			processor.execute();
-		} catch (Exception e) {
-			String msg = e.toString().replace("\n", " ");
-			logger.error("clearGraph - UpdateProcessor - Exception {}", msg);
-			return "Triplestore clear graph failed.";
+		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, sparqlUser, sparqlPassword);
+		String result = am.submitUpdateRequestToTripleStore(request);
+		if (result != null) {
+			return "Triplestore clear graph failed. "+result;
 		}
 		
 		return null;
@@ -174,6 +161,7 @@ public class MetadataManager {
 	        			maxShortId = maxLit.getInt();
 	        		}
 	        	}
+	        	qexec.close();
 	        } catch (Exception e) {
 				String msg = e.toString().replace("\n", " ");
 				logger.error("addMedia - QUERY_MAX_SHORTID - Triplestore query failed {}", msg);
@@ -225,19 +213,12 @@ public class MetadataManager {
 
 		request.add("CLEAR GRAPH <"+graph.getURI()+">;");
 		request.add(new UpdateDataInsert(acc));		
-		
-		try {
-			logger.info("addMedia - SPARQL UPDATE - size {}", request.toString().length());
-			logger.debug("addMedia - SPARQL UPDATE - {}", request.toString());
-			UpdateProcessor processor = createUpdateProcessor(request, true);
-			processor.execute();
-		} catch (Exception e) {
-			String msg = e.toString().replace("\n", " ");
-			logger.error("addMedia - insert - UpdateProcessor - Exception - {}", msg);
-			return "Triplestore metadata update failed.";
-		}
-		
+
 		AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, sparqlUser, sparqlPassword);
+		String result = am.submitUpdateRequestToTripleStore(request);
+		if (result != null) {
+			return "Triplestore metadata update failed. "+result;
+		}
 		
 		if (newMovie) {
 			return am.insertGeneratedScene(record);
@@ -290,6 +271,7 @@ public class MetadataManager {
         	logger.debug("getMovieMetadata - SPARQL QUERY {}", queryScenes);
         	ResultSet set = qexec.execSelect();
         	sceneResult = convertResultSetToListOfMaps(set);
+        	qexec.close();
         } catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("getMovieMetadata - QUERY_ALL_SCENES - Triplestore query failed {}", msg);
@@ -314,6 +296,7 @@ public class MetadataManager {
 			logger.debug("getMovieMetadata - SPARQL QUERY {}", queryCounts);
         	ResultSet set = qexec.execSelect();
         	countres = convertResultSetToListOfMaps(set);
+        	qexec.close();
         } catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("getMovieMetadata - QUERY_ANNOTATION_TYPE_COUNTS - Triplestore query failed {}", msg);
@@ -340,6 +323,7 @@ public class MetadataManager {
 			logger.debug("getMovieMetadata - SPARQL QUERY {}", query);
         	ResultSet set = qexec.execSelect();        	
         	tmpResult = convertResultSetToListOfMaps(set);
+        	qexec.close();
         } catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - QUERY_METADATA - Triplestore query failed {}", "getMovieMetadata", msg);
@@ -374,7 +358,7 @@ public class MetadataManager {
 			logger.debug("getOntology - SPARQL QUERY {}", query);
             ResultSet set = qexec.execSelect();
             tempResult = convertResultSetToListOfMaps(set);
-            
+        	qexec.close();
         } catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - QUERY_ONTOLOGY_ELEMENTS - Triplestore query failed {}", "getOntology", msg);
@@ -414,6 +398,7 @@ public class MetadataManager {
                 subElements.put(elemNode.asResource().getURI(), subs);
                 
             }
+        	qexec.close();
         } catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - QUERY_ONTOLOGY_LINKS - Triplestore query failed {}", "getOntology", msg);

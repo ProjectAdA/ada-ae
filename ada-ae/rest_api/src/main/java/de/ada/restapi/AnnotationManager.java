@@ -58,20 +58,19 @@ import com.github.jsonldjava.utils.JsonUtils;
 
 public class AnnotationManager {
 
-	private final String sparqlEndpoint;
-	private final String sparqlAuthEndpoint;
-	private final String sparqlUser;
-	private final String sparqlPassword;
+	private String sparqlEndpoint;
+	private String sparqlAuthEndpoint;
+	private String sparqlUser;
+	private String sparqlPassword;
 	private static AnnotationManager instance;
 
-	final Logger logger;
+	private static final Logger logger = LoggerFactory.getLogger(AnnotationManager.class);
 
 	private AnnotationManager(String endpoint, String authEndpoint, String user, String password) {
 		this.sparqlEndpoint = endpoint;
 		this.sparqlAuthEndpoint = authEndpoint;
 		this.sparqlUser = user;
 		this.sparqlPassword = password;
-		logger = LoggerFactory.getLogger(AnnotationManager.class);
 	}
 
 	public static AnnotationManager getInstance(String endpoint, String authEndpoint, String user, String password) {
@@ -203,6 +202,7 @@ public class AnnotationManager {
 		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
 			logger.info("{} Query for mediaId ({}) scenes({}) types({})", "getAnnotations", mediaId, scenes, types);
 			result = qexec.execDescribe();
+        	qexec.close();
         } catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - Query annotations - Triplestore query failed {}", "getAnnotations", msg);
@@ -233,6 +233,7 @@ public class AnnotationManager {
 		
 		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
 			result = qexec.execDescribe();
+        	qexec.close();
         } catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - Text search annotations - Triplestore query failed {}", "textSearch", msg);
@@ -292,7 +293,7 @@ public class AnnotationManager {
 					AnnotationMetadata amd = new AnnotationMetadata(annoUri, new Interval(begin.getLong(), end.getLong()));
 					annotations.add(amd);
 	        	}
-	        	
+	        	qexec.close();
 	        } catch (Exception e) {
 				String msg = e.toString().replace("\n", " ");
 				logger.error("{} - QUERY VALUE_SEARCH_SELECT_TEMPLATE - Triplestore query failed {} {}", "valueSearch", values, msg);
@@ -370,10 +371,11 @@ public class AnnotationManager {
 		query = query.replaceFirst("\\?target oa:hasSource <<MEDIA>>.","");
 		query = query.replaceFirst("<<SCENEFILTER>>", "");
 		query = query.replaceFirst("<<TYPEFILTER>>", annoFilter);
-		query = query.replaceFirst("FROM <<GRAPH>>>","");
+		query = query.replaceFirst("FROM <<GRAPH>>","");
 		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
 			logger.info("{} - QUERY_ANNOTATIONS_TEMPLATE - Annotations: {}", "valueSearch", numValue);
 			result = qexec.execDescribe();
+        	qexec.close();
         } catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - QUERY_ANNOTATIONS_TEMPLATE - Triplestore query failed - Annotations: {} - {}", "valueSearch", numValue, msg);
@@ -448,33 +450,54 @@ public class AnnotationManager {
 	 * @param auth
 	 * @return
 	 */
-	private UpdateProcessor createUpdateProcessor(UpdateRequest request, boolean auth) {
+	/*private UpdateProcessor createUpdateProcessor(UpdateRequest request, boolean auth) {
 		if (auth) {
+
 			CredentialsProvider credsProvider = new BasicCredentialsProvider();
 			Credentials credentials = new UsernamePasswordCredentials(sparqlUser, sparqlPassword);
 			credsProvider.setCredentials(AuthScope.ANY, credentials);
-			CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultCredentialsProvider(credsProvider).build();
-			return UpdateExecutionFactory.createRemote(request, sparqlAuthEndpoint, httpClient);
+			HttpContext httpContext = new BasicHttpContext();
+			httpContext.setAttribute(HttpClientContext.CREDS_PROVIDER, credsProvider);
+			UpdateProcessor up = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
+			((UpdateProcessRemote) up).setHttpContext(httpContext);
+			return up;
+			
+//			CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultCredentialsProvider(credsProvider).build();
+//			return UpdateExecutionFactory.createRemote(request, sparqlAuthEndpoint, httpClient);
 		} else {
 			return UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
 		}
 	}
-	
+	*/
 	/**
-	 * Executes the update request.
+	 * Executes an update request for the triplestore. 
 	 * @param request
 	 * @return Error message in case of failure or null if success
 	 */
-	private String submitUpdateRequestToTripleStore(UpdateRequest request) {
+	public String submitUpdateRequestToTripleStore(UpdateRequest request) {
+		logger.info("submitUpdateRequestToTripleStore - request size {}", request.toString().length());
+		logger.debug("submitUpdateRequestToTripleStore - request - {}", request.toString());
+		CloseableHttpClient httpClient = null; 
 		try {
-			logger.info("submitUpdateRequestToTripleStore - request size {}", request.toString().length());
-			logger.debug("submitUpdateRequestToTripleStore - request - {}", request.toString());
-			UpdateProcessor processor = createUpdateProcessor(request, true);
+			
+			CredentialsProvider credsProvider = new BasicCredentialsProvider();
+			Credentials credentials = new UsernamePasswordCredentials(sparqlUser, sparqlPassword);
+			credsProvider.setCredentials(AuthScope.ANY, credentials);
+			httpClient = HttpClientBuilder.create().setDefaultCredentialsProvider(credsProvider).build();
+			UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlAuthEndpoint, httpClient);
 			processor.execute();
 		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("submitUpdateRequestToTripleStore - request failed - {}", msg);
 			return "Triplestore update request failed. "+msg.replace("\"", "");
+		} finally {
+			if (httpClient != null) {
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+					return "HTTP Connection to triplestore could not be closed. "+e.toString().replace("\n", " ").replace("\"", "");
+				}
+			}
 		}
 	
 		return null;
@@ -514,9 +537,11 @@ public class AnnotationManager {
 		// Before inserting new data the content of graph is removed completely
 		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
 		submitUpdateRequestToTripleStore(request);
+		
+		CloseableHttpClient client = null;
 
 		try {
-			CloseableHttpClient client = HttpClients.createDefault();
+			client = HttpClients.createDefault();
 			
 			MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 			builder.addBinaryBody("file", turtleString.getBytes(), ContentType.APPLICATION_OCTET_STREAM, mediaId+".ttl");
@@ -548,7 +573,6 @@ public class AnnotationManager {
 				logger.error("insertModelIntoTripleStore - Response of RDF uploader could not be parsed. {}", IOUtils.toString(entity.getContent(), "UTF-8"));
 				return "Response of RDF uploader could not be parsed.";
 			}	
-			client.close();
 			
 			if (statusCode != HttpStatus.SC_OK) {
 				logger.error("insertModelIntoTripleStore - RDF uploader service call failed. Code: {} Msg: {}", statusCode, errormsg);
@@ -559,6 +583,14 @@ public class AnnotationManager {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("insertModelIntoTripleStore - RDF uploader service call failed - {}", msg);
 			return "RDF uploader service call failed. "+msg.replace("\"", "");
+		} finally {
+			if (client != null) {
+				try {
+					client.close();
+				} catch (IOException e) {
+					return "HTTP Connection to RDF uploader could not be closed. "+e.toString().replace("\n", " ").replace("\"", "");
+				}
+			}
 		}
 		
 		return null;
@@ -804,11 +836,12 @@ public class AnnotationManager {
                	Interval i = new Interval(startTime.getLong(), endTime.getLong());
                 scenes.put(sceneid.toString(), i);
 			}
-			qexec.close();
 		} catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("retrieveSceneIntervals - QUERY_ALL_SCENES - query failed {}", msg);
 			return null;
+		} finally {
+			qexec.close();
 		}
 		
 		return movieSceneIntervals;

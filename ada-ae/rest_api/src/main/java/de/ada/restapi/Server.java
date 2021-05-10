@@ -420,10 +420,10 @@ public class Server {
 				record = om.readValue(ctx.body(), MetadataRecord.class);
 
 			} catch (JsonProcessingException e) {
-				returnError(ctx, "Not a valid json input. JsonProcessingException.", 400, e);
+				returnError(ctx, "Not a valid json input.", 400, e);
 				return;
 			} catch (IllegalArgumentException iae) {
-				returnError(ctx, "Unknown json field supplied. IllegalArgumentException.", 400, iae);
+				returnError(ctx, "Unknown json field supplied.", 400, iae);
 				return;
 			}
 			
@@ -464,20 +464,21 @@ public class Server {
 				returnError(ctx, "Exactly one upload_file is required.", 500, null);
 				return;
 			}
-			
+
+			logger.info("uploadAdvenePackage - media id "+mediaId+" - filename "+uploadedFiles.get(0).getFilename());
+
 			InputStream upload_content = uploadedFiles.get(0).getContent();
 			String filename = uploadedFiles.get(0).getFilename();
-			
 			InputStream converted_result = null;
-			
-			logger.info("uploadAdvenePackage - media id "+mediaId+" - filename "+uploadedFiles.get(0).getFilename());
+			CloseableHttpClient client = null;
 			
 			try {
-				CloseableHttpClient client = HttpClients.createDefault();
+				client = HttpClients.createDefault();
 				HttpPost post = new HttpPost(ADVENE_SERVICE_URL);
 				MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 				builder.addBinaryBody("file", upload_content, ContentType.APPLICATION_OCTET_STREAM, filename);
 				post.setEntity(builder.build());
+				upload_content.close();
 
 				logger.info("uploadAdvenePackage - Advene service call at "+ADVENE_SERVICE_URL);
 
@@ -487,6 +488,7 @@ public class Server {
 				
 				if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
 					String result = IOUtils.toString(resultInputStream, StandardCharsets.UTF_8.name());
+					resultInputStream.close();
 					returnError(ctx, "Advene service call failed.", 500, new Exception(result));
 					return;
 				}
@@ -501,12 +503,13 @@ public class Server {
 			if (converted_result != null) {
 				AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
 				String result = am.insertAdveneResult(mediaId, converted_result);
+				converted_result.close();
+				client.close();
 				if (result != null) {
 					returnError(ctx, result, 500, null);
 					return;
 				}
 			}
-			
 			
 		});
 
