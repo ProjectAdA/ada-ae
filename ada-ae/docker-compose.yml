@@ -71,8 +71,11 @@ services:
       - ADVENE_SERVICE_URL=http://advene-service:5002/convertazp
       - RDF_UPLOADER_URL=http://rdf-uploader:5003/uploadrdf
     networks:
-      - ada-ae
-      - ada-rproxy
+      ada-ae: {}
+      ada-rproxy: {}
+      ada-rest-api:
+        aliases:
+          - ada-rest-api
 #    ports:
 #      - 7002:7002
     depends_on:
@@ -157,5 +160,14 @@ networks:
       driver: default
       config:
         - subnet: 172.21.10.0/29
+
+  ada-rest-api:
+    name: ada-rest-api
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.21.11.0/27
+
   ada-rproxy:
      external: true
