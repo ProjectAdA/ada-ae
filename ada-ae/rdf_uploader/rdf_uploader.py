@@ -144,5 +144,5 @@ if __name__ == '__main__':
         print("TRIPLESTORE_PORT NOT SET", file=sys.stderr)
         sys.exit(1) 
 
-    app.run(host='0.0.0.0', port=5003)
-    #serve(app, host='0.0.0.0', port=5003)
+    #app.run(host='0.0.0.0', port=5003)
+    serve(app, host='0.0.0.0', port=5003)
