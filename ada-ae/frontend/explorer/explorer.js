@@ -232,7 +232,7 @@ function init_movie_tree() {
 	var tree_data = [];
 	
 	var cats = [...new Set(movies.map(m => m.category))].sort();
-	cats.forEach(c => tree_data.push({title: c, key: c, tooltip: c, count: 0, uri: null, expanded: false, unselectable: true, children: []}));
+	cats.forEach(c => tree_data.push({title: c, original_title: c, key: c, tooltip: c, count: 0, uri: null, expanded: false, unselectable: true, children: []}));
 	
 	movies.forEach(function(movie){
 		var tooltip = movie.title;
@@ -242,7 +242,7 @@ function init_movie_tree() {
 		var movie_data = {title: truncate_name(movie.title, 27), original_title:movie.title, key: movie.id, tooltip: tooltip, count: 0, uri: movie.mediauri, expanded: false, unselectable: true, children: []};
 		if (movie.scenes !== null && movie.scenes.length > 0) {
 			movie.scenes.forEach(function(scene) {
-				movie_data.children.push({title: zeroPad(scene.shortId,2)+": "+truncate_name(scene.name, 23), original_title: scene.name, key: scene.id, expanded: false, unselectable: true });
+				movie_data.children.push({title: zeroPad(scene.shortId,2)+": "+truncate_name(scene.name, 23), original_title: zeroPad(scene.shortId,2)+": "+scene.name, tooltip: scene.name, key: scene.id, expanded: false, unselectable: true });
 			});
 		}
 		
@@ -830,24 +830,6 @@ function clear_workspace() {
 	unlock_interface();
 }
 
-function count_annotations() {
-	console.log("count_annotations");
-
-	var all_annotations = request_results.flatMap(ro => ro.annotations);
-	var requested_scenes = request_results.flatMap(ro => ro.sceneids);
-	//var filtered_annotations = requested_scenes.length > 0 ? filter_annotations(all_annotations, requested_scenes) : all_annotations;
-
-
-	var all_annotations = request_results.flatMap(ro => ro.annotations);
-	console.log(all_annotations);
-	
-	var sceneids = all_annotations.flatMap(a => a.sceneId);
-	console.log(sceneids);
-	
-	var sceneid_counts = sceneids.reduce((acc, e) => acc.set(e, (acc.get(e) || 0) + 1), new Map());
-	console.log(sceneid_counts);
-}
-
 function execute_requests(request_objects) {
 	console.log("execute_requests");
 	
@@ -872,7 +854,7 @@ function execute_requests(request_objects) {
 		});
 		request_results = request_results.concat(requests_with_results);
 		updateURL();
-		count_annotations();
+		//count_annotations();
 		initFrameTrail();
 		unlock_interface();
 	});
@@ -950,10 +932,9 @@ function submit_value_search() {
 	execute_requests(request_objects);
 	
 }
+
 function filter_sceneids(annotations, requested_scenes) {
-	// Deep copy annotations in order keep originals inside of "requests_results" and pass modified annotations to Frametrail
-	var result = JSON.parse(JSON.stringify(annotations));
-	
+	var result = annotations;
 	// Remove scene id assignments for non-requested scenes to avoid display of large cross-scene annotations
 	result.forEach(function(annotation) {
 		if (Array.isArray(annotation['sceneId'])) {
@@ -969,21 +950,139 @@ function filter_sceneids(annotations, requested_scenes) {
 	return result;
 }
 
+function node_update(node) {
+	var textsize = 27;
+	if (node.getLevel() == 3) {
+		textsize = 23;
+	}
+	if (node.data.count == 0) {
+		node.setTitle(truncate_name(node.data.original_title, textsize));
+		node.unselectable = false;
+		node.setSelected(false);
+		node.unselectable = true;
+	} else {
+		node.setTitle(truncate_name(node.data.original_title, textsize) + " ("+node.data.count+")");
+		node.unselectable = false;
+		if (node.getLevel() == 3 || (node.getLevel() == 2 && node.getChildren() == null)) {
+			node.setSelected(true);
+		}
+	}
+}
+
+function node_sum(node) {
+	var subnodes = node.getChildren();
+	if (typeof subnodes !== 'undefined') {
+		node.data.count = subnodes.reduce((acc, val) => acc + val.data.count, 0);
+	}
+}
+
+function update_fancytrees() {
+	console.log("update_fancytrees");
+	
+	var annoTree = $.ui.fancytree.getTree("#annotation_tree");
+	var movieTree = $.ui.fancytree.getTree("#movie_tree");
+	
+	annoTree.getRootNode().getChildren().forEach(node_sum);
+	movieTree.getRootNode().getChildren().forEach(node_sum);
+	
+	annoTree.visit(node_update);
+	movieTree.visit(node_update);
+
+	annoTree.render();
+	movieTree.render();
+}
+
+function count_annotations(annotations) {
+	console.log("count_annotations");
+	
+	var counts = new Map();
+	var countarray = [];
+	
+	// Count scene ids
+	var allsceneids = annotations.flatMap(a => a.sceneId);
+	var sceneid_counts = allsceneids.reduce((acc, e) => acc.set(e, (acc.get(e) || 0) + 1), new Map());
+
+	// Count movie ids
+	var allmovies = annotations.map(a => a.target.source.substr(a.target.source.lastIndexOf("/")+1));
+	var movie_counts = allmovies.reduce((acc, e) => acc.set(e, (acc.get(e) || 0) + 1), new Map());
+
+	// Get annotation type ids that have subelements (predefined values)
+	var metatypes = annotationlevels.flatMap(l => l.subElements);
+	var metatypeid_with_subelements = metatypes.filter(t => t.subElements.length > 0).map(t => t.elementUri);
+
+	// Retrieve annotation bodies and filter textual bodies that also have a predefinded values body
+	var allbodies = annotations.flatMap(a => a.body)
+	var filtered_bodies = allbodies.filter(b => (!metatypeid_with_subelements.includes(b.annotationType) && b.type == "TextualBody") || (b.type !== "TextualBody") );
+	
+	// Count type ids
+	var alltypes = filtered_bodies.flatMap(b => b.annotationType);
+	alltypes.forEach(function(part, index, theArray) {
+		theArray[index] = "AnnotationType/"+theArray[index].substr(theArray[index].lastIndexOf("/")+1);
+	});
+	var type_counts = alltypes.reduce((acc, e) => acc.set(e, (acc.get(e) || 0) + 1), new Map());
+	
+	// Count value ids
+	var allvalues = filtered_bodies.flatMap(b => b.annotationValue).filter(v => typeof v !== 'undefined');
+	var allvalues = allvalues.concat(filtered_bodies.flatMap(b => b.annotationValueSequence).filter(v => typeof v !== 'undefined'));
+	allvalues.forEach(function(part, index, theArray) {
+		theArray[index] = "AnnotationValue/"+theArray[index].substr(theArray[index].lastIndexOf("/")+1);
+	});
+	var value_counts = allvalues.reduce((acc, e) => acc.set(e, (acc.get(e) || 0) + 1), new Map());
+
+	// Set counts on nodes of annotation type tree
+	var annotree_counts = new Map([...type_counts, ...value_counts]);
+	$.ui.fancytree.getTree("#annotation_tree").visit(function(node){
+		var count = annotree_counts.get(node.key);
+		if (typeof count !== 'undefined') {
+			node.data.count = count;
+		} else {
+			node.data.count = 0;
+		}
+	});
+
+	// Set counts on nodes of movie tree
+	var movietree_counts = new Map([...sceneid_counts, ...movie_counts]);
+	$.ui.fancytree.getTree("#movie_tree").visit(function(node){
+		var count = movietree_counts.get(node.key);
+		if (typeof count !== 'undefined') {
+			node.data.count = count;
+		} else {
+			node.data.count = 0;
+		}
+	});
+}
+
+
 function getCurrentAnnotationData() {
 	console.log("getCurrentAnnotationData");
 	var annotation_structure = [];
 	
-	var movie_search_annotations = request_results.flatMap(ro => ro.searchtype == "moviesearch" ? ro.annotations : []);  
+	// Get all moviesearch annotation from the request results
+	var movie_search_annotations = request_results.flatMap(ro => ro.searchtype == "moviesearch" ? ro.annotations : []);
+	// Deep copy annotations in order keep originals inside of "requests_results" and pass modified annotations to Frametrail
+	movie_search_annotations = JSON.parse(JSON.stringify(movie_search_annotations));
 	var requested_scenes = request_results.flatMap(ro => ro.sceneids.map(s => s.split("_")[1]));
 	var movie_search_annotations = requested_scenes.length > 0 ? filter_sceneids(movie_search_annotations, requested_scenes) : movie_search_annotations;
 	
-	var rest_annotations = request_results.flatMap(ro => ro.searchtype != "moviesearch" ? ro.annotations : []);  
+	var rest_annotations = request_results.flatMap(ro => ro.searchtype != "moviesearch" ? ro.annotations : []);
+	// Deep copy annotations in order keep originals inside of "requests_results" and pass modified annotations to Frametrail
+	rest_annotations = JSON.parse(JSON.stringify(rest_annotations));
 	
-	var filtered_annotations = movie_search_annotations.concat(rest_annotations);
+	// Filter duplicates that can come from different requests
+	var tmp_anno_ids = [];
+	var filtered_annotations = [];
+	movie_search_annotations.concat(rest_annotations).forEach(function(anno){
+		if (!tmp_anno_ids.includes(anno.id)) {
+			tmp_anno_ids.push(anno.id);
+			filtered_annotations.push(anno);
+		}
+	});
+	
+	count_annotations(filtered_annotations);
+	update_fancytrees();
 	
 	var all_movies = [...new Set(filtered_annotations.map(a => a.target.source.substr(a.target.source.lastIndexOf("/")+1)))];
 	var all_scenes = [...new Set(filtered_annotations.flatMap(a => a.sceneId))];
-	console.log("all scenes", requested_scenes);
 	
 	all_movies.forEach(function(movieid) {
 		var movie = movies.find(m => m.id == movieid);
