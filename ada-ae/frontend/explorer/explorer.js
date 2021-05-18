@@ -4,6 +4,12 @@ var type_list = [];
 var request_results = [];
 var autocomplete_values = {};
 
+// var annotation_tree_timeout_id;
+// var movie_tree_timeout_id;
+var tree_timeout_id;
+
+var trees_deselected_nodes = [];
+
 const zeroPad = (num, places) => String(num).padStart(places, '0')
 
 function lock_interface() {
@@ -122,6 +128,75 @@ function add_autocomplete(fieldname, autocomplete_valuename, focusFunction) {
         }).focus(focusFunction);
 }
 
+function retrieve_trees_selection_state() {
+	console.log("retrieve_trees_selection_state");
+	var annoTree = $.ui.fancytree.getTree("#annotation_tree");
+	var movieTree = $.ui.fancytree.getTree("#movie_tree");
+	var resanno = annoTree.getSelectedNodes().map(n => n.key);
+	var resmovie = movieTree.getSelectedNodes().map(n => n.key);
+	return resanno.concat(resmovie);
+}
+
+function get_deselected_nodes() {
+	var annoTree = $.ui.fancytree.getTree("#annotation_tree");
+	var movieTree = $.ui.fancytree.getTree("#movie_tree");
+	var result = [];
+	annoTree.visit(function(node){
+		if (!node.unselectable && node.getChildren() == null) {
+			if (!node.isSelected() && !node.isPartsel()) {
+				result.push(node.key);
+			}
+		}
+	});
+	movieTree.visit(function(node){
+		if (!node.unselectable && node.getChildren() == null) {
+			if (!node.isSelected() && !node.isPartsel()) {
+				result.push(node.key);
+			}
+		}
+	});
+	return result;
+}
+
+function fix_deselected_nodes() {
+	if (trees_deselected_nodes.length == 0) {
+		return;
+	}
+	var annoTree = $.ui.fancytree.getTree("#annotation_tree");
+	var movieTree = $.ui.fancytree.getTree("#movie_tree");
+	annoTree.visit(function(node){
+		if (trees_deselected_nodes.includes(node.key)) {
+			node.setSelected(false);
+		}
+	});
+	movieTree.visit(function(node){
+		if (trees_deselected_nodes.includes(node.key)) {
+			node.setSelected(false);
+		}
+	});
+	
+}
+
+function tree_select_eventhandler(event, data) {
+	var node = data.node;
+	// console.log(node);
+	// console.log(event);
+	// console.log(data);
+	
+	if (typeof data.originalEvent !== 'undefined') {
+		if (typeof tree_timeout_id !== 'undefined') {
+			window.clearTimeout(tree_timeout_id);
+		}
+		
+		trees_deselected_nodes = get_deselected_nodes();
+		console.log("get_deselected_nodes", trees_deselected_nodes);
+		
+		//trees_last_selection_state = retrieve_trees_selection_state();
+		
+		tree_timeout_id = window.setTimeout(reload_frametrail, tree_selection_timeout);
+	}
+}
+
 function init_ontology_tree() {
 	console.log("init_ontology_tree");
 	
@@ -163,6 +238,7 @@ function init_ontology_tree() {
 				window.open(node.data.uri, "_blank");
 			}
 		},
+		select: tree_select_eventhandler,
 		cookieId: "fancytree-annotations",
 		idPrefix: "fancytree-annotations-"
 	});
@@ -262,6 +338,7 @@ function init_movie_tree() {
 				window.open(node.data.uri, "_blank");
 			}
 		},
+		select: tree_select_eventhandler,
 		cookieId: "fancytree-movies",
 		idPrefix: "fancytree-movies-"
 	});
@@ -817,6 +894,12 @@ function remove_request(id) {
 }
 
 
+function reload_frametrail() {
+	lock_interface();
+	initFrameTrail();
+	unlock_interface();
+}
+
 function clear_workspace() {
 	console.log("clear_workspace");
 	
@@ -854,7 +937,6 @@ function execute_requests(request_objects) {
 		});
 		request_results = request_results.concat(requests_with_results);
 		updateURL();
-		//count_annotations();
 		initFrameTrail();
 		unlock_interface();
 	});
@@ -959,10 +1041,12 @@ function node_update(node) {
 		node.setTitle(truncate_name(node.data.original_title, textsize));
 		node.unselectable = false;
 		node.setSelected(false);
+		node.unselectableStatus = false;
 		node.unselectable = true;
 	} else {
 		node.setTitle(truncate_name(node.data.original_title, textsize) + " ("+node.data.count+")");
 		node.unselectable = false;
+		node.unselectableStatus = undefined;
 		if (node.getLevel() == 3 || (node.getLevel() == 2 && node.getChildren() == null)) {
 			node.setSelected(true);
 		}
@@ -971,7 +1055,7 @@ function node_update(node) {
 
 function node_sum(node) {
 	var subnodes = node.getChildren();
-	if (typeof subnodes !== 'undefined') {
+	if (typeof subnodes !== 'undefined' && subnodes != null) {
 		node.data.count = subnodes.reduce((acc, val) => acc + val.data.count, 0);
 	}
 }
@@ -1052,6 +1136,55 @@ function count_annotations(annotations) {
 	});
 }
 
+function isAnnotationKept(annotation, deselected_nodes) {
+	
+	var sceneids = [];
+	
+	if (Array.isArray(annotation['sceneId'])) {
+		sceneids = annotation['sceneId'];
+	} else {
+		sceneids.push(annotation['sceneId']);
+	}
+	
+	sceneids = sceneids.filter(s => !deselected_nodes.includes(s));
+	if (sceneids.length == 0) {
+		return false;
+	}
+	
+	var bodies = [];
+	if (Array.isArray(annotation['body'])) {
+		bodies = annotation['body'];
+	} else {
+		bodies.push(annotation['body']);
+	}
+	
+	var types = [...new Set(bodies.flatMap(b => b.annotationType))];
+	types.forEach(function(part, index, theArray) {
+		theArray[index] = "AnnotationType/"+theArray[index].substr(theArray[index].lastIndexOf("/")+1);
+	});
+	
+	types = types.filter(t => !deselected_nodes.includes(t));
+	if (types.length == 0) {
+		return false;
+	}
+	
+	var aval = bodies.flatMap(b => b.annotationValue).filter(v => typeof v !== 'undefined');
+	var avalseq = bodies.flatMap(b => b.annotationValueSequence).filter(v => typeof v !== 'undefined');
+	
+	var values = [...new Set(aval.concat(avalseq))];
+	values.forEach(function(part, index, theArray) {
+		theArray[index] = "AnnotationValue/"+theArray[index].substr(theArray[index].lastIndexOf("/")+1);
+	});
+	
+	if (values.length !== 0) {
+		values = values.filter(t => !deselected_nodes.includes(t));
+		if (values.length == 0) {
+			return false;
+		}
+	}
+	
+	return true;
+}
 
 function getCurrentAnnotationData() {
 	console.log("getCurrentAnnotationData");
@@ -1080,9 +1213,18 @@ function getCurrentAnnotationData() {
 	
 	count_annotations(filtered_annotations);
 	update_fancytrees();
+	fix_deselected_nodes();
 	
-	var all_movies = [...new Set(filtered_annotations.map(a => a.target.source.substr(a.target.source.lastIndexOf("/")+1)))];
-	var all_scenes = [...new Set(filtered_annotations.flatMap(a => a.sceneId))];
+	// Filter according to the selection in the trees
+	var frametrail_annotations = [];
+	filtered_annotations.forEach(function(anno){
+		if (isAnnotationKept(anno, trees_deselected_nodes)) {
+			frametrail_annotations.push(anno);
+		}
+	});
+	
+	var all_movies = [...new Set(frametrail_annotations.map(a => a.target.source.substr(a.target.source.lastIndexOf("/")+1)))];
+	var all_scenes = [...new Set(frametrail_annotations.flatMap(a => a.sceneId))];
 	
 	all_movies.forEach(function(movieid) {
 		var movie = movies.find(m => m.id == movieid);
@@ -1100,7 +1242,7 @@ function getCurrentAnnotationData() {
 		
 	});
 	
-	filtered_annotations.forEach(function(anno){
+	frametrail_annotations.forEach(function(anno){
 		var movieid = anno.target.source.substr(anno.target.source.lastIndexOf("/")+1);
 		var movie = annotation_structure.find(m => m.id == movieid);
 		var scenes_to_process = [];

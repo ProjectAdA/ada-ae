@@ -2,6 +2,7 @@
 * Generic Config Parameters
 ******************************/
 const apiUrl='/api';
+//const apiUrl='http://127.0.0.1:7070/api';
 
 const requestUrls = {
 	moviesearch: apiUrl + '/jsonld/getAnnotations/',
@@ -47,3 +48,5 @@ let picture_preview_width = 200;
 let max_value_fields = 5;
 let predefined_values_selectable = false;
 
+// After making a selection in the Fancytree, wait x ms before reloading Frametrail
+let tree_selection_timeout = 2000;
