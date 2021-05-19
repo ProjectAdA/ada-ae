@@ -507,7 +507,7 @@ public class AnnotationManager {
 		
 		// Usually we would insert a model using JENA Update Requests, but Virtuoso has bug since
 		// several years that prevents us from inserting larger models.
-		// See: https://stackoverflow.com/questions/16487746/jena-sparql-update-doesnt-execute
+		// See: https://github.com/openlink/virtuoso-opensource/issues/581
 		
 		/*
 		StringWriter triples = new StringWriter();
