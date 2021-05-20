@@ -142,6 +142,34 @@ services:
         max-file: "5"
     restart: always
 
+  lodview:
+    image: ada-ae/lodview:1.0
+    build:
+      context: ./lodview
+      dockerfile: Dockerfile
+      args:
+        # Don't use global OPENJDK_VER. WAR compile does not work with Openjdk 16 or 17!
+        - OPENJDK_VER=15
+        - TOMCAT_VER=${TOMCAT_VER:-9.0.46}
+        - ONTOLOGY_BASE_URI=${ONTOLOGY_BASE_URI:-http://ada.cinepoetics.org}
+        - PUBLIC_SPARQL_URL=http://ada.cinepoetics.org:9090/sparql
+    env_file:
+      - .env
+      - ada-ae.env
+    networks:
+      ada-ae: {}
+      ada-rproxy: {}
+#    ports:
+#      - 8080:8080
+    depends_on:
+      - ada-triplestore
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "300k"
+        max-file: "5"
+    restart: always
+
 volumes:
   import: {}
   
