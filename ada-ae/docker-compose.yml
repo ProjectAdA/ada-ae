@@ -187,7 +187,7 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.21.10.0/29
+        - subnet: 172.21.10.0/28
 
   ada-rest-api:
     name: ada-rest-api
