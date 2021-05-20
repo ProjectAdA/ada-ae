@@ -22,17 +22,38 @@ function unlock_interface() {
 
 function request_ontology() {
 	console.log("request_ontology");
-	return $.get(apiUrl + "/getOntology");
+	return $.ajax({
+		url: apiUrl + "/getOntology",
+		timeout: 10000,
+		error: function(request, status, error) {
+			alert("Loading ontology failed. API could not be reached. Please reload the page.\n responseText: " + request.responseText + "\n request.status: " + request.status + "\n status: " + status + "\n error: " + error);
+			unlock_interface();
+		}
+	});
 }
 
 function request_annotations(url) {
 	console.log("request_annotations");
-	return $.get(url);
+	return $.ajax({
+		url: url,
+		timeout: 50000,
+		error: function(request, status, error) {
+			alert("Loading annotations failed. API could not be reached. Please submit the request again.\n responseText: " + request.responseText + "\n request.status: " + request.status + "\n status: " + status + "\n error: " + error);
+			unlock_interface();
+		}
+	});	
 }
 
 function request_movie_metadata() {
 	console.log("request_movie_metadata");
-	return $.get(apiUrl + "/getMovieMetadata");
+	return $.ajax({
+		url: apiUrl + "/getMovieMetadata",
+		timeout: 10000,
+		error: function(request, status, error) {
+			alert("Loading movie metadata failed. API could not be reached. Please reload the page.\n responseText: " + request.responseText + "\n request.status: " + request.status + "\n status: " + status + "\n error: " + error);
+			unlock_interface();
+		}
+	});
 }
 
 function truncate_name(name, length) {
@@ -1257,7 +1278,11 @@ function getCurrentAnnotationData() {
 			}
 			scenes_to_process.forEach(function(sceneid){
 				var scene = movie.scenes.find(s => s.id == sceneid);
-				scene.annotations.push(anno);
+				if (typeof scene === 'undefined') {
+					console.log("Error: scene id of annotation is missing in movie metadata",anno.id);
+				} else {
+					scene.annotations.push(anno);
+				}
 			});
 		}
 	});
