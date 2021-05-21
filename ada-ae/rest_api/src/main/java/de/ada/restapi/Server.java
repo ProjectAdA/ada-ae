@@ -427,7 +427,7 @@ public class Server {
 				return;
 			}
 			
-			if (mdm.validateMissing(record)) {
+			if (mdm.isMandatoryFieldMissing(record)) {
 				returnError(ctx, "Mandatory json field missing,", 400, null);
 				return;
 			} else {

@@ -55,7 +55,7 @@ public class MetadataManager {
 		return instance;
 	}
 
-	public boolean validateMissing(MetadataRecord record) {
+	public boolean isMandatoryFieldMissing(MetadataRecord record) {
 		return record.getId() == null || record.getRuntime() == null || record.getDuration() == null
 				|| record.getTitle() == null || record.getYear() == null || record.getCategory() == null
 				|| record.getPlayoutUrl() == null;
@@ -260,7 +260,8 @@ public class MetadataManager {
 		
 		List<Map<String, Object>> result = new ArrayList<Map<String,Object>>();
 		List<Map<String, Object>> countres = new ArrayList<Map<String,Object>>();
-		Map<Object,Map<Object,Object>> counts = new HashMap<Object, Map<Object,Object>>(); 
+		Map<Object,Map<Object,Object>> counts = new HashMap<Object, Map<Object,Object>>();
+		Map<Object,Integer> totalCounts = new HashMap<Object, Integer>();
 		
 		List<Map<String, Object>> sceneResult = new ArrayList<Map<String,Object>>();
 		Map<String,List<Map<String, Object>>> scenes = new HashMap<String, List<Map<String,Object>>>();
@@ -314,6 +315,13 @@ public class MetadataManager {
         		counts.put(source, map);
         	}
         	map.put(annotype, count);
+        	Integer total = totalCounts.get(source);
+        	if (total == null) {
+        		total = (Integer)count;
+        	} else {
+        		total = total + (Integer)count;
+        	}
+    		totalCounts.put(source, total);
 		}
         
         List<Map<String, Object>> tmpResult = null;
@@ -339,6 +347,13 @@ public class MetadataManager {
 				List<Map<String, Object>> sceneList = scenes.get(mediaId);
 				map.put("scenes", sceneList);
 				result.add(map);
+				
+				Integer annotationsTotal = totalCounts.get(mediaId);
+				if (annotationsTotal == null) {
+					map.put("annotationsTotal", 0);
+				} else {
+					map.put("annotationsTotal", annotationsTotal);
+				}
 			}
 		}
 

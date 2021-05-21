@@ -43,28 +43,26 @@ public class MetadataQueries {
 	
 	public static final String QUERY_METADATA() {
 		return
-			"select ?mediauri ?id ?shortId ?title ?year ?runtime ?duration ?category ?playoutUrl ?director ?abstract ?releaseDate ?writer ?language ?broadcaster ?imdbId ?actors ?filmversion (count(?target) as ?annotationsTotal) WHERE {\r\n"
-			+ "	?mediauri rdf:type <http://schema.org/VideoObject>.\r\n"
-			+ "	?mediauri rdfs:label ?title.\r\n"
-			+ "	?mediauri <http://dbpedia.org/ontology/year> ?year.\r\n"
-			+ "	?mediauri <http://dbpedia.org/ontology/Work/runtime> ?runtime.\r\n"
-			+ "	?mediauri <http://schema.org/duration> ?duration.\r\n"
-			+ "	?mediauri <http://schema.org/genre> ?category.\r\n"
-			+ "	?mediauri <http://schema.org/url> ?playoutUrl.\r\n"
-			+ "	?mediauri <https://w3id.org/idsa/core/checkSum> ?id.\r\n"
-			+ "	OPTIONAL {?mediauri <http://purl.org/dc/elements/1.1/identifier> ?shortId}.\r\n" // TODO remove optional
-			+ "	OPTIONAL {?target oa:hasSource ?mediauri}.\r\n"
-			+ "	OPTIONAL {?mediauri <http://schema.org/director> ?director.}\r\n"
-			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/abstract> ?abstract.}\r\n"
-			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/releaseDate> ?releaseDate.}\r\n"
-			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/writer> ?writer.}\r\n"
-			+ "	OPTIONAL {?mediauri <http://purl.org/dc/terms/language> ?language.}\r\n"
-			+ "	OPTIONAL {?mediauri <http://schema.org/broadcaster> ?broadcaster.}\r\n"
-			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/imdbId> ?imdbId.}\r\n"
-			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/actor> ?actors.}\r\n"
-			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/filmVersion> ?filmversion.}\r\n"
-			+ "}\r\n"
-			+ "GROUP BY ?mediauri ?id ?shortId ?title ?year ?runtime ?duration ?category ?playoutUrl ?director ?abstract ?releaseDate ?writer ?language ?broadcaster ?imdbId ?actors ?filmversion";
+			"select ?mediauri ?title ?year ?runtime ?duration ?category ?playoutUrl ?id ?shortId ?director ?abstract ?releaseDate ?writer ?language ?broadcaster ?imdbId ?actors ?filmversion WHERE {\n"
+			+ "	?mediauri rdf:type <http://schema.org/VideoObject>.\n"
+			+ "	?mediauri rdfs:label ?title.\n"
+			+ "	?mediauri <http://dbpedia.org/ontology/year> ?year.\n"
+			+ "	?mediauri <http://dbpedia.org/ontology/Work/runtime> ?runtime.\n"
+			+ "	?mediauri <http://schema.org/duration> ?duration.\n"
+			+ "	?mediauri <http://schema.org/genre> ?category.\n"
+			+ "	?mediauri <http://schema.org/url> ?playoutUrl.\n"
+			+ "	?mediauri <https://w3id.org/idsa/core/checkSum> ?id.\n"
+			+ "	?mediauri <http://purl.org/dc/elements/1.1/identifier> ?shortId.\n"
+			+ "	OPTIONAL {?mediauri <http://schema.org/director> ?director.}\n"
+			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/abstract> ?abstract.}\n"
+			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/releaseDate> ?releaseDate.}\n"
+			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/writer> ?writer.}\n"
+			+ "	OPTIONAL {?mediauri <http://purl.org/dc/terms/language> ?language.}\n"
+			+ "	OPTIONAL {?mediauri <http://schema.org/broadcaster> ?broadcaster.}\n"
+			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/imdbId> ?imdbId.}\n"
+			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/actor> ?actors.}\n"
+			+ "	OPTIONAL {?mediauri <http://dbpedia.org/ontology/filmVersion> ?filmversion.}\n"
+			+ "}\n";
 	}
 			
 	public static final String QUERY_ONTOLOGY_ELEMENTS() {
