@@ -61,30 +61,10 @@ public class MetadataManager {
 				|| record.getPlayoutUrl() == null;
 	}
 	
-	/*
-	public String clearGraph(String graphURI) {
-		logger.info("clearGraph - {}", graphURI);
-		
-		UpdateRequest request = new UpdateRequest();
-		request.add("CLEAR GRAPH <"+graphURI+">;");
-		UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
-		
-		try {
-			logger.debug("clearGraph - SPARQL UPDATE {}", request.toString());
-			processor.execute();
-		} catch (Exception e) {
-			String msg = e.toString().replace("\n", " ");
-			logger.error("clearGraph - UpdateProcessor - Exception {}", msg);
-			return "Triplestore clear graph failed.";
-//			msg = msg.replace("\"", "");
-//			return "{\"error\": {\"message\": \"TripleStore delete metadata graph failed .\",\"code\": 500,\"cause\": \"" + msg
-//					+ "\"}}";
-		}
-
-		return null;
-	}
-	*/
 	public Node createURI(String value) {
+		if (value == null || value.contains(" ")) {
+			return null;
+		}
 		Node object = null;
 		try {
 			URL u = new URL((String)value);
@@ -97,21 +77,6 @@ public class MetadataManager {
 		return object;
 	}
 
-	/*
-	// TODO refactor to reuse in AnnotationManager
-	private UpdateProcessor createUpdateProcessor(UpdateRequest request, boolean auth) {
-		if (auth) {
-			CredentialsProvider credsProvider = new BasicCredentialsProvider();
-			Credentials credentials = new UsernamePasswordCredentials(sparqlUser, sparqlPassword);
-			credsProvider.setCredentials(AuthScope.ANY, credentials);
-			CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultCredentialsProvider(credsProvider).build();
-			return UpdateExecutionFactory.createRemote(request, sparqlAuthEndpoint, httpClient);
-		} else {
-			return UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
-		}
-	}
-	*/
-	
 	public String deleteMedia(String mediaId) {
 		logger.info("deleteMedia - "+mediaId);
 		Set<String> graphsToDelete = new HashSet<String>();
@@ -210,7 +175,7 @@ public class MetadataManager {
 			acc.addTriple(new Triple(mediaNode, propertyNode, object));
 			
 		}
-
+		
 		request.add("CLEAR GRAPH <"+graph.getURI()+">;");
 		request.add(new UpdateDataInsert(acc));		
 
