@@ -2,7 +2,6 @@
 * Generic Config Parameters
 ******************************/
 const apiUrl='/api';
-//const apiUrl='http://127.0.0.1:7070/api';
 
 const requestUrls = {
 	moviesearch: apiUrl + '/jsonld/getAnnotations/',
@@ -19,7 +18,7 @@ const htaccessLogin = false;
 
 // Corpus Types and Auto Types
 const CorpusTypes = 'AnnotationType/DialogueEmotion,DialogueIntensity,MusicMood,SoundGestureDynamics,Volume,BodyLanguageEmotion,BodyLanguageIntensity,CameraAngle,CameraMovementDirection,RecordingPlaybackSpeed,ColourRange,DominantMovementDirection,FieldSize,ImageBrightness,ImageIntrinsicMovement,DialogueText,FoundFootage,MontageFigureMacro,Shot,ShotDuration,ImageContent,Setting,Scene';
-const AutoTypes = 'AnnotationType/neuraltalk2,shotdetect,opticalflow,asr,im2txt,densecap,yamnet,soundenvelope,yamnet_music,yamnet_speech,yamnet_silence,yamnet_other';
+const AutoTypes = 'AnnotationType/shotdetection,motion_dynamics,deepspeech,aspect_ratio,im2txt,densecap,soundenvelope,yamnet_music,yamnet_speech,yamnet_silence,yamnet_other';
 
 // annotation types to render as soundwave, based on "advene:type" property
 const typesToRenderAsSoundwave = [
