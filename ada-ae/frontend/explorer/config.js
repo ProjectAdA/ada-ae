@@ -1,7 +1,7 @@
 /******************************
 * Generic Config Parameters
 ******************************/
-//const apiUrl='/api';
+const apiUrl='/api';
 
 const requestUrls = {
 	moviesearch: apiUrl + '/jsonld/getAnnotations/',
