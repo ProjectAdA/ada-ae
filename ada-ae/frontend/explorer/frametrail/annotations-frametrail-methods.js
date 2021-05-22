@@ -697,7 +697,7 @@ function renderAnnotations(sceneAnnotations, targetSelector, movieDuration, offs
         if (!dialogueTextCache[movieID] || dialogueTextCache[movieID].length == 0) {
             dialogueTextCache[movieID] = [];
             $.ajax({
-                url : apiUrl + '/jsonld/getAnnotations/'+ movieID +'/AnnotationType/DialogueText',
+                url : requestUrls['moviesearch'] + movieID +'/'+transcriptType,
                 type: 'GET',
                 success : function(result) {
                     
@@ -712,7 +712,7 @@ function renderAnnotations(sceneAnnotations, targetSelector, movieDuration, offs
 
                     for (var dta=0; dta<dtAnnotations.length; dta++) {
                         if (dtAnnotations[dta].body.annotationType && 
-                            dtAnnotations[dta].body.annotationType == 'http://ada.filmontology.org/resource/'+ ontologyDate +'/AnnotationType/DialogueText') {
+                            dtAnnotations[dta].body.annotationType.endsWith(transcriptType)) {
                             dialogueTextCache[movieID].push(dtAnnotations[dta]);
                         }
                     }
@@ -738,7 +738,7 @@ function renderAnnotations(sceneAnnotations, targetSelector, movieDuration, offs
         if (!image2TextCache[movieID] || image2TextCache[movieID].length == 0) {
             image2TextCache[movieID] = [];
             $.ajax({
-                url : apiUrl + '/jsonld/getAnnotations/'+ movieID +'/AnnotationType/im2txt',
+                url : requestUrls['moviesearch'] + movieID +'/'+visualDescriptionType,
                 type: 'GET',
                 success : function(result) {
                     
@@ -753,7 +753,7 @@ function renderAnnotations(sceneAnnotations, targetSelector, movieDuration, offs
 
                     for (var i2ta=0; i2ta<i2tAnnotations.length; i2ta++) {
                         if (i2tAnnotations[i2ta].body.annotationType && 
-                            i2tAnnotations[i2ta].body.annotationType == 'http://ada.filmontology.org/resource/'+ ontologyDate +'/AnnotationType/im2txt') {
+                            i2tAnnotations[i2ta].body.annotationType.endsWith(visualDescriptionType)) {
                             image2TextCache[movieID].push(i2tAnnotations[i2ta]);
                         }
                     }

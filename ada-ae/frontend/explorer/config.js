@@ -1,7 +1,7 @@
 /******************************
 * Generic Config Parameters
 ******************************/
-const apiUrl='/api';
+//const apiUrl='/api';
 
 const requestUrls = {
 	moviesearch: apiUrl + '/jsonld/getAnnotations/',
@@ -16,9 +16,14 @@ const exportBaseURL = baseURL + '/explorer/';
 // (incl. login button & auth dialog on initialization)
 const htaccessLogin = false;
 
-// Corpus Types and Auto Types
+// Define predefined sets of annotation types
 const CorpusTypes = 'AnnotationType/DialogueEmotion,DialogueIntensity,MusicMood,SoundGestureDynamics,Volume,BodyLanguageEmotion,BodyLanguageIntensity,CameraAngle,CameraMovementDirection,RecordingPlaybackSpeed,ColourRange,DominantMovementDirection,FieldSize,ImageBrightness,ImageIntrinsicMovement,DialogueText,FoundFootage,MontageFigureMacro,Shot,ShotDuration,ImageContent,Setting,Scene';
 const AutoTypes = 'AnnotationType/shotdetection,motion_dynamics,deepspeech,aspect_ratio,im2txt,densecap,soundenvelope,yamnet_music,yamnet_speech,yamnet_silence,yamnet_other';
+
+// AnnotationType that is queried to display timecode based transcript
+const transcriptType = 'AnnotationType/DialogueText';
+// AnnotationType that is queried to display timecode based visual descriptions (shot captions)
+const visualDescriptionType = 'AnnotationType/im2txt';
 
 // annotation types to render as soundwave, based on "advene:type" property
 const typesToRenderAsSoundwave = [
