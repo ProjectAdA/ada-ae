@@ -170,6 +170,27 @@ services:
         max-file: "5"
     restart: always
 
+  ontoviz:
+    image: ada-ae/ontoviz:latest
+    build:
+      context: ./ontoviz
+      dockerfile: Dockerfile
+    env_file:
+      - ada-ae.env
+    networks:
+      - ada-ae
+      - ada-rproxy
+    depends_on:
+      - ada-rest-api
+    user: "nginx:nginx"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "300k"
+        max-file: "5"
+    restart: always
+
+
 volumes:
   import: {}
   
