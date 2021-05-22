@@ -10,7 +10,7 @@ const requestUrls = {
 }
 
 // used to link back to the "live" version from an exported file
-const exportBaseURL = 'http://ada.filmontology.org/explorer/';
+const exportBaseURL = baseURL + '/explorer/';
 
 // should htaccess auth methods be used? 
 // (incl. login button & auth dialog on initialization)
