@@ -28,7 +28,7 @@ const typesToRenderAsSoundwave = [
 
 // annotation types to render as barchart, based on "advene:type" property
 const typesToRenderAsBarchart = [
-    'opticalflow'
+    'motion_dynamics'
 ];
 
 // annotation types to render as barchart, regardless of a scale
