@@ -173,17 +173,17 @@ body[data-timeline-charts="true"] .mainContainer .timelineList .userTimelineWrap
 
 /* Special Case Volume / Soundwave Info */
 body .mainContainer .timelineList .userTimelineWrapper[data-type-label="As | Volume"],
-body .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | opticalflow"],
+body .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | motion_dynamics"],
 body .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | soundenvelope"] {
     padding-bottom: 60px !important;
 }
 body .mainContainer .timelineList .userTimelineWrapper[data-type-label="As | Volume"] .userTimeline,
-body .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | opticalflow"] .userTimeline,
+body .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | motion_dynamics"] .userTimeline,
 body .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | soundenvelope"] .userTimeline {
     height: 40px !important;
 }
 .mainContainer .timelineList .userTimelineWrapper[data-type-label="As | Volume"] .userTimeline .compareTimelineElement,
-.mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | opticalflow"] .userTimeline .compareTimelineElement,
+.mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | motion_dynamics"] .userTimeline .compareTimelineElement,
 .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | soundenvelope"] .userTimeline .compareTimelineElement {
     /*pointer-events: none;*/
     opacity: 1;
@@ -205,7 +205,7 @@ body:not(.dividerLinesOn) .mainContainer .timelineList .compareTimelineElement[d
     border-right: 1px solid #fff !important;
 }
 body[data-timeline-color="true"] .mainContainer .timelineList .userTimelineWrapper[data-type-label="As | Volume"] .userTimeline .compareTimelineElement,
-body[data-timeline-color="true"] .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | opticalflow"] .userTimeline .compareTimelineElement,
+body[data-timeline-color="true"] .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | motion_dynamics"] .userTimeline .compareTimelineElement,
 body[data-timeline-color="true"] .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | soundenvelope"] .userTimeline .compareTimelineElement {
     background: transparent !important;
 }
@@ -253,7 +253,7 @@ body[data-timeline-color="true"] .timelineList .compareTimelineElement[data-orig
     fill: #777777 !important;
 }
 
-body[data-timeline-color="true"] .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | asr"] .compareTimelineElement[title="SIL"] {
+body[data-timeline-color="true"] .mainContainer .timelineList .userTimelineWrapper[data-type-label="Auto | deepspeech"] .compareTimelineElement[title="SIL"] {
     background: #cfcfcf !important;
 }
 
