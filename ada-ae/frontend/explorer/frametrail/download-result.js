@@ -24,7 +24,7 @@ function downloadResult() {
 
         $.ajax({
             type: 'GET',
-            url: 'annotations-frametrail-methods.js',
+            url: 'frametrail/annotations-frametrail-methods.js',
             dataType: 'text',
             success: function( data ) {
                 FrameTrailMethodsJS = data;
