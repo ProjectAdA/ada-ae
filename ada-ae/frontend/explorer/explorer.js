@@ -719,7 +719,6 @@ function getTypeLongId(shortId) {
 	if (shortId == "a") {
 		result = AutoTypes;
 	} else {
-		// TODO Subelement check
 		annotationlevels.forEach(function(level) {
 			if (level.subElements !== null) {
 				var type = level.subElements.find(t => t.sequentialNumber == Number(shortId));
@@ -735,15 +734,18 @@ function getTypeLongId(shortId) {
 function getValueLabelById(id) {
 	var res = null;
 	var restype = null;
-	// TODO Subelement check
 	annotationlevels.forEach(function(level){
-		level.subElements.forEach(function(type){
-			var value = type.subElements.find(v => v.id.split("/")[1] == id);
-			if (value) {
-				res = value;
-				restype = type;
-			}
-		});
+		if (level.subElements !== null) {
+			level.subElements.forEach(function(type){
+				if (type.subElements !== null) {
+					var value = type.subElements.find(v => v.id.split("/")[1] == id);
+					if (value) {
+						res = value;
+						restype = type;
+					}
+				}
+			});
+		}
 	});
 	
 	if (res) {

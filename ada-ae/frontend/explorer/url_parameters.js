@@ -75,15 +75,16 @@ function updateUIfromURL() {
 	var request_objects = [];
 
 	urlValues.requests.forEach(function(req){
-		var movieids = req.movieIDs.map(m => getMovieLongId(m));
+		var movieids = req.movieIDs.map(m => getMovieLongId(m)).filter(m => m !== "");
 		var sceneids = [];
 		if (movieids.length == 1) {
 			sceneids = req.sceneIDs.map(s => movieids[0] + "_" + getSceneLongId(movieids[0], s));
 		}
-		var typeids = req.typeIDs.map(t => getTypeLongId(t));
+		var typeids = req.typeIDs.map(t => getTypeLongId(t)).filter(t => t !== "");
 		var searchterm = Object.keys(req).includes("searchText") ? req.searchText : "";
 		var wholeWord = Object.keys(req).includes("wholeWord") ? req.wholeWord : false;
-		var valueids = req.valueIDs.map(v => v.map(sv => getValueLongId(sv)));
+		var valueids = req.valueIDs.map(v => v.map(sv => getValueLongId(sv)).filter(v => v !== ""));
+		console.log(valueids);
 		var ros = generate_request_objects(req.searchType, movieids, sceneids, typeids, searchterm, wholeWord, valueids);
 		request_objects = request_objects.concat(ros);
 	});
