@@ -81,7 +81,6 @@ function downloadResult() {
                         +   '      var visualDescriptionType = "'+ visualDescriptionType +'";\n'
                         +   '      var transcriptType = "'+ transcriptType +'";\n'
                         +   '      var requestUrls = {moviesearch: apiUrl + "/jsonld/getAnnotations/", textsearch: apiUrl + "/jsonld/textSearch/", valuesearch: apiUrl + "/jsonld/valueSearch/"};\n'
-                        +   '      var videoFilePrefix = "http://ada.filmontology.org/videos/";\n'
                         +   '      var dialogueTextCache = '+ JSON.stringify(dialogueTextCache) +';\n'
                         +   '      var image2TextCache = '+ JSON.stringify(image2TextCache) +';\n'
                         +   '      var resultCache = {};\n'

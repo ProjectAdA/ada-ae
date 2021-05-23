@@ -43,9 +43,6 @@ const specialTypesToRenderAsBarchart = [
     'ShotDuration'
 ];
 
-// video file prefix (can change while using video source settings window)
-let videoFilePrefix = 'http://ada.filmontology.org/videos/';
-
 // searchtab.js config parameters
 let picture_preview = true;
 let picture_preview_width = 200;

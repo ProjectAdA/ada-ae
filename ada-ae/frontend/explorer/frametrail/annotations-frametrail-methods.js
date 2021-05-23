@@ -1321,7 +1321,7 @@ function login(reloadAfterSuccess, initAfter) {
 
 function checkAuth(loginCallback) {
 
-    var testURL = videoFilePrefix + 'private/';
+    var testURL = 'private/';
 
     $.ajax({
         url : testURL +'test.json',
@@ -1375,7 +1375,7 @@ function openVideoSourceSettings() {
                       +   '  <div class="settingsContainer">'
                       +   '    <div class="message warning active">You can either replace the Video Base Path or choose to change each video path manually.<br> Paths can be either to an MP4 file or a YouTube / Vimeo URL.<br><br>CAREFUL: Local paths (eg. URL: "file:///[..]/video.mp4") only work if the Annotation Explorer is also opened directly from the HTML file (URL: "file:///[..]/AnnotationExplorer.html").</div>'
                       +   '    <label for="currentVideoFileBasePath">Replace Video Base Path: </label>'
-                      +   '    <input id="currentVideoFileBasePath"  style="width: 25%;"type="text" value="'+ videoFilePrefix +'">'
+                      +   '    <input id="currentVideoFileBasePath"  style="width: 25%;"type="text" value="">'
                       +   '    <label for="newVideoFileBasePath">with: </label>'
                       +   '    <input id="newVideoFileBasePath" placeholder="Enter new Video Base Path" style="width: 25%;"type="text" value="">'
                       +   '    <button class="button" type="button" id="replaceVideoFileBasePathButton">REPLACE ALL</button>'
