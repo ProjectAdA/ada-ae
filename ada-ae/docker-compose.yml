@@ -39,10 +39,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - ONTOLOGY_BASE_URI=${ONTOLOGY_BASE_URI:-http://ada.cinepoetics.org}
     env_file:
-      - ada-ae.env
+      - .env
     networks:
-      - ada-ae
       - ada-rproxy
     depends_on:
       - ada-rest-api
