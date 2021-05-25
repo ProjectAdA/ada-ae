@@ -17,8 +17,10 @@ services:
       - virtuoso-db:/database
       - import:/import
     networks:
-      - ada-ae
-      - ada-rproxy
+      ada-ae:
+        aliases:
+          - internal-ada-triplestore
+      ada-rproxy: {}
 #    ports:
 #      - 8890:8890
 #      - 1111:1111
@@ -72,11 +74,13 @@ services:
       - ADVENE_SERVICE_URL=http://advene-service:5002/convertazp
       - RDF_UPLOADER_URL=http://rdf-uploader:5003/uploadrdf
     networks:
-      ada-ae: {}
-      ada-rproxy: {}
+      ada-ae:
+        aliases:
+          - internal-ada-rest-api
       ada-rest-api:
         aliases:
-          - ada-rest-api
+          - internal-ada-rest-api
+      ada-rproxy: {}
 #    ports:
 #      - 7002:7002
     depends_on:
@@ -89,7 +93,7 @@ services:
         max-size: "300k"
         max-file: "5"
     restart: always
-    command: ["http://ada-triplestore:8890/sparql", "http://ada-triplestore:8890/sparql-auth", "/api"]
+    command: ["http://internal-ada-triplestore:8890/sparql", "http://internal-ada-triplestore:8890/sparql-auth", "/api"]
 
   advene-service:
     image: ada-ae/advene-service:1.0
@@ -126,7 +130,7 @@ services:
       - secrets.env
       - ada-ae.env
     environment:
-      - TRIPLESTORE_HOST=ada-triplestore
+      - TRIPLESTORE_HOST=internal-ada-triplestore
       - TRIPLESTORE_PORT=1111
     volumes:
       - import:/import
