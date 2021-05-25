@@ -142,7 +142,7 @@
 										<div align="left"><input type="file" id="imageupload" name="imageupload" class="imagesearchbutton" accept="image/png, image/jpg, image/jpeg" onchange="image_selection(event)"></div>
 										<span class="imageSearchFieldLabel">Max results:</span>
 										<span class="ui-widget">
-											<input id="ImageSearchFieldMax" name="ImageSearchFieldMax" class="imagesearchfield" placeholder="Default is 50" autocomplete="off"><br>
+											<input type="number" max="200" pattern="[0-9]+" id="ImageSearchFieldMax" name="ImageSearchFieldMax" class="imagesearchfield" placeholder="Default 50 - Max 200" autocomplete="off"><br>
 										</span>
 										<div align="left">Preview:</div>
 										<div id="imagepreviewcontainer"><img id="imagepreview" src="#" alt=" " width="200"/></div>

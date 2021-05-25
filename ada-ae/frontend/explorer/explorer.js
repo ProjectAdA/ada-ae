@@ -52,11 +52,12 @@ function request_movie_metadata() {
 	});
 }
 
-function request_image_search(file) {
+function request_image_search(file, numresults) {
 	console.log("request_image_search");
 
 	var data = new FormData();
-	data.append('file', file);
+	data.append('upload_file', file);
+	data.append('numresults', numresults);
 	return $.ajax({
 		url: apiUrl + "/imageSearch",
 		data: data,
@@ -1040,8 +1041,6 @@ function submit_value_search() {
 		value_ids.push(ids);
 	});
 	
-	console.log(value_ids);
-
 	var request_objects = generate_request_objects("valuesearch", movs, [], [], "", false, value_ids);
 	execute_requests(request_objects);
 	
@@ -1049,6 +1048,23 @@ function submit_value_search() {
 
 function submit_image_search() {
 	console.log("submit_image_search");
+	
+	var imgup = document.getElementById('imageupload');
+	var numresults = document.getElementById('ImageSearchFieldMax').value;
+
+	if (typeof numresults == 'undefined' || numresults == '') {
+		numresults = 50;
+	}
+	
+	if (imgup.files.length > 0) {
+		lock_interface();
+		$.when(request_image_search(imgup.files.item(0), numresults)).then(function(result){
+			unlock_interface();
+		})
+		
+	}
+	
+	
 }
 
 function filter_sceneids(annotations, requested_scenes) {
