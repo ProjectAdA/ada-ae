@@ -43,11 +43,8 @@ const specialTypesToRenderAsBarchart = [
     'ShotDuration'
 ];
 
-// searchtab.js config parameters
-let picture_preview = true;
-let picture_preview_width = 200;
+// Maximum number values that can be combined in value search
 let max_value_fields = 5;
-let predefined_values_selectable = false;
 
 // After making a selection in the Fancytree, wait x ms before reloading Frametrail
 let tree_selection_timeout = 2000;

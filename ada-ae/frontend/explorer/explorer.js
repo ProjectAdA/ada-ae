@@ -3,11 +3,7 @@ var annotationlevels = [];
 var type_list = [];
 var request_results = [];
 var autocomplete_values = {};
-
-// var annotation_tree_timeout_id;
-// var movie_tree_timeout_id;
 var tree_timeout_id;
-
 var trees_deselected_nodes = [];
 
 const zeroPad = (num, places) => String(num).padStart(places, '0')
@@ -200,19 +196,12 @@ function fix_deselected_nodes() {
 
 function tree_select_eventhandler(event, data) {
 	var node = data.node;
-	// console.log(node);
-	// console.log(event);
-	// console.log(data);
-	
 	if (typeof data.originalEvent !== 'undefined') {
 		if (typeof tree_timeout_id !== 'undefined') {
 			window.clearTimeout(tree_timeout_id);
 		}
 		
 		trees_deselected_nodes = get_deselected_nodes();
-		console.log("get_deselected_nodes", trees_deselected_nodes);
-		
-		//trees_last_selection_state = retrieve_trees_selection_state();
 		
 		tree_timeout_id = window.setTimeout(reload_frametrail, tree_selection_timeout);
 	}
@@ -1292,8 +1281,15 @@ function getCurrentAnnotationData() {
 	return annotation_structure;
 }
 
+function image_selection(event) {
+	var imagepreview = document.getElementById('imagepreview');
+	imagepreview.src = URL.createObjectURL(event.target.files[0]);
+}
+
 function init_interface() {
 	console.log("init_interface");
+	
+	document.getElementById('imageupload').value = '';
 	
 	lock_interface();
 	
