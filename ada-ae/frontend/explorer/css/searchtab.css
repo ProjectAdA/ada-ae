@@ -116,10 +116,29 @@ nav label:active { background: #ffffff; }
   width: 50px;
 }
 
+.imageSearchFieldLabel {
+  display: inline-block;
+  width: 80px;
+  text-align: left;
+}
+
 .moviesearchfield {
     border: 1px solid grey;
     border-radius: 3px;
     width: 170px;
+    margin: 3px 0px;
+}
+
+.imagesearchbutton {
+    border: 1px solid grey;
+    border-radius: 3px;
+    width: 242px;
+    margin: 3px 0px;
+}
+
+.imagesearchfield {
+    border: 1px solid grey;
+    border-radius: 3px;
     margin: 3px 0px;
 }
 

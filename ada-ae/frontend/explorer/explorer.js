@@ -52,6 +52,26 @@ function request_movie_metadata() {
 	});
 }
 
+function request_image_search(file) {
+	console.log("request_image_search");
+
+	var data = new FormData();
+	data.append('file', file);
+	return $.ajax({
+		url: apiUrl + "/imageSearch",
+		data: data,
+		type: 'POST',
+		processData: false,
+		contentType: false,
+		timeout: 10000,
+		error: function(request, status, error) {
+			alert("Image search request failed. API could not be reached. Please submit the request again. \n responseText: " + request.responseText + "\n request.status: " + request.status + "\n status: " + status + "\n error: " + error);
+			unlock_interface();
+		}
+	});
+}
+
+
 function truncate_name(name, length) {
 	if (name.length > length) {
 		return name.substring(0,length -3)+"...";
@@ -1025,6 +1045,10 @@ function submit_value_search() {
 	var request_objects = generate_request_objects("valuesearch", movs, [], [], "", false, value_ids);
 	execute_requests(request_objects);
 	
+}
+
+function submit_image_search() {
+	console.log("submit_image_search");
 }
 
 function filter_sceneids(annotations, requested_scenes) {

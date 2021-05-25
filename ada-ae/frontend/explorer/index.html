@@ -112,7 +112,7 @@
                             </div>
                             <div class="tab2">
                                 <p>
-                                    <div class="moviesearchdiv">
+									<div class="moviesearchdiv">
 										<span class="searchFieldLabel">Text:</span>
 										<span class="ui-widget">
 											<input id="TextSearchFieldInput" name="TextSearchFieldInput" class="moviesearchfield" placeholder="Enter search text..." autocomplete="off"><br>
@@ -137,9 +137,19 @@
                             </div>
                             <div class="tab3" align="center">
                                 <p>
-                                    <input type="file" name="imageupload" value="imageupload" id="imageupload" accept="image/png, image/jpg, image/jpeg" onchange="image_selection(event)">
-									<div id="imagepreviewcontainer"><img id="imagepreview" src="#" alt=" " width="200"/></div>
-                                    <input type="submit" value="Submit" id="ImageSearchButton" onclick="submit_image_search()">
+									<div class="moviesearchdiv">
+										<div align="left">Select an image:</div>
+										<div align="left"><input type="file" id="imageupload" name="imageupload" class="imagesearchbutton" accept="image/png, image/jpg, image/jpeg" onchange="image_selection(event)"></div>
+										<span class="imageSearchFieldLabel">Max results:</span>
+										<span class="ui-widget">
+											<input id="ImageSearchFieldMax" name="ImageSearchFieldMax" class="imagesearchfield" placeholder="Default is 50" autocomplete="off"><br>
+										</span>
+										<div align="left">Preview:</div>
+										<div id="imagepreviewcontainer"><img id="imagepreview" src="#" alt=" " width="200"/></div>
+									</div>
+									<div align="center">
+										<input type="submit" value="Submit" id="ImageSearchButton" onclick="submit_image_search()">
+									</div>
                                 </p>
                             </div>
                             <div class="tab4">
