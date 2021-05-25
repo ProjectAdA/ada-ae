@@ -73,6 +73,7 @@ services:
     environment:
       - ADVENE_SERVICE_URL=http://advene-service:5002/convertazp
       - RDF_UPLOADER_URL=http://rdf-uploader:5003/uploadrdf
+      - FRAME_SERACH_URL=http://reverse-frame-search:5000/query
     networks:
       ada-ae:
         aliases:

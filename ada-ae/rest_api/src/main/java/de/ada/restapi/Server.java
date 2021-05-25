@@ -11,17 +11,20 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,6 +71,11 @@ public class Server {
 	// URL of the RDF uploader service that inserts turtle files directly into Virtuoso using rdf_load
 	protected static String RDF_UPLOADER_URL = "";
 
+	// URL of the Reverse frame search that delivers similar images for a query image
+	protected static String FRAME_SERACH_URL = "";	
+
+	// Default number of results that frame search should return
+	protected static int FRAME_SERACH_DEFAULT_NUMBER_OF_RESULTS = 50;	
 
 	final Logger logger = LoggerFactory.getLogger(Server.class);
 
@@ -257,8 +265,6 @@ public class Server {
 
    		Map<String, Object> jsonld = am.modelToFramedJsonld(annotations);
    		if (jsonld == null) {
-			ctx.status(500);
-			ctx.contentType("application/json");
     		returnError(ctx, "Query result processing - Conversion to jsonld failed.", 500, null);
 			return;
    		}
@@ -363,6 +369,73 @@ public class Server {
 
         app.get("/jsonld/valueSearch/:values/:mediaIds", ctx -> {
         	handleValueSearch(ctx, true);
+        });
+        
+        app.post("/imageSearch", ctx -> {
+			if (!ctx.isMultipartFormData()) {
+				returnError(ctx, "Request is not multipart/form-data.", 500, null);
+				return;
+			}
+			
+			List<UploadedFile> uploadedFiles = ctx.uploadedFiles("upload_file");
+			
+			if (uploadedFiles == null || uploadedFiles.size() != 1) {
+				returnError(ctx, "Exactly one upload_file is required.", 500, null);
+				return;
+			}
+
+			String numresults = ctx.formParam("numresults");
+			if (numresults == null) {
+				returnError(ctx, "Field numresults is missing in request.", 500, null);
+				return;
+			}
+			
+			Integer numres = FRAME_SERACH_DEFAULT_NUMBER_OF_RESULTS;
+			try {
+				numres = Integer.valueOf(numresults);
+			}catch (NumberFormatException e) {
+			}
+			
+			InputStream content = uploadedFiles.get(0).getContent();
+
+			logger.info("imageSearch - numresults "+numresults+" - filename "+uploadedFiles.get(0).getFilename());
+			
+    		byte[] fileByteArray = IOUtils.toByteArray(content);
+    		String fileBase64 = Base64.encodeBase64String(fileByteArray);
+    		content.close();
+
+			String jsonRequest = "{\"query_image\": \""+fileBase64+"\", \"k\": "+numres+"}";
+			
+			CloseableHttpClient client = null;
+			
+			String result = "";
+			
+			try {
+				client = HttpClients.createDefault();
+    		    HttpPost request = new HttpPost(FRAME_SERACH_URL);
+    		    StringEntity params = new StringEntity(jsonRequest);
+    		    request.addHeader("Content-Type", "application/json");
+    		    request.setEntity(params);
+    		    
+    		    CloseableHttpResponse response = client.execute(request);
+    		    HttpEntity entity = response.getEntity();
+    		    result = EntityUtils.toString(entity);
+    		    response.close();
+    		    
+				if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+					returnError(ctx, "Reverse frame search service call failed.", 500, new Exception(result));
+					return;
+				}
+			} catch (Exception e) {
+				returnError(ctx, "Reverse frame search service call failed.", 500, e);
+				return;
+			} finally {
+				client.close();
+			}
+			
+			ctx.status(200);
+			ctx.contentType("application/json");
+			ctx.result(result);
         });
 
 		app.post("/deleteMedia", ctx -> {
@@ -482,7 +555,7 @@ public class Server {
 
 				logger.info("uploadAdvenePackage - Advene service call at "+ADVENE_SERVICE_URL);
 
-				HttpResponse response = client.execute(post);
+				CloseableHttpResponse response = client.execute(post); // TODO close response
 				HttpEntity entity = response.getEntity();
 				InputStream resultInputStream = entity.getContent();
 				
@@ -610,6 +683,14 @@ public class Server {
 			logger.info("Setting RDF_UPLOADER_URL to "+RDF_UPLOADER_URL);
 		} else {
 			logger.error("Environment variable RDF_UPLOADER_URL is not set");
+			System.exit(1);
+		}
+
+		if (System.getenv("FRAME_SERACH_URL") != null) {
+			FRAME_SERACH_URL = System.getenv("FRAME_SERACH_URL");
+			logger.info("Setting FRAME_SERACH_URL to "+RDF_UPLOADER_URL);
+		} else {
+			logger.error("Environment variable FRAME_SERACH_URL is not set");
 			System.exit(1);
 		}
 
