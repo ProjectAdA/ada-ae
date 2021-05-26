@@ -155,6 +155,27 @@ header #resultPanelActions #timelineOrderSettingsButton {
     transition-duration: 200ms;
     transition-property: left, width;
 }
+
+#imagesearchresults {
+    position: absolute;
+    top: 0px;
+    height: 100%;
+    box-sizing: border-box;
+    left: 0px;
+    width: 200px;
+    border-right: 1px solid #888;
+    background: #f3f3f3;
+    color: #333;
+    padding-right: 15px;
+	overflow-y: auto;
+	overflow-x: hidden;
+    display: none;
+}
+
+body.imagesearch #imagesearchresults {
+    display: block;
+}
+
 #sidebar {
     left: 0px;
     width: 324px;
@@ -399,9 +420,17 @@ body.sidebarClosed #main {
     transition-property: left;
     overflow: hidden;
 }
+body.imagesearch #resultPanelContainer {
+    left: 210px;
+    width: calc(100% - 220px);
+}
 body.compareMode #resultPanelContainer {
     left: 30px;
     width: calc(100% - 60px);
+}
+body.compareMode.imagesearch #resultPanelContainer {
+    left: 230px;
+    width: calc(100% - 260px);
 }
 .resultPanelNavButton {
     position: absolute;
@@ -413,6 +442,9 @@ body.compareMode #resultPanelContainer {
     color: #fff;
     opacity: .2;
     display: none;
+}
+body.imagesearch .resultPanelNavButton {
+    left: 200px;
 }
 body.compareMode .resultPanelNavButton {
     display: block;
@@ -523,14 +555,26 @@ body.compareMode #resultCount {
     transition-property: width;
     margin-right: 10px;
 }
+body.imagesearch .resultMovieItem {
+    width: calc(100vw - 545px);
+}
 body.sidebarClosed .resultMovieItem {
     width: calc(100vw - 44px);
+}
+body.sidebarClosed.imagesearch .resultMovieItem {
+    width: calc(100vw - 244px);
 }
 body.compareMode .resultMovieItem {
     width: calc(50vw - 198px);
 }
+body.compareMode.imagesearch .resultMovieItem {
+    width: calc(50vw - 298px);
+}
 body.sidebarClosed.compareMode .resultMovieItem {
     width: calc(50vw - 48px);
+}
+body.sidebarClosed.compareMode.imagesearch .resultMovieItem {
+    width: calc(50vw - 148px);
 }
 .resultMovieItem .sceneLabel {
     color: #fff;
