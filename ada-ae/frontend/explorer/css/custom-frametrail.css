@@ -284,6 +284,12 @@ body.sidebarClosed #main {
     line-height: 18px;
     max-height: 100%;
 }
+
+body.imagesearch #main #intro {
+    width: calc(100% - 200px);
+    left: 200px;
+}
+
 #main #intro .message {
     margin: 18px 13px;
 }
