@@ -156,6 +156,30 @@ header #resultPanelActions #timelineOrderSettingsButton {
     transition-property: left, width;
 }
 
+.imageresultlabel {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	color: #ffffff;
+	background: rgba(0, 0, 0, 0.6);
+}
+
+.imageresultdistance {
+	position: absolute;
+	bottom: 12px;
+	left: 12px;
+	color: #ffffff;
+	background: rgba(0, 0, 0, 0.6);
+}
+
+.imageresulttime {
+	position: absolute;
+	bottom: 12px;
+	right: -70px;
+	color: #ffffff;
+	background: rgba(0, 0, 0, 0.6);
+}
+
 #imagesearchresults {
     position: absolute;
     top: 0px;
