@@ -1046,8 +1046,75 @@ function submit_value_search() {
 	
 }
 
+function msToTime(s) {
+	var pad = (n, z = 2) => ('00' + n).slice(-z);
+	return pad(s/3.6e6|0) + ':' + pad((s%3.6e6)/6e4 | 0) + ':' + pad((s%6e4)/1000|0) + '.' + pad(s%1000, 3);
+}
+
+function remove_image_search_result() {
+	console.log("remove_image_search_result");
+	
+	var imagelistdiv = document.getElementById('imagelist');
+	imagelistdiv.innerHTML = '';
+
+	$('body').toggleClass('imagesearch', false); 
+}
+
+
+function show_image_search_result(framesearchresult) {
+	console.log("show_image_search_result");
+
+	var neighbors = framesearchresult['nearest_neighbors'];
+	if (typeof neighbors == 'undefined') {
+		alert("Image search result is corrupt. Expected field 'nearest_neighbors'. \n Request result: \n"+JSON.stringify(framesearchresult));
+	}
+	
+	var imagelistdiv = document.getElementById('imagelist');
+	imagelistdiv.innerHTML = '';
+	
+	if (neighbors.length == 0) {
+		imagelistdiv.innerHTML = 'Image search did not find any similar frames';
+	} else {
+		var i = 0;
+		neighbors.forEach(function(nres){
+			var nid = nres[0];
+			var nmilli = nres[1];
+			var ndist = nres[2];
+			var nimg = nres[3];
+			var nlabel = getMovieLabelById(nid);
+			
+			var imgdiv = document.createElement("div");
+			imgdiv.setAttribute('style', 'padding-bottom: 5px; border-bottom: 1px solid #bbb;');
+			var acid = "image_a_"+i;
+			var img = document.createElement("img");
+			img.setAttribute('src', 'data:image/png;base64,'+nimg);
+			img.setAttribute('width', 170);
+			img.setAttribute('style', 'margin-bottom: 0px; margin-top: 5px;');
+			//img.setAttribute('title', nid+'<br><img src="data:image/png;base64,'+nimg+'" />');
+			img.setAttribute('title', ' ');
+			img.id = acid;
+			imgdiv.appendChild(img);
+			
+			var labeldiv = document.createElement("div");
+			//labeldiv.classList.add("imageresultlabel");
+			var labeltext = document.createTextNode(nlabel);
+			labeldiv.appendChild(labeltext);
+			imgdiv.appendChild(labeldiv);
+			
+			imagelistdiv.appendChild(imgdiv);
+			i++;
+			
+			var acfield = "#"+acid;
+			$( acfield ).tooltip({ content: '<img src="data:image/png;base64,'+nimg+'" /><div class="imageresultlabel">'+nlabel+'</div><div class="imageresultdistance">Distance: '+ndist+'</div><div class="imageresulttime">Time: '+msToTime(nmilli)+'</div>' });
+		});
+		
+	}
+}
+
 function submit_image_search() {
 	console.log("submit_image_search");
+	
+	$('body').toggleClass('imagesearch', true); 
 	
 	var imgup = document.getElementById('imageupload');
 	var numresults = document.getElementById('ImageSearchFieldMax').value;
@@ -1059,6 +1126,7 @@ function submit_image_search() {
 	if (imgup.files.length > 0) {
 		lock_interface();
 		$.when(request_image_search(imgup.files.item(0), numresults)).then(function(result){
+			show_image_search_result(result);
 			unlock_interface();
 		})
 		
@@ -1331,8 +1399,14 @@ function init_interface() {
 	
 	document.getElementById('imageupload').value = '';
 	
+		// lock_interface();
+		// init_ontology_tree();
+		// init_movie_tree();
+		// init_search_fields();
+		// unlock_interface();
+		// updateUIfromURL();
+
 	lock_interface();
-	
 	Promise.all([request_ontology(), request_movie_metadata()]).then(function(values){
 		annotationlevels = values[0];
 		post_process_ontology_metadata();
