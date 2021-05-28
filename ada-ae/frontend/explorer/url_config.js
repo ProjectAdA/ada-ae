@@ -1,1 +1,1 @@
-const baseURL = 'http://ada.filmontology.org';
+const baseURL = 'http://ada.cinepoetics.org';

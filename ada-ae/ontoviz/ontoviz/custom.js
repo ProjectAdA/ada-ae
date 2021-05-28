@@ -99,8 +99,8 @@ function initNetwork(metadata) {
 	nodesFull = new vis.DataSet();
 	edgesFull = new vis.DataSet();
 	
-	nodes.add({id: 0, label: "eMAEX\nannotation\nmethod", url: "http://ada.filmontology.org/resource/2020/03/17/eMAEXannotationMethod"});
-	nodesFull.add({id: 0, label: "eMAEX\nannotation\nmethod", url: "http://ada.filmontology.org/resource/2020/03/17/eMAEXannotationMethod"});
+	nodes.add({id: 0, label: "eMAEX\nannotation\nmethod", url: "http://ada.cinepoetics.org/resource/2021/05/19/eMAEXannotationMethod"});
+	nodesFull.add({id: 0, label: "eMAEX\nannotation\nmethod", url: "http://ada.cinepoetics.org/resource/2021/05/19/eMAEXannotationMethod"});
 	
 	i = 1;
 	for( const leveldata of metadata ) {
