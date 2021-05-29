@@ -1051,6 +1051,11 @@ function msToTime(s) {
 	return pad(s/3.6e6|0) + ':' + pad((s%3.6e6)/6e4 | 0) + ':' + pad((s%6e4)/1000|0) + '.' + pad(s%1000, 3);
 }
 
+function msToTimeShort(s) {
+	var pad = (n, z = 2) => ('00' + n).slice(-z);
+	return pad(s/3.6e6|0) + ':' + pad((s%3.6e6)/6e4 | 0) + ':' + pad((s%6e4)/1000|0);
+}
+
 function remove_image_search_result() {
 	console.log("remove_image_search_result");
 	
@@ -1059,6 +1064,44 @@ function remove_image_search_result() {
 
 	$('body').toggleClass('imagesearch', false); 
 }
+
+var clipboard_content = '';
+
+function copy_image_search_result_to_clipboard() {
+	
+	// var blobInput = new Blob(["iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg=="], {type : "image/png"});
+	// const clipboardItemInput = new ClipboardItem({'image/png' : blobInput});
+	// navigator.clipboard.write([clipboardItemInput]);
+
+	// const canvas = document.createElement("canvas");
+// canvas.width = 100;
+// canvas.height = 100;
+// document.body.appendChild(canvas);
+// const ctx = canvas.getContext("2d");
+// ctx.fillRect(0, 0, canvas.width, canvas.height);
+// ctx.fillStyle = "#eee";
+// ctx.fillRect(10, 10, 50, 50);
+// canvas.toBlob(function(blob) { 
+	// const item = new ClipboardItem({ "image/png": blob });
+	// navigator.clipboard.write([item]);
+	// alert("Copied! paste it on paint");
+// });
+	
+	//document.execCommand('copy');
+}
+
+/*
+document.addEventListener('copy', function(e) {
+	// e.clipboardData is initially empty, but we can set it to the
+	// data that we want copied onto the clipboard.
+	//e.clipboardData.setData('text/plain', 'Hello, world!');
+	e.clipboardData.setData('text/html', '<table><tr><th>Head 1</th></tr><tr><td><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="></td></tr></table>');
+
+	// This is necessary to prevent the current document selection from
+	// being written to the clipboard.
+	e.preventDefault();
+});
+*/ 
 
 
 function show_image_search_result(framesearchresult) {
@@ -1075,7 +1118,7 @@ function show_image_search_result(framesearchresult) {
 	if (neighbors.length == 0) {
 		imagelistdiv.innerHTML = 'Image search did not find any similar frames';
 	} else {
-		var i = 0;
+		var i = 1;
 		neighbors.forEach(function(nres){
 			var nid = nres[0];
 			var nmilli = nres[1];
@@ -1084,11 +1127,11 @@ function show_image_search_result(framesearchresult) {
 			var nlabel = getMovieLabelById(nid);
 			
 			var imgdiv = document.createElement("div");
-			imgdiv.setAttribute('style', 'padding-bottom: 5px; border-bottom: 1px solid #bbb;');
+			imgdiv.classList.add('imagethumbdiv');
 			var acid = "image_a_"+i;
 			var img = document.createElement("img");
 			img.setAttribute('src', 'data:image/png;base64,'+nimg);
-			img.setAttribute('width', 170);
+			img.setAttribute('width', 167);
 			img.setAttribute('style', 'margin-bottom: 0px; margin-top: 5px;');
 			//img.setAttribute('title', nid+'<br><img src="data:image/png;base64,'+nimg+'" />');
 			img.setAttribute('title', ' ');
@@ -1096,10 +1139,22 @@ function show_image_search_result(framesearchresult) {
 			imgdiv.appendChild(img);
 			
 			var labeldiv = document.createElement("div");
-			//labeldiv.classList.add("imageresultlabel");
-			var labeltext = document.createTextNode(nlabel);
+			labeldiv.classList.add("imagethumbmovielabel");
+			var labeltext = document.createTextNode(truncate_name(i+": "+nlabel, 24));
 			labeldiv.appendChild(labeltext);
 			imgdiv.appendChild(labeldiv);
+
+			var distdiv = document.createElement("div");
+			distdiv.classList.add("imagethumbdistlabel");
+			var disttext = document.createTextNode(parseFloat(ndist).toFixed(2));
+			distdiv.appendChild(disttext);
+			imgdiv.appendChild(distdiv);
+
+			var timediv = document.createElement("div");
+			timediv.classList.add("imagethumbtimelabel");
+			var timetext = document.createTextNode(msToTimeShort(nmilli));
+			timediv.appendChild(timetext);
+			imgdiv.appendChild(timediv);
 			
 			imagelistdiv.appendChild(imgdiv);
 			i++;

@@ -156,6 +156,37 @@ header #resultPanelActions #timelineOrderSettingsButton {
     transition-property: left, width;
 }
 
+.imagethumbdiv {
+	position: relative;
+	padding-bottom: 5px;
+	border-bottom: 1px solid #bbb;
+}
+
+.imagethumbmovielabel {
+	position: absolute;
+	top: 6px;
+	left: 3px;
+	color: #ffffff;
+	background: rgba(0, 0, 0, 0.6);
+}
+
+.imagethumbdistlabel {
+	position: absolute;
+	bottom: 8px;
+	left: 3px;
+	color: #ffffff;
+	background: rgba(0, 0, 0, 0.6);
+}
+
+.imagethumbtimelabel {
+	position: absolute;
+	bottom: 8px;
+	left: 108px;
+	color: #ffffff;
+	background: rgba(0, 0, 0, 0.6);
+}
+
+
 .imageresultlabel {
 	position: absolute;
 	top: 12px;
