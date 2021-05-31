@@ -423,7 +423,7 @@ function generate_movie_autocomplete_list(allmovies) {
 					cat = movie.category.substring(0,3);
 			}
 		}
-		result.push({label: cat+" | "+truncate_name(movie.title, 40)+" ("+movie.annotationsTotal+")", value: movie.id});
+		result.push({label: cat+" | "+truncate_name(movie.title.replace(/,/g, ' -'), 45)+" ("+movie.annotationsTotal+")", value: movie.id});
 	});
 	return result.sort((a,b) => ('' + a.label).localeCompare(b.label));
 }
@@ -433,10 +433,10 @@ function generate_scene_autocomplete_list(movieid) {
 	
 	var movie = movies.find(x => x.id === movieid);
 	if (movie.scenes !== null && movie.scenes.length > 0) {
-		result.push({label: truncate_name(movie.title, 20)+" | -- All Scenes --", value: movie.id+"_all"});
+		result.push({label: truncate_name(movie.title.replace(/,/g, ' -'), 20)+" | -- All Scenes --", value: movie.id+"_all"});
 
 		movie.scenes.forEach(function(scene) {
-			result.push({label: truncate_name(movie.title, 20)+" | "+zeroPad(scene.shortId,2)+": "+truncate_name(scene.name, 23), value: movie.id+"_"+scene.id});
+			result.push({label: truncate_name(movie.title.replace(/,/g, ' -'), 20)+" | "+zeroPad(scene.shortId,2)+": "+truncate_name(scene.name.replace(/,/g, ' -'), 23), value: movie.id+"_"+scene.id});
 		});
 	}
 	return result;
@@ -480,9 +480,9 @@ function generate_type_autocomplete_list(ontodata, movieids) {
 					count = resultTypeCounts[short_typeid];
 				}
 				if (movieids !== null) {
-					result.push({label: type.elementFullName+" ("+ count + ")", value: type.id});
+					result.push({label: type.elementFullName.replace(/,/g, ' -')+" ("+ count + ")", value: type.id});
 				} else {
-					result.push({label: type.elementFullName, value: type.id});
+					result.push({label: type.elementFullName.replace(/,/g, ' -'), value: type.id});
 				}
 			});
 		}
@@ -499,7 +499,7 @@ function generate_value_autocomplete_list(ontodata) {
 			level.subElements.forEach(function(type) {
 				if (type.subElements !== null) {
 					type.subElements.forEach(function(value) {
-						result.push({label: type.elementName + " - " + value.elementName, value: value.id});
+						result.push({label: type.elementName.replace(/,/g, ' -') + " - " + value.elementName.replace(/,/g, ' -'), value: value.id});
 					});
 				}
 			});
