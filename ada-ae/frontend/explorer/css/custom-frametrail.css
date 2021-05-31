@@ -168,6 +168,7 @@ header #resultPanelActions #timelineOrderSettingsButton {
 	left: 3px;
 	color: #ffffff;
 	background: rgba(0, 0, 0, 0.6);
+	white-space: nowrap;
 }
 
 .imagethumbdistlabel {

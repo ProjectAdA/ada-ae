@@ -1112,6 +1112,8 @@ function show_image_search_result(framesearchresult) {
 		alert("Image search result is corrupt. Expected field 'nearest_neighbors'. \n Request result: \n"+JSON.stringify(framesearchresult));
 	}
 	
+	var imagesearchresults = document.getElementById('imagesearchresults');
+	
 	var imagelistdiv = document.getElementById('imagelist');
 	imagelistdiv.innerHTML = '';
 	
@@ -1140,7 +1142,7 @@ function show_image_search_result(framesearchresult) {
 			
 			var labeldiv = document.createElement("div");
 			labeldiv.classList.add("imagethumbmovielabel");
-			var labeltext = document.createTextNode(truncate_name(i+": "+nlabel, 24));
+			var labeltext = document.createTextNode(truncate_name(i+": "+nlabel, 25));
 			labeldiv.appendChild(labeltext);
 			imgdiv.appendChild(labeldiv);
 
