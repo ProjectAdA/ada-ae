@@ -1065,44 +1065,64 @@ function remove_image_search_result() {
 	$('body').toggleClass('imagesearch', false); 
 }
 
-var clipboard_content = '';
-
-function copy_image_search_result_to_clipboard() {
+function download_image_search_result() {
+	var filename = 'AdA-ImageSearch-'+ getUUID() +'.html';
 	
-	// var blobInput = new Blob(["iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFhAJ/wlseKgAAAABJRU5ErkJggg=="], {type : "image/png"});
-	// const clipboardItemInput = new ClipboardItem({'image/png' : blobInput});
-	// navigator.clipboard.write([clipboardItemInput]);
-
-	// const canvas = document.createElement("canvas");
-// canvas.width = 100;
-// canvas.height = 100;
-// document.body.appendChild(canvas);
-// const ctx = canvas.getContext("2d");
-// ctx.fillRect(0, 0, canvas.width, canvas.height);
-// ctx.fillStyle = "#eee";
-// ctx.fillRect(10, 10, 50, 50);
-// canvas.toBlob(function(blob) { 
-	// const item = new ClipboardItem({ "image/png": blob });
-	// navigator.clipboard.write([item]);
-	// alert("Copied! paste it on paint");
-// });
+	fileHTML =  '<!DOCTYPE html>\n'
+			+   '<html lang="en">\n'
+			+   '  <head>\n'
+			+   '    <title>Image Search Result of the Semantic Video Annotation Explorer - AdA Project</title>\n'
+			+   '    <meta charset="UTF-8">\n'
+			+   '    <style type="text/css">\n'
+			+   '    table, th, td {\n'
+			+   '       border: 1px solid black;\n'
+			+   '       border-collapse: collapse;\n'
+			+   '    }\n'
+			+   '    th, td {\n'
+			+   '       padding: 8px;\n'
+			+   '    }\n'
+			+   '    </style>\n'
+			+   '  </head>\n'
+			+   '  <body>\n'
+			+   '  <h3>Query Image</h3>\n'
+			+   '  <img src="'+imagepreview.src+'" width="300">\n'
+			+   '  <h3>Image Search Result</h3>\n'
+			+   '  <table style="padding: 10px; border: 1px solid #bbb;">\n'
+			+   '  <tr><th>#</th><th>Frame</th><th>Movie</th><th>Timestamp</th><th>Distance</th></tr>\n'
 	
-	//document.execCommand('copy');
+	var i = 1;
+	imageSearchNeighbors.forEach(function(nres){
+		var nid = nres[0];
+		var nmilli = nres[1];
+		var ndist = nres[2];
+		var nimg = nres[3];
+		var nlabel = getMovieLabelById(nid);
+		
+		fileHTML += '<tr>';
+		fileHTML += '<td>'+i+'</td>';
+		fileHTML += '<td><img src="data:image/png;base64,'+nimg+'"></td>';
+		fileHTML += '<td>'+nlabel+'</td>';
+		fileHTML += '<td>'+msToTime(nmilli)+'</td>';
+		fileHTML += '<td>'+ndist+'</td>';
+		fileHTML += '</tr>\n';
+		
+		i++;
+	});
+	
+	fileHTML += '  </table>\n';
+	fileHTML += '  </body>\n';
+	fileHTML += '</html>';
+
+	var element = document.createElement('a');
+	element.setAttribute('href', 'data:text/html;charset=utf-8,' + encodeURIComponent(fileHTML));
+	element.setAttribute('download', filename);
+	element.style.display = 'none';
+	document.body.appendChild(element);
+	element.click();
+	document.body.removeChild(element);
 }
 
-/*
-document.addEventListener('copy', function(e) {
-	// e.clipboardData is initially empty, but we can set it to the
-	// data that we want copied onto the clipboard.
-	//e.clipboardData.setData('text/plain', 'Hello, world!');
-	e.clipboardData.setData('text/html', '<table><tr><th>Head 1</th></tr><tr><td><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="></td></tr></table>');
-
-	// This is necessary to prevent the current document selection from
-	// being written to the clipboard.
-	e.preventDefault();
-});
-*/ 
-
+var imageSearchNeighbors = '';
 
 function show_image_search_result(framesearchresult) {
 	console.log("show_image_search_result");
@@ -1110,16 +1130,32 @@ function show_image_search_result(framesearchresult) {
 	var neighbors = framesearchresult['nearest_neighbors'];
 	if (typeof neighbors == 'undefined') {
 		alert("Image search result is corrupt. Expected field 'nearest_neighbors'. \n Request result: \n"+JSON.stringify(framesearchresult));
+		return;
 	}
 	
-	var imagesearchresults = document.getElementById('imagesearchresults');
+	var downloadbutton = document.getElementById('DownloadImageSearchResult');
 	
 	var imagelistdiv = document.getElementById('imagelist');
 	imagelistdiv.innerHTML = '';
 	
 	if (neighbors.length == 0) {
 		imagelistdiv.innerHTML = 'Image search did not find any similar frames';
+		downloadbutton.disabled = true;
 	} else {
+		imageSearchNeighbors = neighbors;
+		downloadbutton.disabled = false;
+		var corruptFound = false;
+		neighbors.forEach(function(nres){
+			if (nres.length != 4) {
+				corruptFound = true;
+			}
+		});
+		
+		if (corruptFound) {
+			alert("Image search result is corrupt. Expected 4 entries. \n Nearest neighbors: \n"+JSON.stringify(neighbors));
+			return;
+		}
+		
 		var i = 1;
 		neighbors.forEach(function(nres){
 			var nid = nres[0];
@@ -1186,10 +1222,7 @@ function submit_image_search() {
 			show_image_search_result(result);
 			unlock_interface();
 		})
-		
 	}
-	
-	
 }
 
 function filter_sceneids(annotations, requested_scenes) {
@@ -1446,9 +1479,18 @@ function getCurrentAnnotationData() {
 	return annotation_structure;
 }
 
+//var imageSearchUploadedFile = '';
+
 function image_selection(event) {
 	var imagepreview = document.getElementById('imagepreview');
-	imagepreview.src = URL.createObjectURL(event.target.files[0]);
+	//imagepreview.src = URL.createObjectURL(event.target.files[0]);
+	
+	const reader = new FileReader();
+	reader.addEventListener('load', (event) => {
+		imagepreview.src = event.target.result
+		//imageSearchUploadedFile = event.target.result;
+	});
+	reader.readAsDataURL(event.target.files[0]);
 }
 
 function init_interface() {

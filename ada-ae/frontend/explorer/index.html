@@ -239,7 +239,11 @@
             </div>
             <div id="imagesearchresults">
                 <div id="imgresheader" style="display: block; margin-bottom: 5px; margin-top: 5px; padding-bottom: 5px; border-bottom: 1px solid #ccc;">
-                    <div id="imgresheadline" class="sidebarTitle"><!--<span class="icon-picture"></span>-->&nbsp;Image Search Results <button onclick="remove_image_search_result()"><span class="icon-cancel-circled"></span></button></div>
+                    <div id="imgresheadline" style="margin-bottom: 5px; border-bottom: 1px solid #ccc;"><span class="icon-picture"></span>&nbsp;Image Search Results <!--<button onclick="remove_image_search_result()"><span class="icon-cancel-circled"></span></button>--></div>
+					<div align="center">
+					<input type="submit" value="Download..." id="DownloadImageSearchResult" onclick="download_image_search_result()">&nbsp;
+					<input type="submit" value="Close" id="CloseImageSearchResult" onclick="remove_image_search_result()">
+					</div>
                 </div>
                 <div id="imagelist">
                 </div>
