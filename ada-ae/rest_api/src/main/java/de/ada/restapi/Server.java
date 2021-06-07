@@ -270,6 +270,43 @@ public class Server {
    		}
    		ctx.json(jsonld);
 	}
+	
+	private void handleAddUpdateMedia(Context ctx, boolean update) {
+		if (!checkApiToken(ctx)) {
+			return;
+		}
+
+		MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
+		MetadataRecord record = null;
+		
+		try {
+			ObjectMapper om = new ObjectMapper();
+			
+			logger.info("addMedia - input {}", ctx.body().replace("\n", ""));
+			record = om.readValue(ctx.body(), MetadataRecord.class);
+
+		} catch (JsonProcessingException e) {
+			returnError(ctx, "Not a valid json input.", 400, e);
+			return;
+		} catch (IllegalArgumentException iae) {
+			returnError(ctx, "Unknown json field supplied.", 400, iae);
+			return;
+		}
+		
+		if (mdm.isMandatoryFieldMissing(record)) {
+			returnError(ctx, "Mandatory json field missing,", 400, null);
+			return;
+		} else {
+			String result = mdm.addUpdateMedia(record, update);
+			if (result != null) {
+				returnError(ctx, result, 500, null);
+				return;
+			}
+			logger.info("addMedia - added {}", record.toString().replace("\n", ""));
+		}
+
+		ctx.status(201);		
+	}
 
 	private void returnError(Context ctx, String msg, Integer code, Exception ex) {
 		String cause = "";
@@ -479,40 +516,11 @@ public class Server {
 		});
 
 		app.post("/addMedia", ctx -> {
-			if (!checkApiToken(ctx)) {
-				return;
-			}
+			handleAddUpdateMedia(ctx, false);
+		});
 
-			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
-			MetadataRecord record = null;
-			
-			try {
-				ObjectMapper om = new ObjectMapper();
-				
-				logger.info("addMedia - input {}", ctx.body().replace("\n", ""));
-				record = om.readValue(ctx.body(), MetadataRecord.class);
-
-			} catch (JsonProcessingException e) {
-				returnError(ctx, "Not a valid json input.", 400, e);
-				return;
-			} catch (IllegalArgumentException iae) {
-				returnError(ctx, "Unknown json field supplied.", 400, iae);
-				return;
-			}
-			
-			if (mdm.isMandatoryFieldMissing(record)) {
-				returnError(ctx, "Mandatory json field missing,", 400, null);
-				return;
-			} else {
-				String result = mdm.addMedia(record);
-				if (result != null) {
-					returnError(ctx, result, 500, null);
-					return;
-				}
-				logger.info("addMedia - added {}", record.toString().replace("\n", ""));
-			}
-
-			ctx.status(201);
+		app.post("/updateMedia", ctx -> {
+			handleAddUpdateMedia(ctx, true);
 		});
 
 		app.post("/uploadAdvenePackage", ctx -> {

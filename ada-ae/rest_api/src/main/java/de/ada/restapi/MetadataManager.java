@@ -103,16 +103,14 @@ public class MetadataManager {
 		
 	}
 
-	public String addMedia(MetadataRecord record) {
+	public String addUpdateMedia(MetadataRecord record, boolean update) {
 		
 		Node graph = NodeFactory.createURI(URIconstants.GRAPH_PREFIX() + record.getId() + URIconstants.METADATA_GRAPH_SUFFIX);
 		String mediaUri = URIconstants.MEDIA_PREFIX() + record.getId();
 		Node mediaNode = NodeFactory.createURI(mediaUri);
 		
-		boolean newMovie = record.getShortId() == null;
-
-		// Create a new short identifier in case metadata record is initially created
-		if (newMovie) {
+		// Create a new short identifier in case metadata record is created the first time
+		if (record.getShortId() == null) {
 			logger.info("addMedia - QUERY_MAX_SHORTID");
 			String queryMax = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_MAX_MOVIE_SHORTID();
 			Integer maxShortId = 0;
@@ -185,7 +183,7 @@ public class MetadataManager {
 			return "Triplestore metadata update failed. "+result;
 		}
 		
-		if (newMovie) {
+		if (!update) {
 			return am.insertGeneratedScene(record);
 		} else {
 			return null;
