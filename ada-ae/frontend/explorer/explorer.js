@@ -20,7 +20,7 @@ function request_ontology() {
 	console.log("request_ontology");
 	return $.ajax({
 		url: apiUrl + "/getOntology",
-		timeout: 10000,
+		timeout: 50000,
 		error: function(request, status, error) {
 			alert("Loading ontology failed. API could not be reached. Please reload the page.\n responseText: " + request.responseText + "\n request.status: " + request.status + "\n status: " + status + "\n error: " + error);
 			unlock_interface();
@@ -32,7 +32,7 @@ function request_annotations(url) {
 	console.log("request_annotations");
 	return $.ajax({
 		url: url,
-		timeout: 50000,
+		timeout: 120000,
 		error: function(request, status, error) {
 			alert("Loading annotations failed. API could not be reached. Please submit the request again.\n responseText: " + request.responseText + "\n request.status: " + request.status + "\n status: " + status + "\n error: " + error);
 			unlock_interface();
@@ -44,7 +44,7 @@ function request_movie_metadata() {
 	console.log("request_movie_metadata");
 	return $.ajax({
 		url: apiUrl + "/getMovieMetadata",
-		timeout: 10000,
+		timeout: 50000,
 		error: function(request, status, error) {
 			alert("Loading movie metadata failed. API could not be reached. Please reload the page.\n responseText: " + request.responseText + "\n request.status: " + request.status + "\n status: " + status + "\n error: " + error);
 			unlock_interface();
@@ -64,7 +64,7 @@ function request_image_search(file, numresults) {
 		type: 'POST',
 		processData: false,
 		contentType: false,
-		timeout: 10000,
+		timeout: 50000,
 		error: function(request, status, error) {
 			alert("Image search request failed. API could not be reached. Please submit the request again. \n responseText: " + request.responseText + "\n request.status: " + request.status + "\n status: " + status + "\n error: " + error);
 			unlock_interface();
@@ -1122,6 +1122,14 @@ function download_image_search_result() {
 	document.body.removeChild(element);
 }
 
+function jump_to_frametrail(movieid, timemilli) {
+	console.log("jump_to_frametrail", movieid, timemilli);
+	
+	// FrameTrail.instances[0].currentTime = timemilli / 1000;
+	
+	// console.log(FrameTrail.instances);
+}
+
 var imageSearchNeighbors = '';
 
 function show_image_search_result(framesearchresult) {
@@ -1166,13 +1174,14 @@ function show_image_search_result(framesearchresult) {
 			
 			var imgdiv = document.createElement("div");
 			imgdiv.classList.add('imagethumbdiv');
+			
 			var acid = "image_a_"+i;
 			var img = document.createElement("img");
 			img.setAttribute('src', 'data:image/png;base64,'+nimg);
 			img.setAttribute('width', 167);
-			img.setAttribute('style', 'margin-bottom: 0px; margin-top: 5px;');
-			//img.setAttribute('title', nid+'<br><img src="data:image/png;base64,'+nimg+'" />');
+			img.setAttribute('style', 'margin-bottom: 0px; margin-top: 5px; cursor: pointer;');
 			img.setAttribute('title', ' ');
+			img.setAttribute('onclick', 'jump_to_frametrail("'+nid+'",'+nmilli+');');
 			img.id = acid;
 			imgdiv.appendChild(img);
 			
@@ -1195,6 +1204,8 @@ function show_image_search_result(framesearchresult) {
 			imgdiv.appendChild(timediv);
 			
 			imagelistdiv.appendChild(imgdiv);
+			
+			
 			i++;
 			
 			var acfield = "#"+acid;
@@ -1207,7 +1218,6 @@ function show_image_search_result(framesearchresult) {
 function submit_image_search() {
 	console.log("submit_image_search");
 	
-	$('body').toggleClass('imagesearch', true); 
 	
 	var imgup = document.getElementById('imageupload');
 	var numresults = document.getElementById('ImageSearchFieldMax').value;
@@ -1219,6 +1229,7 @@ function submit_image_search() {
 	if (imgup.files.length > 0) {
 		lock_interface();
 		$.when(request_image_search(imgup.files.item(0), numresults)).then(function(result){
+			$('body').toggleClass('imagesearch', true); 
 			show_image_search_result(result);
 			unlock_interface();
 		})
