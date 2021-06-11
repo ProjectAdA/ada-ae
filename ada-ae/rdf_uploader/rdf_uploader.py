@@ -103,6 +103,7 @@ def upload_rdf():
 
     sql_file = os.path.join(temp_dir.name, "import.sql")
     file = open(sql_file, "wt")
+    file.write("sparql clear graph <"+graph+">;\n")
     file.write("ld_dir('"+str(import_dir)+"', '*', '"+graph+"');\n")
     file.write("rdf_loader_run();\n")
     file.write("exec('checkpoint');\n")
