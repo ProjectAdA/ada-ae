@@ -965,6 +965,10 @@ public class AnnotationManager {
 		
 		for (String graphUri : extractorGraphs) {
 			Model annotations = getAnnotations(mediaId, null, null, graphUri);
+			if (annotations == null) {
+				logger.error("updateSceneAssociations failed for movie "+mediaId+". Could not get annotations from graph "+graphUri);
+				return "updateSceneAssociations failed for movie "+mediaId+". Could not get annotations from graph "+graphUri;
+			}
 			if (annotations.size() > 0) {
 				logger.info("updateSceneAssociations - graph "+graphUri);
 				Model matchedModel = matchScenes(annotations, sceneIntervals);
