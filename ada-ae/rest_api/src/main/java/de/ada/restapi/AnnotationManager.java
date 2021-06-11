@@ -534,9 +534,9 @@ public class AnnotationManager {
 		RDFDataMgr.write(turtleWriter, model, RDFFormat.TURTLE_PRETTY);
 		String turtleString = turtleWriter.toString();
 		
-		// Before inserting new data the content of graph is removed completely
-		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
-		submitUpdateRequestToTripleStore(request);
+		// Is handled by the rdf upload now - // Before inserting new data the content of graph is removed completely
+//		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
+//		submitUpdateRequestToTripleStore(request);
 		
 		CloseableHttpClient client = null;
 
