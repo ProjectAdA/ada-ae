@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -339,6 +340,22 @@ public class Server {
 						ctx.res.getStatus(), ctx.userAgent(), executionTimeMs.longValue());
 			});
 		}).start(defaultPort);
+		
+		app.get("/status", ctx -> {
+			AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
+			Integer totalCount = am.getTotalCount();
+			
+			Map<String,Object> result = new HashMap<String,Object>();
+			
+			if (totalCount != null) {
+				result.put("annotationsTotal",	totalCount);
+				result.put("status", "ok");
+			} else {
+				result.put("annotationsTotal",	null);
+				result.put("error", "Triplestore query for total amount of annotations failed.");
+			}
+			ctx.json(result);
+		});
 		
 		app.get("/getMovieMetadata", ctx -> {
 			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);

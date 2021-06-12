@@ -177,6 +177,31 @@ public class AnnotationManager {
 		return result;
 	}
 
+	public Integer getTotalCount() {
+		Integer result = null;
+		
+		String query = URIconstants.QUERY_PREFIXES() + AnnotationQueries.QUERY_ANNOTATION_COUNT;
+
+		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
+			logger.info("{} Query for total annotation count.", "getTotalCount");
+			ResultSet set = qexec.execSelect();
+        	if (set.hasNext()) {
+        		QuerySolution next = set.next();
+        		Literal count = next.getLiteral("count");
+        		if (count != null) {
+        			result = count.getInt();
+        		}
+        	}
+        	qexec.close();
+        } catch (Exception e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("{} - Query annotations - Triplestore query failed {}", "getTotalCount", msg);
+			return null;
+		}
+
+		return result;
+	}
+	
 
 	public Model getAnnotations(String mediaId, Set<String> scenes, Set<String> types, String graphUri) {
 		Model result = null;
