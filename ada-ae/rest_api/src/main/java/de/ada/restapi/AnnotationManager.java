@@ -379,64 +379,39 @@ public class AnnotationManager {
 		}
 		
 		
-   		int i = 0;
-   		int numValue = finalMatchedAnnotations.size();
-		String annoFilter = "FILTER (?anno IN ( ";
-		for (AnnotationMetadata anno : finalMatchedAnnotations) {
-			i++;
-			annoFilter = annoFilter + "<"+anno.getAnnoUri()+">";
-			if (i == numValue) {
-				annoFilter = annoFilter + " ))";
-			} else {
-				annoFilter = annoFilter + ", ";
+		if (finalMatchedAnnotations.size() > 0) {
+	   		int i = 0;
+	   		int numValue = finalMatchedAnnotations.size();
+			String annoFilter = "FILTER (?anno IN ( ";
+			for (AnnotationMetadata anno : finalMatchedAnnotations) {
+				i++;
+				annoFilter = annoFilter + "<"+anno.getAnnoUri()+">";
+				if (i == numValue) {
+					annoFilter = annoFilter + " ))";
+				} else {
+					annoFilter = annoFilter + ", ";
+				}
 			}
+	
+			String query = URIconstants.QUERY_PREFIXES() + AnnotationQueries.QUERY_ANNOTATIONS_TEMPLATE;
+			query = query.replaceFirst("\\?target oa:hasSource <<MEDIA>>.","");
+			query = query.replaceFirst("<<SCENEFILTER>>", "");
+			query = query.replaceFirst("<<TYPEFILTER>>", annoFilter);
+			query = query.replaceFirst("FROM <<GRAPH>>","");
+			try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
+				logger.info("{} - QUERY_ANNOTATIONS_TEMPLATE - Annotations: {}", "valueSearch", numValue);
+				result = qexec.execDescribe();
+	        	qexec.close();
+	        } catch (Exception e) {
+				String msg = e.toString().replace("\n", " ");
+				logger.error("{} - QUERY_ANNOTATIONS_TEMPLATE - Triplestore query failed - Annotations: {} - {}", "valueSearch", numValue, msg);
+				return null;
+			}
+			
+		} else {
+			result = ModelFactory.createDefaultModel();
 		}
 
-		String query = URIconstants.QUERY_PREFIXES() + AnnotationQueries.QUERY_ANNOTATIONS_TEMPLATE;
-		query = query.replaceFirst("\\?target oa:hasSource <<MEDIA>>.","");
-		query = query.replaceFirst("<<SCENEFILTER>>", "");
-		query = query.replaceFirst("<<TYPEFILTER>>", annoFilter);
-		query = query.replaceFirst("FROM <<GRAPH>>","");
-		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
-			logger.info("{} - QUERY_ANNOTATIONS_TEMPLATE - Annotations: {}", "valueSearch", numValue);
-			result = qexec.execDescribe();
-        	qexec.close();
-        } catch (Exception e) {
-			String msg = e.toString().replace("\n", " ");
-			logger.error("{} - QUERY_ANNOTATIONS_TEMPLATE - Triplestore query failed - Annotations: {} - {}", "valueSearch", numValue, msg);
-			return null;
-		}
-
-		/*
-		result = ModelFactory.createDefaultModel();
-
-   		int i = 0;
-   		int numValue = finalMatchedAnnotations.size();
-   		int maxAnno = 100;
-   		
-   		String annoFilter = "FILTER (";
-   		for (AnnotationMetadata anno : finalMatchedAnnotations) {
-   			annoFilter = annoFilter + "?anno = <"+anno.getAnnoUri()+">";
-   			i++;
-   			if (i % maxAnno == 0 || i == numValue) {
-   				annoFilter = annoFilter + " )";
-   				String query = URIconstants.QUERY_PREFIXES + AnnotationQueries.QUERY_ANNOTATIONS_TEMPLATE;
-   				query = query.replaceFirst("\\?target oa:hasSource <<MEDIA>>.","");
-   				query = query.replaceFirst("<<SCENEFILTER>>", "");
-   				query = query.replaceFirst("<<TYPEFILTER>>", annoFilter);
-   				Model model = null;
-   				System.out.println(query);
-   				try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
-   					model = qexec.execDescribe();
-   				}
-   				result.add(model);
-   				annoFilter = "FILTER (";
-   			} else {
-   				annoFilter = annoFilter + " || ";
-   			}
-   		}
-		*/
-		
 		return result;
 	}
 	
