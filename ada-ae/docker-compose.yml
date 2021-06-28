@@ -158,7 +158,7 @@ services:
         - OPENJDK_VER=15
         - TOMCAT_VER=${TOMCAT_VER:-9.0.46}
         - ONTOLOGY_BASE_URI=${ONTOLOGY_BASE_URI:-http://ada.cinepoetics.org}
-        - PUBLIC_SPARQL_URL=http://ada.cinepoetics.org:9090/sparql
+        - PUBLIC_SPARQL_URL=http://internal-ada-triplestore:8890/sparql
     env_file:
       - .env
       - ada-ae.env
