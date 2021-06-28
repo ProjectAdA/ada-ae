@@ -16,6 +16,17 @@ function unlock_interface() {
 	$('#overlay').fadeOut();
 }
 
+function request_status() {
+	console.log("request_status");
+	return $.ajax({
+		url: apiUrl + "/status",
+		timeout: 5000,
+		error: function(request, status, error) {
+			console.log("Loading of API status failed. \n responseText: " + request.responseText + "\n request.status: " + request.status + "\n status: " + status + "\n error: " + error);
+		}
+	});
+}
+
 function request_ontology() {
 	console.log("request_ontology");
 	return $.ajax({
@@ -1218,7 +1229,6 @@ function show_image_search_result(framesearchresult) {
 function submit_image_search() {
 	console.log("submit_image_search");
 	
-	
 	var imgup = document.getElementById('imageupload');
 	var numresults = document.getElementById('ImageSearchFieldMax').value;
 
@@ -1490,8 +1500,6 @@ function getCurrentAnnotationData() {
 	return annotation_structure;
 }
 
-//var imageSearchUploadedFile = '';
-
 function image_selection(event) {
 	var imagepreview = document.getElementById('imagepreview');
 	//imagepreview.src = URL.createObjectURL(event.target.files[0]);
@@ -1508,6 +1516,28 @@ function init_interface() {
 	console.log("init_interface");
 	
 	document.getElementById('imageupload').value = '';
+	document.getElementById('statusLabel').title = '';
+	document.getElementById('statusLabel').textContent = '';
+	document.getElementById('statusLabel').style.fontStyle = null;
+
+	request_status().then(function(values){
+		if (typeof values !== 'undefined') {
+			if (typeof values['status'] !== 'undefined' && typeof values['annotationsTotal'] !== 'undefined') {
+				document.getElementById('statusLabel').textContent = values['annotationsTotal'];
+			}
+			if (typeof values['error'] !== 'undefined') {
+				document.getElementById('statusLabel').textContent = 'Error...';
+				document.getElementById('statusLabel').title = values['error'];
+				document.getElementById('statusLabel').style.fontStyle = 'italic';
+			}
+		}
+	}).catch(
+		function(errorThrown) {
+			document.getElementById('statusLabel').textContent = 'Error...';
+			document.getElementById('statusLabel').title = 'API could not be reached.';
+			document.getElementById('statusLabel').style.fontStyle = 'italic';
+		}
+	);
 	
 		// lock_interface();
 		// init_ontology_tree();
@@ -1516,16 +1546,16 @@ function init_interface() {
 		// unlock_interface();
 		// updateUIfromURL();
 
-	lock_interface();
-	Promise.all([request_ontology(), request_movie_metadata()]).then(function(values){
-		annotationlevels = values[0];
-		post_process_ontology_metadata();
-		movies = values[1];
-		post_process_movie_metadata();
-		init_ontology_tree();
-		init_movie_tree();
-		init_search_fields();
-		unlock_interface();
-		updateUIfromURL();
-	});
+		lock_interface();
+		Promise.all([request_ontology(), request_movie_metadata()]).then(function(values){
+			annotationlevels = values[0];
+			post_process_ontology_metadata();
+			movies = values[1];
+			post_process_movie_metadata();
+			init_ontology_tree();
+			init_movie_tree();
+			init_search_fields();
+			unlock_interface();
+			updateUIfromURL();
+		});
 }

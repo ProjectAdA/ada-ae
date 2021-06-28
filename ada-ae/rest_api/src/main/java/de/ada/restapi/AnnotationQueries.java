@@ -2,6 +2,11 @@ package de.ada.restapi;
 
 public class AnnotationQueries {
 	
+	public static final String QUERY_ANNOTATION_COUNT = 
+			"SELECT (count(?anno) as ?count) WHERE {\n"
+			+ "	?anno rdf:type oa:Annotation.\n"
+			+ "}";
+	
 	public static final String QUERY_ANNOTATIONS_TEMPLATE = 
 			"DESCRIBE ?anno ?target ?body ?selector ?list ?listRest ?numlist ?numlistRest FROM <<GRAPH>> WHERE {\r\n"
 			+ "	?anno oa:hasTarget ?target.\r\n"

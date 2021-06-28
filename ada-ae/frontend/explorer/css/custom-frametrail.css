@@ -59,6 +59,12 @@ header h2 {
     font-size: 16px;
     font-weight: normal;
 }
+header #statusContainer {
+    float: left;
+    padding: 12px 3px;
+    margin-left: 6px;
+    display: block;
+}
 header #loginContainer {
     float: left;
     padding-top: 4px;

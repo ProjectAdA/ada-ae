@@ -177,6 +177,31 @@ public class AnnotationManager {
 		return result;
 	}
 
+	public Integer getTotalCount() {
+		Integer result = null;
+		
+		String query = URIconstants.QUERY_PREFIXES() + AnnotationQueries.QUERY_ANNOTATION_COUNT;
+
+		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
+			logger.info("{} Query for total annotation count.", "getTotalCount");
+			ResultSet set = qexec.execSelect();
+        	if (set.hasNext()) {
+        		QuerySolution next = set.next();
+        		Literal count = next.getLiteral("count");
+        		if (count != null) {
+        			result = count.getInt();
+        		}
+        	}
+        	qexec.close();
+        } catch (Exception e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("{} - Query annotations - Triplestore query failed {}", "getTotalCount", msg);
+			return null;
+		}
+
+		return result;
+	}
+	
 
 	public Model getAnnotations(String mediaId, Set<String> scenes, Set<String> types, String graphUri) {
 		Model result = null;
@@ -354,64 +379,39 @@ public class AnnotationManager {
 		}
 		
 		
-   		int i = 0;
-   		int numValue = finalMatchedAnnotations.size();
-		String annoFilter = "FILTER (?anno IN ( ";
-		for (AnnotationMetadata anno : finalMatchedAnnotations) {
-			i++;
-			annoFilter = annoFilter + "<"+anno.getAnnoUri()+">";
-			if (i == numValue) {
-				annoFilter = annoFilter + " ))";
-			} else {
-				annoFilter = annoFilter + ", ";
+		if (finalMatchedAnnotations.size() > 0) {
+	   		int i = 0;
+	   		int numValue = finalMatchedAnnotations.size();
+			String annoFilter = "FILTER (?anno IN ( ";
+			for (AnnotationMetadata anno : finalMatchedAnnotations) {
+				i++;
+				annoFilter = annoFilter + "<"+anno.getAnnoUri()+">";
+				if (i == numValue) {
+					annoFilter = annoFilter + " ))";
+				} else {
+					annoFilter = annoFilter + ", ";
+				}
 			}
+	
+			String query = URIconstants.QUERY_PREFIXES() + AnnotationQueries.QUERY_ANNOTATIONS_TEMPLATE;
+			query = query.replaceFirst("\\?target oa:hasSource <<MEDIA>>.","");
+			query = query.replaceFirst("<<SCENEFILTER>>", "");
+			query = query.replaceFirst("<<TYPEFILTER>>", annoFilter);
+			query = query.replaceFirst("FROM <<GRAPH>>","");
+			try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
+				logger.info("{} - QUERY_ANNOTATIONS_TEMPLATE - Annotations: {}", "valueSearch", numValue);
+				result = qexec.execDescribe();
+	        	qexec.close();
+	        } catch (Exception e) {
+				String msg = e.toString().replace("\n", " ");
+				logger.error("{} - QUERY_ANNOTATIONS_TEMPLATE - Triplestore query failed - Annotations: {} - {}", "valueSearch", numValue, msg);
+				return null;
+			}
+			
+		} else {
+			result = ModelFactory.createDefaultModel();
 		}
 
-		String query = URIconstants.QUERY_PREFIXES() + AnnotationQueries.QUERY_ANNOTATIONS_TEMPLATE;
-		query = query.replaceFirst("\\?target oa:hasSource <<MEDIA>>.","");
-		query = query.replaceFirst("<<SCENEFILTER>>", "");
-		query = query.replaceFirst("<<TYPEFILTER>>", annoFilter);
-		query = query.replaceFirst("FROM <<GRAPH>>","");
-		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
-			logger.info("{} - QUERY_ANNOTATIONS_TEMPLATE - Annotations: {}", "valueSearch", numValue);
-			result = qexec.execDescribe();
-        	qexec.close();
-        } catch (Exception e) {
-			String msg = e.toString().replace("\n", " ");
-			logger.error("{} - QUERY_ANNOTATIONS_TEMPLATE - Triplestore query failed - Annotations: {} - {}", "valueSearch", numValue, msg);
-			return null;
-		}
-
-		/*
-		result = ModelFactory.createDefaultModel();
-
-   		int i = 0;
-   		int numValue = finalMatchedAnnotations.size();
-   		int maxAnno = 100;
-   		
-   		String annoFilter = "FILTER (";
-   		for (AnnotationMetadata anno : finalMatchedAnnotations) {
-   			annoFilter = annoFilter + "?anno = <"+anno.getAnnoUri()+">";
-   			i++;
-   			if (i % maxAnno == 0 || i == numValue) {
-   				annoFilter = annoFilter + " )";
-   				String query = URIconstants.QUERY_PREFIXES + AnnotationQueries.QUERY_ANNOTATIONS_TEMPLATE;
-   				query = query.replaceFirst("\\?target oa:hasSource <<MEDIA>>.","");
-   				query = query.replaceFirst("<<SCENEFILTER>>", "");
-   				query = query.replaceFirst("<<TYPEFILTER>>", annoFilter);
-   				Model model = null;
-   				System.out.println(query);
-   				try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
-   					model = qexec.execDescribe();
-   				}
-   				result.add(model);
-   				annoFilter = "FILTER (";
-   			} else {
-   				annoFilter = annoFilter + " || ";
-   			}
-   		}
-		*/
-		
 		return result;
 	}
 	
@@ -534,9 +534,9 @@ public class AnnotationManager {
 		RDFDataMgr.write(turtleWriter, model, RDFFormat.TURTLE_PRETTY);
 		String turtleString = turtleWriter.toString();
 		
-		// Before inserting new data the content of graph is removed completely
-		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
-		submitUpdateRequestToTripleStore(request);
+		// Is handled by the rdf upload now - // Before inserting new data the content of graph is removed completely
+//		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
+//		submitUpdateRequestToTripleStore(request);
 		
 		CloseableHttpClient client = null;
 
@@ -965,6 +965,10 @@ public class AnnotationManager {
 		
 		for (String graphUri : extractorGraphs) {
 			Model annotations = getAnnotations(mediaId, null, null, graphUri);
+			if (annotations == null) {
+				logger.error("updateSceneAssociations failed for movie "+mediaId+". Could not get annotations from graph "+graphUri);
+				return "updateSceneAssociations failed for movie "+mediaId+". Could not get annotations from graph "+graphUri;
+			}
 			if (annotations.size() > 0) {
 				logger.info("updateSceneAssociations - graph "+graphUri);
 				Model matchedModel = matchScenes(annotations, sceneIntervals);
