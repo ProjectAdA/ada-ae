@@ -320,7 +320,8 @@ public class MetadataManager {
 		}
         
         for (Map<String, Object> co : countres) {
-        	Object source = co.get("id");
+//        	Object source = co.get("id");
+        	Object source = co.get("source");
         	Object annotype = co.get("annotype");
         	Object count = co.get("count");
         	
@@ -371,15 +372,16 @@ public class MetadataManager {
         
 		for (Map<String, Object> map : tmpResult) {
 			String mediaId  = ((String)map.get("id"));
+			String mediaUri  = ((String)map.get("mediauri"));
 			if (queryId == null || mediaId.equals(queryId)) {
-				Map<Object, Object> typeCounts = counts.get(mediaId);
+				Map<Object, Object> typeCounts = counts.get(mediaUri);
 				map.put("typeCounts", typeCounts);
 				
 				List<Map<String, Object>> sceneList = scenes.get(mediaId);
 				map.put("scenes", sceneList);
 				result.add(map);
 				
-				Integer annotationsTotal = totalCounts.get(mediaId);
+				Integer annotationsTotal = totalCounts.get(mediaUri);
 				if (annotationsTotal == null) {
 					map.put("annotationsTotal", 0);
 				} else {

@@ -31,16 +31,26 @@ public class MetadataQueries {
 			+ "}";
 	}
 	
+//	public static final String QUERY_ANNOTATION_TYPE_COUNTS() {
+//		return
+//			"select ?id ?annotype (Count(?annotype) as ?count) where {\r\n"
+//			+ "	?anno advene:type ?annotype.\r\n"
+//			+ "	BIND ( REPLACE(REPLACE(str(?anno),\""+URIconstants.MEDIA_PREFIX()+"\",\"\"),\"\\\\/(.*)\",\"\") as ?id )\r\n"
+//			+ "}\r\n"
+//			+ "GROUP by ?id ?annotype\r\n"
+//			+ "";
+//	}
+
 	public static final String QUERY_ANNOTATION_TYPE_COUNTS() {
 		return
-			"select ?id ?annotype (Count(?annotype) as ?count) where {\r\n"
-			+ "	?anno advene:type ?annotype.\r\n"
-			+ "	BIND ( REPLACE(REPLACE(str(?anno),\""+URIconstants.MEDIA_PREFIX()+"\",\"\"),\"\\\\/(.*)\",\"\") as ?id )\r\n"
-			+ "}\r\n"
-			+ "GROUP by ?id ?annotype\r\n"
-			+ "";
+			"select ?source ?annotype (Count(?annotype) as ?count) where {\n"
+			+ "	?anno advene:type ?annotype.\n"
+			+ "	?anno oa:hasTarget ?target.\n"
+			+ "	?target oa:hasSource ?source.\n"
+			+ "}\n"
+			+ "GROUP by ?source ?annotype\n";
 	}
-	
+
 	public static final String QUERY_METADATA() {
 		return
 			"select ?mediauri ?title ?year ?runtime ?duration ?category ?playoutUrl ?id ?shortId ?director ?abstract ?releaseDate ?writer ?language ?broadcaster ?imdbId ?actors ?filmversion WHERE {\n"
