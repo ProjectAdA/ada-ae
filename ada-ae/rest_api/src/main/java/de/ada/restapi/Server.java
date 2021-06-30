@@ -89,13 +89,7 @@ public class Server {
 	// Default number of results that frame search should return
 	protected static int FRAME_SERACH_DEFAULT_NUMBER_OF_RESULTS = 50;	
 
-	static {
-//		System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
-		System.setProperty(org.slf4j.impl.SimpleLogger.SHOW_DATE_TIME_KEY, "true");
-		System.setProperty(org.slf4j.impl.SimpleLogger.DATE_TIME_FORMAT_KEY, "yyyy-MM-dd HH:mm:ss:SSS Z");
-	}
-	
-	private static Logger logger = LoggerFactory.getLogger(Server.class);
+	private static Logger logger;
 
 	/**
 	 * Converts media/scene request parameters to media id string and a set of scene id strings.
@@ -710,7 +704,11 @@ public class Server {
 	}
 
 	public static void main(String[] args) {
-		
+//		System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "debug");
+		System.setProperty(org.slf4j.impl.SimpleLogger.SHOW_DATE_TIME_KEY, "true");
+		System.setProperty(org.slf4j.impl.SimpleLogger.DATE_TIME_FORMAT_KEY, "yyyy-MM-dd HH:mm:ss:SSS Z");
+		logger = LoggerFactory.getLogger(Server.class);
+
 		logger.info("Starting AdA REST API...");
 
 		if (args.length == 3) {
