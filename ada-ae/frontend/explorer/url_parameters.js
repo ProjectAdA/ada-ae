@@ -75,17 +75,48 @@ function updateUIfromURL() {
 	var request_objects = [];
 
 	urlValues.requests.forEach(function(req){
+		var parameterMappingOk = 1;
+		
 		var movieids = req.movieIDs.map(m => getMovieLongId(m)).filter(m => m !== "");
+		if (req.movieIDs.length != movieids.length) {
+			alert("Unknown movie short id used in URL: "+req.movieIDs+"\n"+JSON.stringify(req));
+			parameterMappingOk = 0;
+		}
+		
 		var sceneids = [];
 		if (movieids.length == 1) {
-			sceneids = req.sceneIDs.map(s => movieids[0] + "_" + getSceneLongId(movieids[0], s));
+			sceneids = req.sceneIDs.map(s => movieids[0] + "_" + getSceneLongId(movieids[0], s)).filter(s => !s.endsWith("_"));
+			if (req.sceneIDs.length != sceneids.length) {
+				alert("Unknown scene short id used in URL: "+req.sceneIDs+"\n"+JSON.stringify(req));
+				parameterMappingOk = 0;
+			}
 		}
+
 		var typeids = req.typeIDs.map(t => getTypeLongId(t)).filter(t => t !== "");
+		if (req.typeIDs.length != typeids.length) {
+			alert("Unknown type short id used in URL: "+req.typeIDs+"\n"+JSON.stringify(req));
+			parameterMappingOk = 0;
+		}
+
 		var searchterm = Object.keys(req).includes("searchText") ? req.searchText : "";
 		var wholeWord = Object.keys(req).includes("wholeWord") ? req.wholeWord : false;
+		
 		var valueids = req.valueIDs.map(v => v.map(sv => getValueLongId(sv)).filter(v => v !== ""));
-		var ros = generate_request_objects(req.searchType, movieids, sceneids, typeids, searchterm, wholeWord, valueids);
-		request_objects = request_objects.concat(ros);
+		if (req.valueIDs.length != valueids.length) {
+			alert("Unknown value short id used in URL: "+req.valueIDs+"\n"+JSON.stringify(req));
+			parameterMappingOk = 0;
+		}
+		for (let i = 0; i < req.valueIDs.length; i++) {
+			if (req.valueIDs[i].length != valueids[i].length) {
+				alert("Unknown value short id used in URL: "+req.valueIDs[i]+"\n"+JSON.stringify(req));
+				parameterMappingOk = 0;
+			}
+		} 
+		
+		if (parameterMappingOk == 1) {
+			var ros = generate_request_objects(req.searchType, movieids, sceneids, typeids, searchterm, wholeWord, valueids);
+			request_objects = request_objects.concat(ros);
+		}
 	});
 	
 	if (request_objects.length > 0) {
