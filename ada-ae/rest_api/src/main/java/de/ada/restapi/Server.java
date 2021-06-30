@@ -2,6 +2,9 @@ package de.ada.restapi;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -18,13 +21,21 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
@@ -78,7 +89,7 @@ public class Server {
 	// Default number of results that frame search should return
 	protected static int FRAME_SERACH_DEFAULT_NUMBER_OF_RESULTS = 50;	
 
-	final Logger logger = LoggerFactory.getLogger(Server.class);
+	private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
 	/**
 	 * Converts media/scene request parameters to media id string and a set of scene id strings.
@@ -653,6 +664,43 @@ public class Server {
 			}
 		});
 		
+	}
+	
+	protected static CloseableHttpClient getSslReadyHttpClientWithCredentials() {
+		CloseableHttpClient httpClient = null;
+		CredentialsProvider credsProvider = new BasicCredentialsProvider();
+		Credentials credentials = new UsernamePasswordCredentials(SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
+		credsProvider.setCredentials(AuthScope.ANY, credentials);
+		try {
+			httpClient = HttpClientBuilder.create()
+			        .setSSLContext(new SSLContextBuilder().loadTrustMaterial(null, TrustSelfSignedStrategy.INSTANCE).build())
+			        .setDefaultCredentialsProvider(credsProvider)
+			        .build();
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("getSslReadyHttpClientWithCredentials - failed to created http client. "+msg);
+			return null;
+		}
+		
+		return httpClient;
+	}
+
+
+	protected static CloseableHttpClient getSslReadyHttpClient() {
+		CloseableHttpClient httpClient = null;
+		try {
+			httpClient = HttpClientBuilder.create()
+			        .setSSLContext(new SSLContextBuilder().loadTrustMaterial(null, TrustSelfSignedStrategy.INSTANCE).build())
+//			        .setConnectionReuseStrategy(NoConnectionReuseStrategy.INSTANCE)
+//			        .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+			        .build();
+		} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("getSslReadyHttpClient - failed to created http client. "+msg);
+			return null;
+		}
+		
+		return httpClient;
 	}
 
 	public static void main(String[] args) {

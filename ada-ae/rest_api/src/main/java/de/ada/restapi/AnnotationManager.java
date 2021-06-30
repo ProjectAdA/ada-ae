@@ -16,17 +16,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -60,6 +54,7 @@ public class AnnotationManager {
 
 	private String sparqlEndpoint;
 	private String sparqlAuthEndpoint;
+	// TODO remove user/pass from class
 	private String sparqlUser;
 	private String sparqlPassword;
 	private static AnnotationManager instance;
@@ -182,7 +177,13 @@ public class AnnotationManager {
 		
 		String query = URIconstants.QUERY_PREFIXES() + AnnotationQueries.QUERY_ANNOTATION_COUNT;
 
-		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
+		CloseableHttpClient httpClient = Server.getSslReadyHttpClient();
+		if (httpClient == null) {
+			logger.error("getTotalCount - httpClient could not be created.");
+			return null;
+		}
+
+		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query, httpClient)) {
 			logger.info("{} Query for total annotation count.", "getTotalCount");
 			ResultSet set = qexec.execSelect();
         	if (set.hasNext()) {
@@ -197,6 +198,16 @@ public class AnnotationManager {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - Query annotations - Triplestore query failed {}", "getTotalCount", msg);
 			return null;
+		} finally {
+			if (httpClient != null) {
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+					String msg = e.toString().replace("\n", " ");
+					logger.error("getTotalCount - HTTP Connection to triplestore could not be closed. {}", msg);
+					return null;
+				}
+			}
 		}
 
 		return result;
@@ -224,14 +235,31 @@ public class AnnotationManager {
 			query = query.replaceFirst("FROM <<GRAPH>>","");
 		}
 		
-		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
-			logger.info("{} Query for mediaId ({}) scenes({}) types({})", "getAnnotations", mediaId, scenes, types);
+		logger.info("{} Query for mediaId ({}) scenes({}) types({})", "getAnnotations", mediaId, scenes, types);
+
+		CloseableHttpClient httpClient = Server.getSslReadyHttpClient();
+		if (httpClient == null) {
+			logger.error("getAnnotations - httpClient could not be created.");
+			return null;
+		}
+		
+		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query, httpClient)) {
 			result = qexec.execDescribe();
         	qexec.close();
         } catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - Query annotations - Triplestore query failed {}", "getAnnotations", msg);
 			return null;
+		} finally {
+			if (httpClient != null) {
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+					String msg = e.toString().replace("\n", " ");
+					logger.error("getAnnotations - HTTP Connection to triplestore could not be closed. {}", msg);
+					return null;
+				}
+			}
 		}
 		
 		return result;
@@ -256,13 +284,29 @@ public class AnnotationManager {
 		query = query.replaceFirst("<<TYPEFILTER>>", typeFilter);
 		query = query.replaceFirst("<<MEDIAFILTER>>", mediaFilter);
 		
-		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
+		CloseableHttpClient httpClient = Server.getSslReadyHttpClient();
+		if (httpClient == null) {
+			logger.error("textSearch - httpClient could not be created.");
+			return null;
+		}
+
+		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query, httpClient)) {
 			result = qexec.execDescribe();
         	qexec.close();
         } catch (Exception e) {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - Text search annotations - Triplestore query failed {}", "textSearch", msg);
 			return null;
+		} finally {
+			if (httpClient != null) {
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+					String msg = e.toString().replace("\n", " ");
+					logger.error("textSearch - HTTP Connection to triplestore could not be closed. {}", msg);
+					return null;
+				}
+			}
 		}
 		
 		return result;
@@ -306,7 +350,13 @@ public class AnnotationManager {
 			
 			Set<AnnotationMetadata> annotations = new HashSet<AnnotationMetadata>();
 			
-	        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
+			CloseableHttpClient httpClient = Server.getSslReadyHttpClient();
+			if (httpClient == null) {
+				logger.error("valueSearch - httpClient could not be created.");
+				return null;
+			}
+
+			try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query, httpClient)) {
 				logger.info("{} - QUERY VALUE_SEARCH_SELECT_TEMPLATE {}", "valueSearch", values);
 	        	ResultSet set = qexec.execSelect();
 	        	while (set.hasNext()) {
@@ -323,6 +373,16 @@ public class AnnotationManager {
 				String msg = e.toString().replace("\n", " ");
 				logger.error("{} - QUERY VALUE_SEARCH_SELECT_TEMPLATE - Triplestore query failed {} {}", "valueSearch", values, msg);
 				return null;
+			} finally {
+				if (httpClient != null) {
+					try {
+						httpClient.close();
+					} catch (IOException e) {
+						String msg = e.toString().replace("\n", " ");
+						logger.error("valueSearch - HTTP Connection to triplestore could not be closed. {}", msg);
+						return null;
+					}
+				}
 			}
 	        
 	        resultSets.put(values, annotations);
@@ -398,7 +458,14 @@ public class AnnotationManager {
 			query = query.replaceFirst("<<SCENEFILTER>>", "");
 			query = query.replaceFirst("<<TYPEFILTER>>", annoFilter);
 			query = query.replaceFirst("FROM <<GRAPH>>","");
-			try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
+
+			CloseableHttpClient httpClient = Server.getSslReadyHttpClient();
+			if (httpClient == null) {
+				logger.error("valueSearch - httpClient could not be created.");
+				return null;
+			}
+			
+			try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query, httpClient)) {
 				logger.info("{} - QUERY_ANNOTATIONS_TEMPLATE - Annotations: {}", "valueSearch", numValue);
 				result = qexec.execDescribe();
 	        	qexec.close();
@@ -406,6 +473,16 @@ public class AnnotationManager {
 				String msg = e.toString().replace("\n", " ");
 				logger.error("{} - QUERY_ANNOTATIONS_TEMPLATE - Triplestore query failed - Annotations: {} - {}", "valueSearch", numValue, msg);
 				return null;
+			} finally {
+				if (httpClient != null) {
+					try {
+						httpClient.close();
+					} catch (IOException e) {
+						String msg = e.toString().replace("\n", " ");
+						logger.error("valueSearch - HTTP Connection to triplestore could not be closed. {}", msg);
+						return null;
+					}
+				}
 			}
 			
 		} else {
@@ -445,31 +522,6 @@ public class AnnotationManager {
     }
 
 	/**
-	 * Creates an UpdateProcessor to submit SPARQL updates to the triplestore, with or without authentification.
-	 * @param request
-	 * @param auth
-	 * @return
-	 */
-	/*private UpdateProcessor createUpdateProcessor(UpdateRequest request, boolean auth) {
-		if (auth) {
-
-			CredentialsProvider credsProvider = new BasicCredentialsProvider();
-			Credentials credentials = new UsernamePasswordCredentials(sparqlUser, sparqlPassword);
-			credsProvider.setCredentials(AuthScope.ANY, credentials);
-			HttpContext httpContext = new BasicHttpContext();
-			httpContext.setAttribute(HttpClientContext.CREDS_PROVIDER, credsProvider);
-			UpdateProcessor up = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
-			((UpdateProcessRemote) up).setHttpContext(httpContext);
-			return up;
-			
-//			CloseableHttpClient httpClient = HttpClientBuilder.create().setDefaultCredentialsProvider(credsProvider).build();
-//			return UpdateExecutionFactory.createRemote(request, sparqlAuthEndpoint, httpClient);
-		} else {
-			return UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
-		}
-	}
-	*/
-	/**
 	 * Executes an update request for the triplestore. 
 	 * @param request
 	 * @return Error message in case of failure or null if success
@@ -477,13 +529,14 @@ public class AnnotationManager {
 	public String submitUpdateRequestToTripleStore(UpdateRequest request) {
 		logger.info("submitUpdateRequestToTripleStore - request size {}", request.toString().length());
 		logger.debug("submitUpdateRequestToTripleStore - request - {}", request.toString());
-		CloseableHttpClient httpClient = null; 
+
+		CloseableHttpClient httpClient = Server.getSslReadyHttpClientWithCredentials();
+		if (httpClient == null) {
+			logger.error("submitUpdateRequestToTripleStore - httpClient could not be created.");
+			return null;
+		}
+		
 		try {
-			
-			CredentialsProvider credsProvider = new BasicCredentialsProvider();
-			Credentials credentials = new UsernamePasswordCredentials(sparqlUser, sparqlPassword);
-			credsProvider.setCredentials(AuthScope.ANY, credentials);
-			httpClient = HttpClientBuilder.create().setDefaultCredentialsProvider(credsProvider).build();
 			UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlAuthEndpoint, httpClient);
 			processor.execute();
 		} catch (Exception e) {
@@ -495,7 +548,9 @@ public class AnnotationManager {
 				try {
 					httpClient.close();
 				} catch (IOException e) {
-					return "HTTP Connection to triplestore could not be closed. "+e.toString().replace("\n", " ").replace("\"", "");
+					String msg = e.toString().replace("\n", " ");
+					logger.error("submitUpdateRequestToTripleStore - HTTP Connection to triplestore could not be closed. {}", msg);
+					return "HTTP Connection to triplestore could not be closed. "+msg.replace("\"", "");
 				}
 			}
 		}
@@ -524,7 +579,7 @@ public class AnnotationManager {
 		*/
 		
 		/*
-		 * Instead we upload the turtle model to our RDF upload service that does a bulk load via isql-v
+		 * Instead we submit the turtle model to our RDF upload service that does a bulk load via isql-v
 		 */
 		
 		// Add a new namespace prefix to shorten turtle triples 
@@ -533,10 +588,6 @@ public class AnnotationManager {
 		StringWriter turtleWriter = new StringWriter();
 		RDFDataMgr.write(turtleWriter, model, RDFFormat.TURTLE_PRETTY);
 		String turtleString = turtleWriter.toString();
-		
-		// Is handled by the rdf upload now - // Before inserting new data the content of graph is removed completely
-//		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
-//		submitUpdateRequestToTripleStore(request);
 		
 		CloseableHttpClient client = null;
 
@@ -595,173 +646,6 @@ public class AnnotationManager {
 		
 		return null;
 		
-		/*
-		
-		// Add a new namespace prefix to shorten turtle triples 
-		model.setNsPrefix("armid", URIconstants.MEDIA_PREFIX()+mediaId+"/");
-		
-		StringWriter turtleWriter = new StringWriter();
-		RDFDataMgr.write(turtleWriter, model, RDFFormat.TURTLE_PRETTY);
-		String turtleString = turtleWriter.toString();
-		String insertPrefixes = extractPrefixes(model);
-		String annotationTurtleString = removePrefixes(turtleString);
-
-//		try {
-//			BufferedWriter out = new BufferedWriter(new FileWriter("d:\\hagt\\googledrive\\HPI\\ada\\advene_service\\shot_insert.ttl"));
-//			out.write(annotationTurtleString);
-//			out.close();
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//		}
-
-		if (!AnnotationConstants.USE_VIRTUOSO_QUERY_PAGINATION) {
-			String update = insertPrefixes + "\n"; 
-			update = update + "INSERT { GRAPH <"+targetGraphUri+"> {\n";
-			update = update + annotationTurtleString.toString() +"\n";
-			update = update + "} } WHERE {}";
-			UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
-			request.add(update);
-			
-			return submitUpdateRequestToTripleStore(request);
-		} else {
-			List<String> splitAnnotations = splitAnnotations(annotationTurtleString);
-			System.out.println(splitAnnotations.size());
-			UpdateRequest crequest = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
-			String cresult = submitUpdateRequestToTripleStore(crequest);
-			if (cresult != null) {
-				return cresult;
-			}
-
-//			String update = insertPrefixes + "\n"; 
-//			update = update + "INSERT { GRAPH <"+targetGraphUri+"> {\n";
-//			update = update + splitAnnotations.get(0)+"\n" + splitAnnotations.get(1)+"\n";
-//			update = update + "} } WHERE {}";
-//			
-//			System.out.println(update);
-//			UpdateRequest request = UpdateFactory.create(update);
-//			System.out.println(request.toString());
-//			String uresult = submitUpdateRequestToTripleStore(request);
-
-			String update = insertPrefixes + "\n"; 
-			update = update + "INSERT { GRAPH <"+targetGraphUri+"> {\n";
-
-			int i = 1;
-			for (String anno : splitAnnotations) {
-				if (i % AnnotationConstants.NUMBER_OF_ANNOTATIONS_PER_INSERT_QUERY == 0) {
-					update = update + "} } WHERE {}";
-					UpdateRequest request = UpdateFactory.create(update);
-					String uresult = submitUpdateRequestToTripleStore(request);
-					if (uresult != null) {
-						return uresult;
-					}
-					update = insertPrefixes + "\n"; 
-					update = update + "INSERT { GRAPH <"+targetGraphUri+"> {\n";
-				} else {
-					update = update + anno+"\n";
-					i++;
-				}
-			}
-			if (!update.isEmpty()) {
-				update = update + "} } WHERE {}";
-				UpdateRequest request = UpdateFactory.create(update);
-				String uresult = submitUpdateRequestToTripleStore(request);
-				if (uresult != null) {
-					return uresult;
-				}
-			}
-		}
-		
-		
-		System.out.println(model.size());
-		
-		try {
-			BufferedWriter out = new BufferedWriter(new FileWriter("d:\\hagt\\googledrive\\HPI\\ada\\advene_service\\shot_test.ttl"));
-			
-			StringWriter sw = new StringWriter();
-			RDFDataMgr.write(sw, model, RDFFormat.TURTLE_PRETTY);
-			
-			out.write(sw.toString());
-			
-			out.close();
-			
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-		StringWriter triples = new StringWriter();
-		RDFDataMgr.write(triples, model, RDFFormat.NTRIPLES_UTF8);
-		
-		String update = "INSERT { GRAPH <"+targetGraphUri+"> {\n";
-		update = update + triples.toString() +"\n";
-		update = update + "} } WHERE {}";
-		UpdateRequest request = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
-		request.add(update);
-
-		*/
-		
-		/*
-		
-		// Split the insert query into parts because virtuoso truncates queries lager than ~220kb and just responds with 400 Bad Request
-		// see also https://stackoverflow.com/questions/16487746/jena-sparql-update-doesnt-execute
-		ArrayList<String> paginatedQuery = paginateQuery(queryString);
-		
-		logger.info("insertModelIntoTripleStore - paginatedQuery - number of queries {}", paginatedQuery.size());
-	
-		// Attention: The respective graph is first cleared and then the triples are inserted
-		UpdateRequest clearRequest = UpdateFactory.create("CLEAR GRAPH <"+targetGraphUri+">");
-		try {
-			logger.info("insertModelIntoTripleStore - CLEAR GRAPH - {}", targetGraphUri);
-			UpdateProcessor processor = UpdateExecutionFactory.createRemote(clearRequest, sparqlEndpoint);
-			processor.execute();
-		} catch (Exception e) {
-			e.printStackTrace();
-			String msg = e.toString().replace("\n", " ");
-			logger.error("insertModelIntoTripleStore - UpdateProcessor - {}", msg);
-			return "Triplestore clear graph failed.";
-		}
-		
-		*/
-	
-	
-		/*
-		
-		for (String query : paginatedQuery) {
-			String update = "INSERT { GRAPH <"+targetGraphUri+"> {\n";
-			update = update + query +"\n";
-			update = update + "} } WHERE {}";
-			UpdateRequest request = UpdateFactory.create(update);
-			try {
-				logger.info("insertModelIntoTripleStore - INSERT - size {}", request.toString().length());
-				logger.debug("insertModelIntoTripleStore - INSERT - {}", request.toString());
-				UpdateProcessor processor = UpdateExecutionFactory.createRemote(request, sparqlEndpoint);
-				processor.execute();
-			} catch (Exception e) {
-				e.printStackTrace();
-				String msg = e.toString().replace("\n", " ");
-				logger.error("insertModelIntoTripleStore - INSERT - {}", msg);
-				return "Triplestore insert failed.";
-			}
-		}
-		*/ 
-		
-	    /*
-	     * Implementation with INSERT DATA
-	     * 
-		Node graph = NodeFactory.createURI(URIconstants.GRAPH_PREFIX() + record.getId() + GENERATED_SCENES_SUFFIX);
-		UpdateRequest req = new UpdateRequest();
-		QuadDataAcc acc = new QuadDataAcc();
-		acc.setGraph(graph);
-		
-		sceneModel.listStatements().forEachRemaining(st -> {
-			Triple t = st.asTriple();
-			acc.addTriple(t);
-		});
-		
-		req.add("CLEAR GRAPH <"+graph.toString()+">;");
-		req.add(new UpdateDataInsert(acc));
-		*/
 	}
 	
 	public String removeGeneratedScene(String mediaId) {
@@ -807,10 +691,17 @@ public class AnnotationManager {
 		Map<String,Map<String,Interval>> movieSceneIntervals = new HashMap<String, Map<String,Interval>>();
 
 		String queryScenes = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ALL_SCENES();
+
+		CloseableHttpClient httpClient = Server.getSslReadyHttpClient();
+		if (httpClient == null) {
+			logger.error("retrieveSceneIntervals - httpClient could not be created.");
+			return null;
+		}
+		
 		QueryExecution qexec = null;
 		if (modelWithScenes == null) {
 			// Retrieve available scene annotations from triple store
-			qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryScenes);	
+			qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryScenes, httpClient);	
 		} else {
 			// Retrieve available scene annotations from model
 			qexec = QueryExecutionFactory.create(queryScenes, modelWithScenes);
@@ -842,6 +733,15 @@ public class AnnotationManager {
 			return null;
 		} finally {
 			qexec.close();
+			if (httpClient != null) {
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+					String msg = e.toString().replace("\n", " ");
+					logger.error("retrieveSceneIntervals - HTTP Connection to triplestore could not be closed. {}", msg);
+					return null;
+				}
+			}
 		}
 		
 		return movieSceneIntervals;

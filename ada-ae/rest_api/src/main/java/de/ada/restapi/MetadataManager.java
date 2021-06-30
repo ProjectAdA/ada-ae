@@ -1,5 +1,6 @@
 package de.ada.restapi;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.datatypes.xsd.impl.XSDBaseNumericType;
 import org.apache.jena.graph.Node;
@@ -111,11 +113,18 @@ public class MetadataManager {
 		
 		// Create a new short identifier in case metadata record is created the first time
 		if (record.getShortId() == null) {
-			logger.info("addMedia - QUERY_MAX_SHORTID");
+			logger.info("addUpdateMedia - QUERY_MAX_SHORTID");
+			
+			CloseableHttpClient httpClient = Server.getSslReadyHttpClient();
+			if (httpClient == null) {
+				logger.error("addUpdateMedia - httpClient could not be created.");
+				return "httpClient could not be created.";
+			}
+
 			String queryMax = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_MAX_MOVIE_SHORTID();
 			Integer maxShortId = 0;
-	        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryMax)) {
-	        	logger.debug("addMedia - SPARQL QUERY {}", queryMax);
+	        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryMax, httpClient)) {
+	        	logger.debug("addUpdateMedia - SPARQL QUERY {}", queryMax);
 	        	ResultSet set = qexec.execSelect();
 	        	if (set.hasNext()) {
 	        		QuerySolution next = set.next();
@@ -127,8 +136,18 @@ public class MetadataManager {
 	        	qexec.close();
 	        } catch (Exception e) {
 				String msg = e.toString().replace("\n", " ");
-				logger.error("addMedia - QUERY_MAX_SHORTID - Triplestore query failed {}", msg);
+				logger.error("addUpdateMedia - QUERY_MAX_SHORTID - Triplestore query failed {}", msg);
 				return "Triplestore query for max movie short id failed.";
+			} finally {
+				if (httpClient != null) {
+					try {
+						httpClient.close();
+					} catch (IOException e) {
+						String msg = e.toString().replace("\n", " ");
+						logger.error("addUpdateMedia - HTTP Connection to triplestore could not be closed. {}", msg);
+						return "HTTP Connection to triplestore could not be closed. "+msg.replace("\"", "");
+					}
+				}
 			}
 	        
 	        record.setShortId(maxShortId+1);
@@ -229,8 +248,14 @@ public class MetadataManager {
 		List<Map<String, Object>> sceneResult = new ArrayList<Map<String,Object>>();
 		Map<String,List<Map<String, Object>>> scenes = new HashMap<String, List<Map<String,Object>>>();
 		
+		CloseableHttpClient httpClient = Server.getSslReadyHttpClient();
+		if (httpClient == null) {
+			logger.error("getMovieMetadata - httpClient could not be created.");
+			return null;
+		}
+
 		String queryScenes = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ALL_SCENES();
-        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryScenes)) {        	
+        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryScenes, httpClient)) {        	
 			logger.info("getMovieMetadata - SPARQL - QUERY_ALL_SCENES");
         	logger.debug("getMovieMetadata - SPARQL QUERY {}", queryScenes);
         	ResultSet set = qexec.execSelect();
@@ -240,7 +265,18 @@ public class MetadataManager {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("getMovieMetadata - QUERY_ALL_SCENES - Triplestore query failed {}", msg);
 			return null;
+		} finally {
+			if (httpClient != null) {
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+					String msg = e.toString().replace("\n", " ");
+					logger.error("getMovieMetadata - HTTP Connection to triplestore could not be closed. {}", msg);
+					return null;
+				}
+			}
 		}
+
         for (Map<String, Object> scene : sceneResult) {
         	String id = (String)scene.get("id");
         	String mediaId = id.split("/")[0];
@@ -254,8 +290,14 @@ public class MetadataManager {
         	list.add(scene);
         }
 
+		httpClient = Server.getSslReadyHttpClient();
+		if (httpClient == null) {
+			logger.error("getMovieMetadata - httpClient could not be created.");
+			return null;
+		}
+
 		String queryCounts = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ANNOTATION_TYPE_COUNTS();
-        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryCounts)) {
+        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, queryCounts, httpClient)) {
 			logger.info("getMovieMetadata - SPARQL - QUERY_ANNOTATION_TYPE_COUNTS");
 			logger.debug("getMovieMetadata - SPARQL QUERY {}", queryCounts);
         	ResultSet set = qexec.execSelect();
@@ -265,6 +307,16 @@ public class MetadataManager {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("getMovieMetadata - QUERY_ANNOTATION_TYPE_COUNTS - Triplestore query failed {}", msg);
 			return null;
+		} finally {
+			if (httpClient != null) {
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+					String msg = e.toString().replace("\n", " ");
+					logger.error("getMovieMetadata - HTTP Connection to triplestore could not be closed. {}", msg);
+					return null;
+				}
+			}
 		}
         
         for (Map<String, Object> co : countres) {
@@ -287,9 +339,15 @@ public class MetadataManager {
     		totalCounts.put(source, total);
 		}
         
+		httpClient = Server.getSslReadyHttpClient();
+		if (httpClient == null) {
+			logger.error("getMovieMetadata - httpClient could not be created.");
+			return null;
+		}
+        
         List<Map<String, Object>> tmpResult = null;
 		String query = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_METADATA();
-        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {        	
+        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query, httpClient)) {        	
 			logger.info("getMovieMetadata - SPARQL - QUERY_METADATA");
 			logger.debug("getMovieMetadata - SPARQL QUERY {}", query);
         	ResultSet set = qexec.execSelect();        	
@@ -299,6 +357,16 @@ public class MetadataManager {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - QUERY_METADATA - Triplestore query failed {}", "getMovieMetadata", msg);
 			return null;
+		} finally {
+			if (httpClient != null) {
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+					String msg = e.toString().replace("\n", " ");
+					logger.error("getMovieMetadata - HTTP Connection to triplestore could not be closed. {}", msg);
+					return null;
+				}
+			}
 		}
         
 		for (Map<String, Object> map : tmpResult) {
@@ -329,9 +397,15 @@ public class MetadataManager {
 		List<Map<String, Object>> annotationValues = new ArrayList<Map<String,Object>>();
 		
 		List<Map<String, Object>> tempResult = new ArrayList<Map<String,Object>>();
+		
+		CloseableHttpClient httpClient = Server.getSslReadyHttpClient();
+		if (httpClient == null) {
+			logger.error("getOntology - httpClient could not be created.");
+			return null;
+		}
 
 		String query = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ONTOLOGY_ELEMENTS();
-		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
+		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query, httpClient)) {
 			logger.info("getOntology - SPARQL - QUERY_ONTOLOGY_ELEMENTS");
 			logger.debug("getOntology - SPARQL QUERY {}", query);
             ResultSet set = qexec.execSelect();
@@ -341,6 +415,16 @@ public class MetadataManager {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - QUERY_ONTOLOGY_ELEMENTS - Triplestore query failed {}", "getOntology", msg);
 			return null;
+		} finally {
+			if (httpClient != null) {
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+					String msg = e.toString().replace("\n", " ");
+					logger.error("getOntology - HTTP Connection to triplestore could not be closed. {}", msg);
+					return null;
+				}
+			}
 		}
 		
         for (Map<String, Object> map : tempResult) {
@@ -359,8 +443,14 @@ public class MetadataManager {
         
         Map<String, Set<String>> subElements = new HashMap<String, Set<String>>();
         
+		httpClient = Server.getSslReadyHttpClient();
+		if (httpClient == null) {
+			logger.error("getOntology - httpClient could not be created.");
+			return null;
+		}
+
 		query = URIconstants.QUERY_PREFIXES() + MetadataQueries.QUERY_ONTOLOGY_LINKS();
-		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query)) {
+		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query, httpClient)) {
 			logger.info("getOntology - SPARQL - QUERY_ONTOLOGY_LINKS");
 			logger.debug("getOntology - SPARQL QUERY {}", query);
             ResultSet set = qexec.execSelect();
@@ -381,6 +471,16 @@ public class MetadataManager {
 			String msg = e.toString().replace("\n", " ");
 			logger.error("{} - QUERY_ONTOLOGY_LINKS - Triplestore query failed {}", "getOntology", msg);
 			return null;
+		} finally {
+			if (httpClient != null) {
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+					String msg = e.toString().replace("\n", " ");
+					logger.error("getOntology - HTTP Connection to triplestore could not be closed. {}", msg);
+					return null;
+				}
+			}
 		}
 		
 		for (Map<String, Object> level : annotationLevels) {
@@ -437,5 +537,5 @@ public class MetadataManager {
 		return annotationLevels;
 		
 	}
-
+	
 }
