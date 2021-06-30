@@ -20,7 +20,7 @@ function request_status() {
 	console.log("request_status");
 	return $.ajax({
 		url: apiUrl + "/status",
-		timeout: 5000,
+		timeout: 15000,
 		error: function(request, status, error) {
 			console.log("Loading of API status failed. \n responseText: " + request.responseText + "\n request.status: " + request.status + "\n status: " + status + "\n error: " + error);
 		}
@@ -43,7 +43,7 @@ function request_annotations(url) {
 	console.log("request_annotations");
 	return $.ajax({
 		url: url,
-		timeout: 120000,
+		timeout: 180000,
 		error: function(request, status, error) {
 			alert("Loading annotations failed. API could not be reached. Please submit the request again.\n responseText: " + request.responseText + "\n request.status: " + request.status + "\n status: " + status + "\n error: " + error);
 			unlock_interface();
@@ -55,7 +55,7 @@ function request_movie_metadata() {
 	console.log("request_movie_metadata");
 	return $.ajax({
 		url: apiUrl + "/getMovieMetadata",
-		timeout: 50000,
+		timeout: 120000,
 		error: function(request, status, error) {
 			alert("Loading movie metadata failed. API could not be reached. Please reload the page.\n responseText: " + request.responseText + "\n request.status: " + request.status + "\n status: " + status + "\n error: " + error);
 			unlock_interface();
