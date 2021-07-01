@@ -1133,12 +1133,31 @@ function download_image_search_result() {
 	document.body.removeChild(element);
 }
 
+function findFrametrailInstance(movieid) {
+	var movieLabel = getMovieLabelById(movieid);
+	
+	var filteredInstances = FrameTrail.instances.filter(ft => ft.metadata.hypervideoName === movieLabel);
+	
+	if (filteredInstances.length == 1) {
+		return filteredInstances[0];
+	} else {
+		return null;
+	}
+}
+
 function jump_to_frametrail(movieid, timemilli) {
-	console.log("jump_to_frametrail", movieid, timemilli);
+	//console.log("jump_to_frametrail", movieid, timemilli);
 	
-	// FrameTrail.instances[0].currentTime = timemilli / 1000;
+	//console.log(FrameTrail.instances);
 	
-	// console.log(FrameTrail.instances);
+	var fti = findFrametrailInstance(movieid);
+	
+	if (fti !== null) {
+		fti.currentTime = timemilli / 1000;
+	} else {
+		//TODO - Request Scene Annotation for movie, initialize frametrail and set currentTime
+		
+	}
 }
 
 var imageSearchNeighbors = '';
