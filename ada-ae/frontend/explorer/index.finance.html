@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Semantic Video Annotation Explorer - AdA Project - HPI</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="frametrail/FrameTrail.min.css">
+    <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="css/color-definitions.css">
+    <link rel="stylesheet" href="css/custom-frametrail.css">
+    <link rel="stylesheet" href="css/custom-frametrail-timelines.css">
+    <link rel="stylesheet" href="fancytree/skin-win8-n/ui.fancytree.css">
+    <link rel="stylesheet" href="css/searchtab.css">
+</head>
+<body onload="init_interface()" data-timeline-charts="false" data-timeline-background="false" data-timeline-color="false" data-timeline-horizontal-grid="false" data-timeline-keys="false">
+<div class="container">
+    <div id="overlay" style="display:none;">
+        <div class="spinner"></div>
+        <br/>
+        <div id="overlay_text">Loading...</div>
+    </div>
+    <header>
+        <div id="headerContainer">
+            <h2>AdA Annotation Explorer v1.x (dev)</h2>
+			<div id="statusContainer">
+				[Annotations online: <span id="statusLabel"></span>]
+            </div>
+            <div id="loginContainer">
+                <button id="loginButton" type="button" class="button" title="Login" onclick="login(true);"><span class="icon-lock-1"></span>Login</button>
+                <button id="logoutButton" type="button" class="button" title="You are logged in"><span class="icon-lock-open"></span>You are logged in</button>
+            </div>
+            <div style="clear: both;"></div>
+        </div>
+        <div id="activeSearchFacets"></div>
+        <div id="searchFacetOptions">
+            <div class="button downloadResult" title="Download / Save Result"><span class="icon-download"></span><span>Download<br> Result</span></div>
+            <div id="clearbutton" class="button clearbutton" onclick="clear_workspace()" title="Clear Workspace"><span class="icon-cancel"></span><span>Clear<br> Workspace</span></div>
+        </div>
+        <div id="resultPanelOptions">
+            <label class="switch">
+                <input id="optionsToggleKeys" name="k" type="checkbox" autocomplete="off">
+                <span class="slider round"></span>
+            </label>
+            <span class="switchLabel">Legend</span>
+            <label class="switch">
+                <input id="optionsToggleColor" name="f" type="checkbox" autocomplete="off">
+                <span class="slider round"></span>
+            </label>
+            <span class="switchLabel">Colors</span>
+            <label class="switch">
+                <input id="optionsToggleHorizontalGrid" name="h" type="checkbox" autocomplete="off">
+                <span class="slider round"></span>
+            </label>
+            <span class="switchLabel">Scale</span>
+            <label class="switch">
+                <input id="optionsToggleBarchart" name="c" type="checkbox" autocomplete="off">
+                <span class="slider round"></span>
+            </label>
+            <span class="switchLabel">Charts</span>
+        </div>
+        <div id="resultPanelActions">
+            <div id="timelineOrderSettingsButton" class="button" title="Timeline Order"><span class="icon-list-numbered"></span></div>
+            <div id="videoSourceSettingsButton" class="button" title="Video Source Settings"><span class="icon-cog"></span></div>
+            <div class="button" data-result-view="list"><span class="icon-tasks"></span>List</div>
+            <div class="button active" data-result-view="movie"><span class="icon-hypervideo"></span>Player</div>
+            <div class="button" data-result-unit="scene">Scenes</div>
+            <div class="button active" data-result-unit="movie">Movie</div>
+        </div>
+    </header>
+    <div id="content">
+        <div id="sidebar">
+            <div class="sidebarPanel">
+                <div id="searchtab" style="display: block; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #ccc;">
+                    <div class="tabbed">
+                        <input checked="checked" id="tab1" type="radio" name="tabs" />
+                        <input id="tab2" type="radio" name="tabs" />
+                        <input id="tab3" type="radio" name="tabs" />
+                        <input id="tab4" type="radio" name="tabs" />
+                        <nav>
+                            <label for="tab1" title="Movie Search"><span class="icon-hypervideo"></span></label>
+                            <label for="tab2" title="Text Search"><span class="icon-search"></span></label>
+                            <label for="tab3" title="Image Search"><span class="icon-picture"></span></label>
+                            <label for="tab4" title="Value Search"><span class="icon-tag"></span></label>
+                        </nav>
+
+                        <figure>
+                            <div class="tab1">
+                                <p>
+                                    <div class="moviesearchdiv">
+                                        <span class="searchFieldLabel">Movies:</span>
+                                        <span class="ui-widget">
+                                            <input id="MovieSearch_MovieField" name="m" class="moviesearchfield" placeholder=" Select movies..." autocomplete="off">
+                                        </span>
+                                        <br>
+                                        <span class="searchFieldLabel">Scenes:</span>
+                                        <span class="ui-widget">
+                                            <input id="MovieSearch_SceneField" name="s" class="moviesearchfield" placeholder=" -- All Movies | All Scenes --" autocomplete="off">
+                                        </span>
+                                        <br>
+                                        <span class="searchFieldLabel">Types:</span>
+                                        <span class="ui-widget">
+                                            <input id="MovieSearch_TypeField" name="a" class="moviesearchfield" placeholder=" -- All Types --" autocomplete="off">
+                                        </span>
+                                        <br>
+                                    </div>
+                                    <div align="center">
+                                        <input type="submit" value="Submit" id="MovieSearchButton" onclick="submit_movie_search()">
+                                    </div>
+                                </p>
+                            </div>
+                            <div class="tab2">
+                                <p>
+									<div class="moviesearchdiv">
+										<span class="searchFieldLabel">Text:</span>
+										<span class="ui-widget">
+											<input id="TextSearchFieldInput" name="TextSearchFieldInput" class="moviesearchfield" placeholder="Enter search text..." autocomplete="off"><br>
+										</span>
+										<div align="center">Filter by:</div>
+										<span class="searchFieldLabel">Movies:</span>
+										<span class="ui-widget">
+											<input id="TextSearchFieldMovies" name="TextSearchFieldMovies" class="moviesearchfield" placeholder=" -- All Movies --" autocomplete="off">
+										</span>
+										<span class="searchFieldLabel">Types:</span>
+										<span class="ui-widget">
+											<input id="TextSearchFieldTypes" name="TextSearchFieldTypes" class="moviesearchfield" placeholder=" -- All Types --" autocomplete="off">
+										</span>
+										<div align="center">
+											<input type="checkbox" name="WholeWordsCheckbox" id="WholeWordsCheckbox" autocomplete="off"><label for="WholeWordsCheckbox"> Find whole words only</label><br>
+										</div>
+                                    </div>
+                                    <div align="center">
+										<input type="submit" value="Submit" id="TextSearchButton" onclick="submit_text_search()">
+                                    </div>
+                                </p>
+                            </div>
+                            <div class="tab3" align="center">
+                                <p>
+									<div class="moviesearchdiv">
+										<div align="left">Select an image:</div>
+										<div align="left"><input type="file" id="imageupload" name="imageupload" class="imagesearchbutton" accept="image/png, image/jpg, image/jpeg" onchange="image_selection(event)"></div>
+										<span class="imageSearchFieldLabel">Max results:</span>
+										<span class="ui-widget">
+											<input type="number" max="200" pattern="[0-9]+" id="ImageSearchFieldMax" name="ImageSearchFieldMax" class="imagesearchfield" placeholder="Default 50 - Max 200" autocomplete="off"><br>
+										</span>
+										<div align="left">Preview:</div>
+										<div id="imagepreviewcontainer"><img id="imagepreview" src="#" alt=" " width="200"/></div>
+									</div>
+									<div align="center">
+										<input type="submit" value="Submit" id="ImageSearchButton" onclick="submit_image_search()">
+									</div>
+                                </p>
+                            </div>
+                            <div class="tab4">
+                                <p>
+                                    <div id="valuesearchcontainer" class="valuesearchdiv">
+										<div id="field_container_1">
+											<span class="searchFieldLabel">Values:</span>
+											<span class="ui-widget">
+												<input id="value_search_field_1" name="value_search_field_1" class="moviesearchfield" autocomplete="off"><button class="icon icon-plus" onclick="add_valuesearch_field()"></button>
+											</span>
+										</div>
+										<div id="valuesearchfilterlabel" align="center">Filter by:</div>
+										<span class="searchFieldLabel">Movies:</span>
+										<span class="ui-widget">
+											<input id="ValueSearchFieldMovies" name="ValueSearchFieldMovies" class="moviesearchfield" placeholder=" -- All Movies --" autocomplete="off">
+										</span>
+									</div>
+									<div align="center">
+										<input type="submit" value="Submit" id="ValueSearchButton" onclick="submit_value_search()">
+									</div>
+                                </p>
+                            </div>
+                        </figure>
+                    </div>
+                </div>
+                <div id="treediv">
+                    <div class="sidebarTitle"><span class="icon-hypervideo"></span>Movies</div>
+                    <div>Select:&nbsp;<a href="#" id="btnSelectAll_movies">All</a> | <a href="#" id="btnDeselectAll_movies">None</a></div>
+                    <div>Expand:&nbsp;<a href="#" id="btnExpand_categories">Categories</a> | <a href="#" id="btnExpandAll_movies">All</a> | <a href="#" id="btnShrinkAll_movies">None</a></div>
+                    <div id="movie_tree"></div>
+                    <div class="sidebarTitle" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #ccc;"><span class="icon-tag"></span>Annotation Types and Values</div>
+                    <div>Select:&nbsp;<a href="#" id="btnSelectAll_annotation">All</a> | <a href="#" id="btnDeselectAll_annotation">None</a></div>
+                    <div>Expand:&nbsp;<a href="#" id="btnExpand_level">Level</a> | <a href="#" id="btnExpandAll_annotations">All</a> | <a href="#" id="btnCollapseAll_annotations">None</a></div>
+                    <div id="annotation_tree"></div>
+                </div>
+            </div>
+            <div id="sidebarToggleButton"></div>
+        </div>
+		<div id="main">
+            
+            <div id="intro">
+                <img src="img/arrow.png">
+                <h2>Welcome to the <b>AdA Annotation Explorer</b>, </h2>the current prototype of our web-based application for querying, analyzing and visualizing semantic video annotations.<br> The Annotation Explorer is a joint work of the Semantic Technologies Group of HPI Potsdam, the film studies department<br> of FU Berlin, and Joscha Jäger the author of FrameTrail. Please visit our <a href="https://projectada.github.io/" target="_blank">AdA Project website</a> for more information.
+                <div class="message active">To visualize annotations, you can either query one or more annotation types from one or more movies and/or scenes, or search for text and predefined values.</div>
+                <div>Be <b>careful</b> when selecting all scenes or all types, as a large number of annotations will slow down your browser. <br>Please note that for copyright reasons we can only grant public access to the public domain video <b>"Occupy Wall Street"</b>. <br>The application does not work with Internet Explorer.<br><br></div>
+                <div>If you have any technical questions, please contact <a target="_blank" href="https://hagt.github.io/">Henning Agt-Rickauer</a>. If you have any questions about the annotations or the corpus, please contact the <a target="_blank" href="https://www.ada.cinepoetics.fu-berlin.de/en/index.html">FU Berlin team</a>.</div>
+                <br><br>
+                <h2>Click to load an example query:</h2>
+                <div id="examplesWrapper">
+                    <a class="exampleItem" href="?r[]=m_74_n_a-c&ui=kfc&unit=movie&view=movie">
+                        <h2>AdA-Filmontology & Video Player Interaction – ‘Occupy Wall Street’</h2>
+                        <p>Full range of manual annotations as well as a selection of automatically generated annotations of “Occupy Wall Street”, an activist video that was released with creative commons and can be accessed unrestrictedly. This player view allows to explore the broad range of AdA-Filmontology as well as the different modes of visualisation and annotation-player interaction in the Annotation Explorer.</p>
+                    </a>
+                    <a class="exampleItem" href="?r[]=m_74_n_a-c&r[]=m_75_n_a-c&ui=kfc&unit=movie&view=movie">
+                        <h2>Detailed Video Comparison – Two Occupy-Wall-Street Videos</h2>
+                        <p>Comparative view of two accessible video files that offers unregistered users further insight into the functionality of the Annotation Explorer using two video players at once.</p>
+                    </a>
+                    <a class="exampleItem" href="?r[]=v_n_50--147-148-146&ui=kfc&unit=movie&view=movie">
+                        <h2>Combined Value Search – Sad Music + Close Field Sizes</h2>
+                        <p>Example for the ‘Value Search’ that allows to find recurring patterns of synchronous annotations across a corpus of different films or within a specific film. Here: music that was perceived as ‘sad’ in combination with close field sizes.</p>
+                    </a>
+                    <a class="exampleItem" href="?r[]=t_n_wall street_s_n&ui=kfc&unit=movie&view=list">
+                        <h2>Full-Text Search – ‘Wall Street’</h2>
+                        <p>Full text search for the term “wall street” in list view. Manual and automatically generated annotations that mention wall street verbally or in which wall street was identified as setting or topic.</p>
+                    </a>
+                    <a class="exampleItem" href="?r[]=t_n_ship_w_n&ui=kfc&unit=movie&view=movie">
+                        <h2>Full-Text Search – 'Ship' (esp. Automated Image Captioning Results)</h2>
+                        <p>Player view of a full text search for “ship”. Among other search results of the automated image captioning (im2txt) that shows various shots of ships within the corpus. Such a search is for example a useful starting point for researching the metaphoric and metonymic dimension of films on the financial crisis. Videos are only partially accessible for external users due to copyrights.</p>
+                    </a>
+                    <a class="exampleItem" href="?r[]=m_60_n_52-101-0-34-14-33-45-48&ui=kfc&unit=movie&view=list">
+                        <h2>Macro Dynamics Full-Length Feature Film – ‘The Company Men’</h2>
+                        <p>Macro view of annotation types that allows to analyze and compare various dynamics on the level of whole films. Shot length, optical flow, use of music, image intrinsic movement and other dimensions are juxtaposed.</p>
+                    </a>
+                    <a class="exampleItem" href="?r[]=m_63_n_a&ui=kfc&unit=movie&view=list">
+                        <h2>Automatically Generated Annotations – ‘The Margin Call’</h2>
+                        <p>Overview of all automatically generated annotations for a full feature film. Automatic speech recognition, concept detection (densecap, neuraltalk2 & im2txt), optical flow analysis, shot detection, waveform of the volume (soundenvelope) and sound classification (yamnet).</p>
+                    </a>
+                    <a class="exampleItem" href="?r[]=m_409_n_101-107-108-100-106&r[]=m_391_n_101-107-108-100-106&r[]=m_63_n_101-107-108-100-106&r[]=m_59_n_101-107-108-100-106&r[]=m_60_n_101-107-108-100-106&r[]=m_62_n_101-107-108-100-106&r[]=m_65_n_101-107-108-100-106&ui=kfc&unit=movie&view=list">
+                        <h2>Comparison of Automatically Generated Annotations for several Feature Films</h2>
+                        <p>Comparative view of automatically generated annotations for a selection of different films. Optical flow analysis, shot detection, waveform of the volume (soundenvelope) and sound classification (yamnet).</p>
+                    </a>
+                    <a class="exampleItem" href="?r[]=m_03_n_107-108-1-14&r[]=m_60_n_107-108-1-14&ui=kfc&unit=movie&view=list">
+                        <h2>Automatically Generated vs Manual Annotations – Segments of Music and Speech</h2>
+                        <p>Comparative view of automatically generated annotations and independently manufactured manual annotations that allow to explore differences and similarities in human and machine perception.</p>
+                    </a>
+                </div>
+            </div>
+            <div id="imagesearchresults">
+                <div id="imgresheader" style="display: block; margin-bottom: 5px; margin-top: 5px; padding-bottom: 5px; border-bottom: 1px solid #ccc;">
+                    <div id="imgresheadline" style="margin-bottom: 5px; border-bottom: 1px solid #ccc;"><span class="icon-picture"></span>&nbsp;Image Search Results</div>
+					<div align="center">
+					<input type="submit" value="Download..." id="DownloadImageSearchResult" onclick="download_image_search_result()">&nbsp;
+					<input type="submit" value="Close" id="CloseImageSearchResult" onclick="remove_image_search_result()">
+					</div>
+                </div>
+                <div id="imagelist">
+                </div>
+            </div>
+            <div id="resultPanelContainer">
+                <div id="resultPanel"></div>
+                <div id="resultIndicatorContainer">
+                    <div id="resultIndicatorScrollContainer"></div>
+                </div>
+                <div id="resultCount">Total Items: <span id="resultCountNumber">0</span></div>
+            </div>
+
+            <div class="resultPanelNavButton" id="resultPanelNavLeft"><span class="icon-left-open-big"></span></div>
+            <div class="resultPanelNavButton" id="resultPanelNavRight"><span class="icon-right-open-big"></span></div>
+            
+            <div id="loadingResults" class="loadingScreen active">
+                <div class="workingSpinner"></div>
+            </div>
+            <!-- FRAMETRAIL END -->
+
+        </div>
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="frametrail/FrameTrail.min.js"></script>
+<script type="text/javascript" src="frametrail/annotations-frametrail-methods.js"></script>
+<script type="text/javascript" src="frametrail/annotations-frametrail.js"></script>
+<script type="text/javascript" src="frametrail/download-result.js"></script>
+<script type="text/javascript" src="fancytree/jquery.fancytree.js"></script>
+
+<script type="text/javascript" src="url_config.js"></script>
+<script type="text/javascript" src="config.js"></script>
+<script type="text/javascript" src="explorer.js"></script>
+<script type="text/javascript" src="url_parameters.js"></script>
+
+</html>
