@@ -380,6 +380,20 @@ public class Server {
         	}
 
 		});
+		
+		app.get("/exportMovieMetadata", ctx -> {
+			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
+			String turtleExport = mdm.exportMovieMetadata();
+			
+			if (turtleExport == null) {
+        		returnError(ctx, "Triplestore query for movie metadata failed.", 500, null);
+			} else {
+				ctx.status(200);
+				ctx.contentType("text/turtle");
+				ctx.result(turtleExport);
+			}
+			
+		});
 
 		app.get("/getMovieMetadata/:mediaId", ctx -> {
 			MetadataManager mdm = MetadataManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);

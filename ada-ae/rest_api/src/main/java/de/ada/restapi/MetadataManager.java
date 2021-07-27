@@ -1,6 +1,7 @@
 package de.ada.restapi;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,8 +21,11 @@ import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.apache.jena.rdf.model.Literal;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.sparql.modify.request.QuadDataAcc;
 import org.apache.jena.sparql.modify.request.UpdateDataInsert;
 import org.apache.jena.update.UpdateRequest;
@@ -232,6 +236,97 @@ public class MetadataManager {
 		logger.info("convertResultSetToListOfMaps - Entries processed: "+result.size());
 		return result;
 	}
+	
+	public String exportMovieMetadata() {
+		CloseableHttpClient httpClient = Server.getSslReadyHttpClient();
+		if (httpClient == null) {
+			logger.error("exportMovieMetadata - httpClient could not be created.");
+			return null;
+		}
+		
+		List<Map<String, Object>> graphResult = null;
+		
+		String query = "SELECT DISTINCT ?g WHERE {GRAPH ?g {?s a ?o}}";
+        try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, query, httpClient)) {        	
+			logger.info("exportMovieMetadata - SPARQL - QUERY GRAPHS");
+        	logger.debug("exportMovieMetadata - SPARQL QUERY {}", query);
+        	ResultSet set = qexec.execSelect();
+        	graphResult = convertResultSetToListOfMaps(set);
+        	qexec.close();
+        } catch (Exception e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("exportMovieMetadata - QUERY GRAPHS - Triplestore query failed {}", msg);
+			return null;
+		} finally {
+			if (httpClient != null) {
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+					String msg = e.toString().replace("\n", " ");
+					logger.error("exportMovieMetadata - HTTP Connection to triplestore could not be closed. {}", msg);
+					return null;
+				}
+			}
+		}
+
+        if (graphResult == null || graphResult.size() == 0) {
+        	return "";
+        }
+
+        
+        Set<String> metaGraphs = new HashSet<String>();
+    	for (Map<String, Object> map : graphResult) {
+    		String g = (String)map.get("g");
+    		if (g != null && g.endsWith("/meta")) {
+    			metaGraphs.add(g);
+    		}
+		}
+        
+        if (metaGraphs.size() == 0) {
+        	return "";
+        }
+        
+        String metaQuery = "describe * ";
+        for (String graph : metaGraphs) {
+        	metaQuery += "FROM <"+graph+"> ";
+		}
+        metaQuery += "WHERE {?s ?p ?o.}";
+        
+        httpClient = Server.getSslReadyHttpClient();
+		if (httpClient == null) {
+			logger.error("exportMovieMetadata - httpClient could not be created.");
+			return null;
+		}
+		
+		Model metaResult = null;
+        
+		try (QueryExecution qexec = QueryExecutionFactory.sparqlService(sparqlEndpoint, metaQuery, httpClient)) {
+			metaResult = qexec.execDescribe();
+        	qexec.close();
+        } catch (Exception e) {
+			String msg = e.toString().replace("\n", " ");
+			logger.error("exportMovieMetadata - QUERY META FROM GRAPHS - Triplestore query failed {}", msg);
+			return null;
+		} finally {
+			if (httpClient != null) {
+				try {
+					httpClient.close();
+				} catch (IOException e) {
+					String msg = e.toString().replace("\n", " ");
+					logger.error("exportMovieMetadata - HTTP Connection to triplestore could not be closed. {}", msg);
+					return null;
+				}
+			}
+		}
+		
+		if (metaResult.size() > 0) {
+			StringWriter queryResult = new StringWriter();
+			RDFDataMgr.write(queryResult, metaResult, RDFLanguages.TURTLE);
+			return queryResult.toString();
+		} else {
+			return "";
+		}
+}
 
 	public List<Map<String, Object>> getMovieMetadata(String queryId) {
 		if (queryId == null) {
