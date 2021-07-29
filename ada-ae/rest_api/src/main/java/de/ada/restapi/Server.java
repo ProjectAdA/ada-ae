@@ -1,6 +1,7 @@
 package de.ada.restapi;
 
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -38,6 +39,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFLanguages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -421,6 +424,34 @@ public class Server {
     			ctx.json(ontology);
         	}
         });
+        
+		app.get("/exportMovieAnnotations/:mediaId", ctx -> {
+	    	String param = properEscapeRemove(ctx.pathParam("mediaId"));
+	    	String mediaId = getScenes(param).left;
+	    	if (mediaId == null) {
+	    		returnError(ctx, "Invalid format of supplied media id and/or scenes.", 400, null);
+				return;
+	    	}
+			AnnotationManager am = AnnotationManager.getInstance(sparqlEndpoint, sparqlAuthEndpoint, SPARQL_UPDATE_USER, SPARQL_UPDATE_PASSWORD);
+			Model annotations = am.getAnnotations(mediaId, new HashSet<String>(), new HashSet<String>(), null);
+			if (annotations == null) {
+	    		returnError(ctx, "Query annotations - Triplestore query failed.", 500, null);
+				return;
+			}
+
+			ctx.status(200);
+			ctx.contentType("text/turtle");
+
+			if (annotations.size() == 0) {
+				ctx.result("");
+			} else {
+				StringWriter queryResult = new StringWriter();
+				RDFDataMgr.write(queryResult, annotations, RDFLanguages.TURTLE);
+				ctx.result(queryResult.toString());
+			}
+			
+		});
+        
         
         app.get("/jsonld/getAnnotations/:mediaId/:cat/:type", ctx -> {
         	handleGetAnnotations(ctx, true);
