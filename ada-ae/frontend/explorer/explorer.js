@@ -1548,7 +1548,10 @@ function getCurrentAnnotationData() {
 		if (window.location.protocol.toLowerCase().startsWith("http") && window.location.hostname != "" ) {
 			var enturl = new URL(anno['id']);
 			if (typeof enturl.pathname !== 'undefined' && enturl.pathname != "") {
-				anno['id'] = window.location.protocol + window.location.hostname + enturl.pathname;
+				enturl.protocol = window.location.protocol;
+				enturl.hostname = window.location.hostname;
+				enturl.port = window.location.port;
+				anno['id'] = enturl.href;
 			}
 		}
 		
