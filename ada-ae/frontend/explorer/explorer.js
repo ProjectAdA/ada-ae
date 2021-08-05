@@ -1544,6 +1544,14 @@ function getCurrentAnnotationData() {
 		var movie = annotation_structure.find(m => m.id == movieid);
 		var scenes_to_process = [];
 		
+		// Patch data URIs to current protocol and hostname. This is necessary to load the annotation preview in case if mixed http/https and if the frontend is running on a different hostname.
+		if (window.location.protocol.toLowerCase().startsWith("http") && window.location.hostname != "" ) {
+			var enturl = new URL(anno['id']);
+			if (typeof enturl.pathname !== 'undefined' && enturl.pathname != "") {
+				anno['id'] = window.location.protocol + window.location.hostname + enturl.pathname;
+			}
+		}
+		
 		if (typeof anno.sceneId === 'undefined') {
 			console.log("Error: scene id is missing for annotation",anno.id);
 		} else {
