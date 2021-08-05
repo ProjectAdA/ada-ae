@@ -5,6 +5,7 @@ var request_results = [];
 var autocomplete_values = {};
 var tree_timeout_id;
 var trees_deselected_nodes = [];
+var consistency_check_result = [];
 
 const zeroPad = (num, places) => String(num).padStart(places, '0')
 
@@ -934,6 +935,9 @@ function remove_request(id) {
 	document.getElementById(id).remove();
 	updateURL();
 	initFrameTrail();
+	// initFrameTrail(false, function() {
+		// console.log("READY CALLBACK");
+	// });
 	unlock_interface();	
 }
 
@@ -941,6 +945,9 @@ function remove_request(id) {
 function reload_frametrail() {
 	lock_interface();
 	initFrameTrail();
+	// initFrameTrail(false, function() {
+		// console.log("READY CALLBACK");
+	// });
 	unlock_interface();
 }
 
@@ -982,6 +989,9 @@ function execute_requests(request_objects) {
 		request_results = request_results.concat(requests_with_results);
 		updateURL();
 		initFrameTrail();
+		// initFrameTrail(false, function() {
+			// console.log("READY CALLBACK");
+		// });
 		unlock_interface();
 	});
 }
@@ -1146,9 +1156,9 @@ function findFrametrailInstance(movieid) {
 }
 
 function jump_to_frametrail(movieid, timemilli) {
-	//console.log("jump_to_frametrail", movieid, timemilli);
+	console.log("jump_to_frametrail", movieid, timemilli);
 	
-	//console.log(FrameTrail.instances);
+	console.log("FrameTrail.instances", FrameTrail.instances);
 	
 	var fti = findFrametrailInstance(movieid);
 	
@@ -1436,6 +1446,41 @@ function isAnnotationKept(annotation, deselected_nodes) {
 	return true;
 }
 
+function checkAnnotationConsistency(annotations) {
+	consistency_check_result = [];
+	
+	var result = [];
+	
+	annotations.forEach(function(anno) {
+		var check_passed = true;
+		
+		if (typeof anno['id'] === 'undefined') {
+			check_passed = false;
+		}
+		if (typeof anno['advene:type'] === 'undefined') {
+			check_passed = false;
+		}
+		if (typeof anno['advene:type_color'] === 'undefined') {
+			check_passed = false;
+		}
+		if (typeof anno['advene:type_title'] === 'undefined') {
+			check_passed = false;
+		}
+		if (typeof anno['target'] === 'undefined') {
+			check_passed = false;
+		}
+		if (Array.isArray(anno['target'])) {
+			check_passed = false;
+			console.log(anno['id']);
+		}		
+		if (check_passed == true) {
+			result.push(anno);
+		}
+	});
+	
+	return result; 
+}
+
 function getCurrentAnnotationData() {
 	console.log("getCurrentAnnotationData");
 	var annotation_structure = [];
@@ -1454,7 +1499,9 @@ function getCurrentAnnotationData() {
 	// Filter duplicates that can come from different requests
 	var tmp_anno_ids = [];
 	var filtered_annotations = [];
-	movie_search_annotations.concat(rest_annotations).forEach(function(anno){
+	
+	var consistent_annotations = checkAnnotationConsistency(movie_search_annotations.concat(rest_annotations));
+	consistent_annotations.forEach(function(anno){
 		if (!tmp_anno_ids.includes(anno.id)) {
 			tmp_anno_ids.push(anno.id);
 			filtered_annotations.push(anno);

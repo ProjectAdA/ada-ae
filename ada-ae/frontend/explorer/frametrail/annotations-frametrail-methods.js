@@ -28,7 +28,7 @@ $(window).resize(function() {
 
 var previousAnnotationData;
 
-function initFrameTrail(resultOffset) {
+function initFrameTrail(resultOffset, frametrailReadyCallback) {
     console.log("initFrameTrail");
 
     //$('#loadingResults').show();
@@ -48,7 +48,7 @@ function initFrameTrail(resultOffset) {
         previousAnnotationData = annotationData;
         renderResultIndicators(annotationData);
     } else {
-        var annotationData = previousAnnotationData;
+        var annotationData = getCurrentAnnotationData();
     }
 
     updateTrapezoids();
@@ -150,7 +150,7 @@ function initFrameTrail(resultOffset) {
                                     +   '</div>');
                 $('#resultPanel').append(resultMovieItem);
                 
-                renderResultScene(allScenes[as], resultMovieItem);
+                renderResultScene(allScenes[as], resultMovieItem, frametrailReadyCallback);
 
             }
 
@@ -194,7 +194,7 @@ function initFrameTrail(resultOffset) {
 
                 resultCache[annotationData[m].id] = annotationData[m];
 
-                renderResultMovie(annotationData[m], resultMovieItem);
+                renderResultMovie(annotationData[m], resultMovieItem, frametrailReadyCallback);
 
             }
         }
@@ -223,7 +223,7 @@ function renderResultList(annotationList) {
     renderAnnotationTimelines(annotationList, $('#resultPanel'), 'annotationType', resultOptionsSortBy, true);
 }
 
-function renderResultScene(sceneAnnotationData, resultMovieElement) {
+function renderResultScene(sceneAnnotationData, resultMovieElement, frametrailReadyCallback) {
 
     var movieID = resultMovieElement.data('movie-id'),
         fullMovieDuration = parseFloat(resultMovieElement.data('movie-duration')),
@@ -238,14 +238,14 @@ function renderResultScene(sceneAnnotationData, resultMovieElement) {
     var sceneLabel = window['player'+ movieID + 'movieTitle'] +'<br>Scene: <b>'+ sceneAnnotationData.title +'</b>';
     resultMovieElement.append('<div class="sceneLabel">'+ sceneLabel +'</div>');
 
-    renderAnnotations(sceneAnnotationData.annotations, '.resultMovieItem[data-movie-id="'+ movieID +'"][data-scene-index="'+ sceneIndex +'"] .playerPanel', fullMovieDuration, window['player'+ movieID + sceneIndex + 'currentSceneOffsetStart'], window['player'+ movieID + sceneIndex + 'currentSceneOffsetEnd'], movieID, sceneIndex);
+    renderAnnotations(sceneAnnotationData.annotations, '.resultMovieItem[data-movie-id="'+ movieID +'"][data-scene-index="'+ sceneIndex +'"] .playerPanel', fullMovieDuration, window['player'+ movieID + sceneIndex + 'currentSceneOffsetStart'], window['player'+ movieID + sceneIndex + 'currentSceneOffsetEnd'], movieID, sceneIndex, frametrailReadyCallback);
 
     $('#loadingResults').hide();
 
 
 }
 
-function renderResultMovie(movieAnnotationData, resultMovieElement) {
+function renderResultMovie(movieAnnotationData, resultMovieElement, frametrailReadyCallback) {
 
     var movieID = movieAnnotationData.id,
         fullMovieDuration = movieAnnotationData.duration / 1000;
@@ -382,14 +382,14 @@ function renderResultMovie(movieAnnotationData, resultMovieElement) {
 
     //console.log(fullMovieDuration);
 
-    renderAllAnnotations(annotationsOfAllScenes, fullMovieDuration, firstSceneOffsetStart, lastSceneOffsetEnd, movieID);
+    renderAllAnnotations(annotationsOfAllScenes, fullMovieDuration, firstSceneOffsetStart, lastSceneOffsetEnd, movieID, frametrailReadyCallback);
 
     $('#loadingResults').hide();
 
 
 }
 
-function renderAnnotations(sceneAnnotations, targetSelector, movieDuration, offsetStart, offsetEnd, movieID, sceneIndex) {
+function renderAnnotations(sceneAnnotations, targetSelector, movieDuration, offsetStart, offsetEnd, movieID, sceneIndex, frametrailReadyCallback) {
 
     $('#loadingResults').show();
     if (typeof sceneIndex == 'undefined') {
@@ -774,6 +774,11 @@ function renderAnnotations(sceneAnnotations, targetSelector, movieDuration, offs
             }, 1000);
             renderImage2Text(image2TextCache[movieID], i2tTargetElem, offsetStart, offsetEnd);
         }
+
+        if (frametrailReadyCallback && typeof frametrailReadyCallback == 'function') {
+            frametrailReadyCallback();
+        }
+        
     });
 
     window['player'+ movieID + sceneIndex].on('pause', function() {
@@ -785,7 +790,7 @@ function renderAnnotations(sceneAnnotations, targetSelector, movieDuration, offs
 
 }
 
-function renderAllAnnotations(allAnnotations, resultDuration, offsetStart, offsetEnd, movieID) {
+function renderAllAnnotations(allAnnotations, resultDuration, offsetStart, offsetEnd, movieID, frametrailReadyCallback) {
 
     window['player'+ movieID + 'sceneTitle'] = '';
 
@@ -797,7 +802,7 @@ function renderAllAnnotations(allAnnotations, resultDuration, offsetStart, offse
     window['player'+ movieID + 'currentSceneOffsetStart'] = offsetStart;
     window['player'+ movieID + 'currentSceneOffsetEnd'] = offsetEnd;
 
-    renderAnnotations(allAnnotations, '.resultMovieItem[data-movie-id="'+ movieID +'"] .playerPanel', resultDuration, offsetStart, offsetEnd, movieID);
+    renderAnnotations(allAnnotations, '.resultMovieItem[data-movie-id="'+ movieID +'"] .playerPanel', resultDuration, offsetStart, offsetEnd, movieID, false, frametrailReadyCallback);
 
     
 }
