@@ -34,7 +34,7 @@ function getMetadata() {
 function render_table(data) {
 	console.log("render_table");
 	
-	var header = ['Category', 'Title', 'Year', 'Runtime', 'Director', 'Film Version', 'IMDB', 'Annotations', 'Metadata'];
+	var header = ['Category', 'Title', 'Year', 'Runtime', 'Director', 'Film Version', 'IMDB', 'Annotations'];
 	
 	var table = document.createElement("TABLE");
 	table.id = "video_list";
@@ -55,7 +55,7 @@ function render_table(data) {
 		var tr = document.createElement('tr');
 		
 		tr.appendChild(create_cell(row_data.category));
-		tr.appendChild(create_cell(row_data.title));
+		tr.appendChild(create_cell_with_link(row_data.title, row_data.mediauri));
 		tr.appendChild(create_cell(row_data.year));
 		tr.appendChild(create_cell(row_data.runtime + " min"));
 		tr.appendChild(create_cell(row_data.director));
@@ -66,7 +66,6 @@ function render_table(data) {
 			tr.appendChild(create_cell_with_link(row_data.imdbId, "https://www.imdb.com/title/"+row_data.imdbId));
 		}
 		tr.appendChild(create_cell(row_data.annotationsTotal));
-		tr.appendChild(create_cell_with_link("Link", row_data.mediauri));
 		
 		tbdy.appendChild(tr);
 	});
@@ -89,7 +88,7 @@ function create_cell_with_link(content, url) {
 	var link = document.createElement("a");
 	link.setAttribute("href", url);
 	link.className = "link";
-	link.appendChild(document.createTextNode("Link"));
+	link.appendChild(document.createTextNode(content));
 	link.title = content;
 	link.target = "_blank";
 	td.appendChild(link);
