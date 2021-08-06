@@ -1,5 +1,5 @@
-const apiUrl='http://127.0.0.1:7070/api'; 
-//const apiUrl='/api'; 
+//const apiUrl='http://127.0.0.1:7070/api'; 
+const apiUrl='/api'; 
 
 var movies = [];
 
