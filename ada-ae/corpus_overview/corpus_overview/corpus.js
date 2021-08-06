@@ -1,5 +1,5 @@
-//const apiUrl='http://127.0.0.1:7070/api'; 
-const apiUrl='/api'; 
+const apiUrl='http://127.0.0.1:7070/api'; 
+//const apiUrl='/api'; 
 
 var movies = [];
 
@@ -14,8 +14,19 @@ function request_movie_metadata() {
 	});
 }
 
+function compare( a, b ) {
+  if ( a.category + a.title < b.category + b.title){
+    return -1;
+  }
+  if ( a.category + a.title > b.category + b.title){
+    return 1;
+  }
+  return 0;
+}
+
 function getMetadata() {
 	request_movie_metadata().then(function(values) {
+		values.sort(compare);
 		render_table(values);
 	});
 }
