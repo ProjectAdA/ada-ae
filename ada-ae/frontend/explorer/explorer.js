@@ -1456,25 +1456,32 @@ function checkAnnotationConsistency(annotations) {
 		
 		if (typeof anno['id'] === 'undefined') {
 			check_passed = false;
+			console.log("Corrupt annotation filtered", "id not found", anno);
 		}
 		if (typeof anno['advene:type'] === 'undefined') {
 			check_passed = false;
+			console.log("Corrupt annotation filtered", "advene:type not found", anno['id']);
 		}
-		if (typeof anno['advene:type_color'] === 'undefined') {
-			check_passed = false;
-		}
+		// if (typeof anno['advene:type_color'] === 'undefined') {
+			// check_passed = false;
+			// console.log("Corrupt annotation filtered", "advene:type_color not found", anno['id']);
+		// }
 		if (typeof anno['advene:type_title'] === 'undefined') {
 			check_passed = false;
+			console.log("Corrupt annotation filtered", "advene:type_title not found", anno['id']);
 		}
 		if (typeof anno['target'] === 'undefined') {
 			check_passed = false;
+			console.log("Corrupt annotation filtered", "target not found", anno['id']);
 		}
 		if (Array.isArray(anno['target'])) {
 			check_passed = false;
-			console.log(anno['id']);
+			console.log("Corrupt annotation filtered", "multiple targets found", anno['id']);
 		}		
 		if (check_passed == true) {
 			result.push(anno);
+		} else {
+//			console.log("Corrupt annotation filtered", anno['id']);
 		}
 	});
 	
