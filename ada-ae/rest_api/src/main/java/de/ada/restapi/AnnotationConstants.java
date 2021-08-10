@@ -27,6 +27,7 @@ public class AnnotationConstants {
 	    		"        dcterms:created    \"XXDATETIMEXX\"^^xsd:dateTime ;\r\n" + 
 	    		"        dcterms:creator    advu:scenegen ;\r\n" + 
 	    		"        advene:color       \"#dcdcdc\" ;\r\n" + 
+	    		"        advene:type_color  \"#dcdcdc\" ;\r\n" + 
 	    		"        advene:type        \"Scene\" ;\r\n" + 
 	    		"        advene:type_title  \"Seg | Scene\" ;\r\n" + 
 	    		"        oa:hasBody         [ a                  oa:TextualBody ;\r\n" + 
