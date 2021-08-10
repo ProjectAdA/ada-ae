@@ -227,16 +227,20 @@ function fix_deselected_nodes() {
 	
 }
 
+function setTimeouts() {
+	if (typeof tree_timeout_id !== 'undefined') {
+		window.clearTimeout(tree_timeout_id);
+	}
+	
+	trees_deselected_nodes = get_deselected_nodes();
+	
+	tree_timeout_id = window.setTimeout(reload_frametrail, tree_selection_timeout);
+}
+
 function tree_select_eventhandler(event, data) {
 	var node = data.node;
 	if (typeof data.originalEvent !== 'undefined') {
-		if (typeof tree_timeout_id !== 'undefined') {
-			window.clearTimeout(tree_timeout_id);
-		}
-		
-		trees_deselected_nodes = get_deselected_nodes();
-		
-		tree_timeout_id = window.setTimeout(reload_frametrail, tree_selection_timeout);
+		setTimeouts();
 	}
 }
 
@@ -292,11 +296,13 @@ function init_ontology_tree() {
 				node.setSelected(true);
 			}
 		});
+		setTimeouts();
 	});
 	$("#btnDeselectAll_annotation").click(function(){
 		$.ui.fancytree.getTree("#annotation_tree").visit(function(node){
 			node.setSelected(false);
 		});
+		setTimeouts();
 	});
 	$("#btnExpand_level").click(function(){
 		$.ui.fancytree.getTree("#annotation_tree").visit(function(node){
@@ -392,11 +398,13 @@ function init_movie_tree() {
 				node.setSelected(true);
 			}
 		});
+		setTimeouts();
 	});
 	$("#btnDeselectAll_movies").click(function(){
 		$.ui.fancytree.getTree("#movie_tree").visit(function(node){
 			node.setSelected(false);
 		});
+		setTimeouts();
 	});
 	$("#btnExpand_categories").click(function(){
 		$.ui.fancytree.getTree("#movie_tree").visit(function(node){
