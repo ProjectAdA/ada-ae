@@ -993,6 +993,9 @@ function execute_requests(request_objects) {
 			// console.log("READY CALLBACK");
 		// });
 		unlock_interface();
+		if (request_results.length == 0) {
+			$( "div.warning" ).fadeIn( 300 ).delay( 2500 ).fadeOut( 400 );
+		}
 	});
 }
 
