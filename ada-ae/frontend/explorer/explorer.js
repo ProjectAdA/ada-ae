@@ -361,7 +361,7 @@ function init_movie_tree() {
 		var movie_data = {title: truncate_name(movie.title, 27), original_title:movie.title, key: movie.id, tooltip: tooltip, count: 0, uri: movie.mediauri, expanded: false, unselectable: true, children: []};
 		if (movie.scenes !== null && movie.scenes.length > 0) {
 			movie.scenes.forEach(function(scene) {
-				movie_data.children.push({title: zeroPad(scene.shortId,2)+": "+truncate_name(scene.name, 23), original_title: zeroPad(scene.shortId,2)+": "+scene.name, tooltip: scene.name, key: scene.id, expanded: false, unselectable: true });
+				movie_data.children.push({title: zeroPad(scene.shortId,2)+": "+truncate_name(scene.name, 23), original_title: zeroPad(scene.shortId,2)+": "+scene.name, tooltip: scene.name, key: scene.id, uri: null, expanded: false, unselectable: true });
 			});
 		}
 		
