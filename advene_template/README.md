@@ -2,7 +2,7 @@
 
 This folder contains an Advene template package (**template_ontology.azp**) that allows you to annotate audiovisual content using the AdA Filmontology's predefined annotation types and values. It contains the imported ontology with its 8 annotation levels, 78 annotation types and 502 annotation values. 
 
-[![Advene Screenshot](advene.png "Advene Screenshot")](advene.png)
+[![Advene Screenshot](advene.png|width=600px "Advene Screenshot")](advene.png)
 
 ## How to use the template
 
