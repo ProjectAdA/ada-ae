@@ -26,3 +26,7 @@ The folder [corpus_metadata](corpus_metadata/) contains the metadata of the vide
 
 The folder [annotations](annotations/) contains all manual annotations (approx. 125,000) created by the film scholars at FU Berlin and all automatically generated annotations (approx. 440,000) created by extractors developed within the project.
 
+## Contact
+
+This repository is maintained by [Henning Agt-Rickauer](https://hagt.github.io/). If you have any technical questions, feel free to contact me.
+
