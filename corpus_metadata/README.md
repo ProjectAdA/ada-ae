@@ -1,12 +1,12 @@
 # Corpus Metadata
 
-The project team of the FU Berlin compiled a video corpus with feature films, documentaries, television news and web videos on the global financial crisis after 2007 in order to examine audiovisual rhetorics of affect. This folder contains the semantic metadata of the corpus exported to different file formats. At the end of the project, the corpus comprised 391 films. The following files are provided:
+The project team of the FU Berlin compiled a video corpus with feature films, documentaries, television news and web videos on the global financial crisis after 2007 in order to examine audiovisual rhetorics of affect. This folder contains the semantic metadata of the corpus exported to different file formats. At the end of the project the corpus consisted of 391 films with approx. 176 hours. The following files are provided:
 
 | File | Format |
 | ----------- | ----------- |
-| corpus_metadata.ttl | RDF dump in turtle format |
-| corpus_metadata.json | JSON export |
-| corpus_metadata.html | HTML export |
+| [corpus_metadata.ttl](corpus_metadata.ttl) | RDF dump in turtle format |
+| [corpus_metadata.json](corpus_metadata.json) | JSON export |
+| [corpus_metadata.html](corpus_metadata.html) | HTML export |
 
 The JSON export also provides information on the scenes in a film and the number of annotations per annotation type.
 
@@ -45,12 +45,9 @@ In the JSON export the URI of each metadata entry is encoded in the field "media
 
 ### Examples
 
-Screenshot of the metadata editor in the video analysis back end:
-
 |[![Metadata Editor Screenshot](metadata_entry.png "Metadata Editor Screenshot")](metadata_entry.png)|
 | ------ |
-
-Screenshot of an metadata entry in LodView (from [http://ada.cinepoetics.org/resource/media/294704ee3bd55a6888235ae7721120c29522eddd3cc273cc8365fa0eef2ac56d](http://ada.cinepoetics.org/resource/media/294704ee3bd55a6888235ae7721120c29522eddd3cc273cc8365fa0eef2ac56d)
+Fig. 1: Screenshot of the metadata editor in the video analysis back end.
 
 <kbd>[![Metadata Editor Screenshot](metadata_lodview.png "Metadata Editor Screenshot")](metadata_entry.png)</kbd>
-
+Fig. 2: Screenshot of an metadata entry in LodView (from [http://ada.cinepoetics.org/resource/media/294704ee3bd55a6888235ae7721120c29522eddd3cc273cc8365fa0eef2ac56d](http://ada.cinepoetics.org/resource/media/294704ee3bd55a6888235ae7721120c29522eddd3cc273cc8365fa0eef2ac56d)
