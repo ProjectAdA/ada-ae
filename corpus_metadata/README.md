@@ -46,7 +46,12 @@ In the JSON export the URI of each metadata entry is encoded in the field "media
 ### Examples
 
 Screenshot of the metadata editor in the video analysis back end:
-[![Metadata Editor Screenshot](metadata_entry.png "Metadata Editor Screenshot")](metadata_entry.png)
+
+|[![Metadata Editor Screenshot](metadata_entry.png "Metadata Editor Screenshot")](metadata_entry.png)|
+-
 
 Screenshot of an metadata entry in LodView (from [http://ada.cinepoetics.org/resource/media/294704ee3bd55a6888235ae7721120c29522eddd3cc273cc8365fa0eef2ac56d](http://ada.cinepoetics.org/resource/media/294704ee3bd55a6888235ae7721120c29522eddd3cc273cc8365fa0eef2ac56d)
-[![Metadata Editor Screenshot](metadata_entry.png "Metadata Editor Screenshot")](metadata_entry.png)
+
+|[![Metadata Editor Screenshot](metadata_lodview.png "Metadata Editor Screenshot")](metadata_entry.png)|
+-
+
