@@ -10,7 +10,7 @@ Normally, the ontology template is not used directly, instead a film-specific te
 
 ## Manual use of template
 
-You can load the ontology template into Advene and start the annotation, but the following steps must be carried out in order to be able to export the annotations as Linked Data according to AdA Filmtology:
+You can load the ontology template into Advene and start the annotation, but the following steps must be carried out in order to be able to export the annotations as Linked Data according to AdA Filmontology:
 
 * Open template_ontology.azp in Advene
 * Save as movie.azp
