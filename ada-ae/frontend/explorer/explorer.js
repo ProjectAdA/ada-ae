@@ -1175,6 +1175,9 @@ function jump_to_frametrail(movieid, timemilli) {
 	if (fti !== null) {
 		fti.currentTime = timemilli / 1000;
 	} else {
+		// var request_objects = generate_request_objects("moviesearch", [movieid], [], ["AnnotationType/Scene"], "", false, []);
+		// console.log(request_objects);
+		// execute_requests(request_objects);
 		//TODO - Request Scene Annotation for movie, initialize frametrail and set currentTime
 		
 	}
@@ -1483,7 +1486,7 @@ function checkAnnotationConsistency(annotations) {
 			// check_passed = false;
 			// console.log("Corrupt annotation filtered:", "\""+effected_movie+"\"", "advene:type_color not found", anno['id']);
 		// }
-		if (typeof anno['advene:type_title'] !== 'undefined') {
+		if (typeof anno['advene:type_title'] === 'undefined') {
 			check_passed = false;
 			console.log("Corrupt annotation filtered:", "\""+effected_movie+"\"", "advene:type_title not found", anno['id']);
 		}
