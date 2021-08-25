@@ -5,7 +5,6 @@ var request_results = [];
 var autocomplete_values = {};
 var tree_timeout_id;
 var trees_deselected_nodes = [];
-var consistency_check_result = [];
 
 const zeroPad = (num, places) => String(num).padStart(places, '0')
 
@@ -1002,7 +1001,7 @@ function execute_requests(request_objects) {
 		// });
 		unlock_interface();
 		if (request_results.length == 0) {
-			$( "div.warning" ).fadeIn( 300 ).delay( 2500 ).fadeOut( 400 );
+			$( "div.zerowarning" ).fadeIn( 300 ).delay( 3500 ).fadeOut( 400 );
 		}
 	});
 }
@@ -1458,8 +1457,6 @@ function isAnnotationKept(annotation, deselected_nodes) {
 }
 
 function checkAnnotationConsistency(annotations) {
-	consistency_check_result = [];
-	
 	var result = [];
 	
 	annotations.forEach(function(anno) {
@@ -1469,30 +1466,37 @@ function checkAnnotationConsistency(annotations) {
 			check_passed = false;
 			console.log("Corrupt annotation filtered", "id not found", anno);
 		}
+		
+		var effected_movie = "";
+		
+		var mediauri = anno['id'].substr(0, anno['id'].lastIndexOf("/"));
+		if (typeof mediauri !== 'undefined') {
+			var movieid = mediauri.substr(mediauri.lastIndexOf("/")+1);
+			effected_movie = getMovieLabelById(movieid);
+		}
+		
 		if (typeof anno['advene:type'] === 'undefined') {
 			check_passed = false;
-			console.log("Corrupt annotation filtered", "advene:type not found", anno['id']);
+			console.log("Corrupt annotation filtered:", "\""+effected_movie+"\"",  "advene:type not found", anno['id']);
 		}
 		// if (typeof anno['advene:type_color'] === 'undefined') {
 			// check_passed = false;
-			// console.log("Corrupt annotation filtered", "advene:type_color not found", anno['id']);
+			// console.log("Corrupt annotation filtered:", "\""+effected_movie+"\"", "advene:type_color not found", anno['id']);
 		// }
-		if (typeof anno['advene:type_title'] === 'undefined') {
+		if (typeof anno['advene:type_title'] !== 'undefined') {
 			check_passed = false;
-			console.log("Corrupt annotation filtered", "advene:type_title not found", anno['id']);
+			console.log("Corrupt annotation filtered:", "\""+effected_movie+"\"", "advene:type_title not found", anno['id']);
 		}
 		if (typeof anno['target'] === 'undefined') {
 			check_passed = false;
-			console.log("Corrupt annotation filtered", "target not found", anno['id']);
+			console.log("Corrupt annotation filtered:", "\""+effected_movie+"\"",  "target not found", anno['id']);
 		}
 		if (Array.isArray(anno['target'])) {
 			check_passed = false;
-			console.log("Corrupt annotation filtered", "multiple targets found", anno['id']);
+			console.log("Corrupt annotation filtered:", "\""+effected_movie+"\"",  "multiple targets found", anno['id']);
 		}		
 		if (check_passed == true) {
 			result.push(anno);
-		} else {
-//			console.log("Corrupt annotation filtered", anno['id']);
 		}
 	});
 	
@@ -1514,11 +1518,17 @@ function getCurrentAnnotationData() {
 	// Deep copy annotations in order keep originals inside of "requests_results" and pass modified annotations to Frametrail
 	rest_annotations = JSON.parse(JSON.stringify(rest_annotations));
 	
+	var all_annotations = movie_search_annotations.concat(rest_annotations);
+	
+	// Filter corrupt annotations
+	var consistent_annotations = checkAnnotationConsistency(all_annotations);
+	if (consistent_annotations.length != all_annotations.length) {
+		$( "div.filtererror" ).fadeIn( 300 ).delay( 8000 ).fadeOut( 400 );
+	}
+
 	// Filter duplicates that can come from different requests
 	var tmp_anno_ids = [];
 	var filtered_annotations = [];
-	
-	var consistent_annotations = checkAnnotationConsistency(movie_search_annotations.concat(rest_annotations));
 	consistent_annotations.forEach(function(anno){
 		if (!tmp_anno_ids.includes(anno.id)) {
 			tmp_anno_ids.push(anno.id);

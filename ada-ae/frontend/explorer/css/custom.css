@@ -71,10 +71,17 @@
     border-radius: 4px;  
 }
 
-.warning {
+.zerowarning {
     color: #8a6d3b;
     background-color: #fcf8e3;
     border-color: #faebcc;
+    display: none;
+}
+
+.filtererror {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
     display: none;
 }
 
