@@ -84,7 +84,7 @@ function updateUIfromURL() {
 		}
 		
 		var sceneids = [];
-		if (movieids.length == 1) {
+		if (movieids.length == 1 && typeof req.sceneIDs !== 'undefined') {
 			sceneids = req.sceneIDs.map(s => movieids[0] + "_" + getSceneLongId(movieids[0], s)).filter(s => !s.endsWith("_"));
 			if (req.sceneIDs.length != sceneids.length) {
 				alert("Unknown scene short id used in URL: "+req.sceneIDs+"\n"+JSON.stringify(req));
