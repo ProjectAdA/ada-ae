@@ -802,7 +802,7 @@ function renderAllAnnotations(allAnnotations, resultDuration, offsetStart, offse
     window['player'+ movieID + 'currentSceneOffsetStart'] = offsetStart;
     window['player'+ movieID + 'currentSceneOffsetEnd'] = offsetEnd;
 
-    renderAnnotations(allAnnotations, '.resultMovieItem[data-movie-id="'+ movieID +'"] .playerPanel', resultDuration, offsetStart, offsetEnd, movieID, false, frametrailReadyCallback);
+    renderAnnotations(allAnnotations, '.resultMovieItem[data-movie-id="'+ movieID +'"] .playerPanel', resultDuration, offsetStart, offsetEnd, movieID, undefined, frametrailReadyCallback);
 
     
 }
