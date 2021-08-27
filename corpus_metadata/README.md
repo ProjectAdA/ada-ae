@@ -8,7 +8,9 @@ The project team of the FU Berlin compiled a video corpus with feature films, do
 | [corpus_metadata.json](corpus_metadata.json) | JSON export |
 | [corpus_metadata.html](corpus_metadata.html) | HTML export |
 
-The JSON export also provides information on the scenes in a film and the number of annotations per annotation type.
+The JSON export also contains information on the scenes in a film and the number of annotations per annotation type.
+
+An online version of the corpus overview is available [here](https://ada.cinepoetics.org/corpus/).
 
 ## Data fields
 

@@ -30,3 +30,7 @@ The folder [annotations](annotations/) contains all manual annotations (approx. 
 
 This repository is maintained by [Henning Agt-Rickauer](https://hagt.github.io/). If you have any technical questions, feel free to contact me.
 
+## Acknowledgments
+
+The work published in this repository was supported by the German Federal Ministry of Education and Research under grant number 01UG1632B.
+
