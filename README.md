@@ -6,10 +6,6 @@ The [AdA project](https://projectada.github.io/) (German abbreviation for "Affek
 
 In particular, the repository contains:
 
-## Software Components
-
-The folder [ada-ae](ada-ae/) contains the software stack of the Annotation Explorer front end and back end for running the web-based application for querying, analyzing and visualizing semantic video annotations.
-
 ## AdA Filmontology
 
 The folder [filmontology](filmontology/) contains the AdA Filmontology, a systematic vocabulary and data model of film-analytical terms and concepts for fine-grained semantic video annotations.
@@ -25,6 +21,10 @@ The folder [corpus_metadata](corpus_metadata/) contains the metadata of the vide
 ## Datasets
 
 The folder [annotations](annotations/) contains all manual annotations (approx. 125,000) created by the film scholars at FU Berlin and all automatically generated annotations (approx. 440,000) created by extractors developed within the project.
+
+## Software Components
+
+The folder [ada-ae](ada-ae/) contains the software stack of the Annotation Explorer front end and back end for running the web-based application for querying, analyzing and visualizing semantic video annotations.
 
 ## Contact
 

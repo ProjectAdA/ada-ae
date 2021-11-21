@@ -21,6 +21,6 @@ You can load the ontology template into Advene and start the annotation, but the
 * Edit --> Package Properties...
 	* Fill in title, descripton
 	* Fill in duration (ms) from media information
-	* Fill in Media URI http://ada.cinepoetics.org/resource/media/checksum (checksum from Metadata)
+	* Fill in Media URI http://ada.cinepoetics.org/resource/media/{checksum} (checksum from Metadata)
 	* Uncheck "Template Package"
 * Save package

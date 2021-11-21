@@ -45,7 +45,7 @@ In the JSON export the URI of each metadata entry is encoded in the field "media
 | Language | http://purl.org/dc/terms/language | language |
 | Film Version | http://dbpedia.org/ontology/filmVersion | filmVersion |
 
-### Examples
+## Examples
 
 |[![Metadata Editor Screenshot](metadata_entry.png "Metadata Editor Screenshot")](metadata_entry.png)|
 | ------ |
